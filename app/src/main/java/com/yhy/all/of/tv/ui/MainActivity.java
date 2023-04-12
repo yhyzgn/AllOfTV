@@ -1,45 +1,35 @@
 package com.yhy.all.of.tv.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.IntEvaluator;
+import android.animation.ObjectAnimator;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.KeyEvent;
+import android.net.ConnectivityManager;
+import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.view.animation.BounceInterpolator;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.AppCompatTextView;
-import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.constraintlayout.widget.Group;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.leanback.widget.ArrayObjectAdapter;
-import androidx.leanback.widget.FocusHighlight;
-import androidx.leanback.widget.FocusHighlightHelper;
-import androidx.leanback.widget.ItemBridgeAdapter;
-import androidx.leanback.widget.OnChildViewHolderSelectedListener;
-import androidx.leanback.widget.Presenter;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager.widget.ViewPager;
-
+import com.owen.tvrecyclerview.widget.TvRecyclerView;
+import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import com.yhy.all.of.tv.R;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.chan.ChanRegister;
-import com.yhy.all.of.tv.component.adapter.ChanTabContentVPAdapter;
+import com.yhy.all.of.tv.component.adapter.HomeTabAdapter;
 import com.yhy.all.of.tv.component.base.BaseActivity;
-import com.yhy.all.of.tv.component.presenter.TabVideoTypePresenter;
-import com.yhy.all.of.tv.utils.LogUtils;
-import com.yhy.all.of.tv.utils.ViewUtils;
-import com.yhy.all.of.tv.widget.ScaleConstraintLayout;
-import com.yhy.all.of.tv.widget.TabHorizontalGridView;
-import com.yhy.all.of.tv.widget.TabVerticalGridView;
-import com.yhy.all.of.tv.widget.TabViewPager;
+import com.yhy.all.of.tv.component.base.BaseLazyFragment;
+import com.yhy.all.of.tv.widget.NoScrollViewPager;
+import com.yhy.all.of.tv.widget.ViewObj;
 import com.yhy.router.annotation.Router;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import me.jessyan.autosize.utils.AutoSizeUtils;
 
 /**
  * 主页面
@@ -51,69 +41,32 @@ import java.util.List;
  * @since 1.0.0
  */
 @Router(url = "/activity/main")
-public class MainActivity extends BaseActivity implements ViewTreeObserver.OnGlobalFocusChangeListener, View.OnFocusChangeListener {
-    private final static List<Chan> CHAN_LIST = ChanRegister.instance.getChanList();
-    private static final String TAG = "MainActivity";
-    private DrawerLayout dlMain;
-    private LinearLayoutCompat clMain;
-    private TabVerticalGridView vgvMenu;
-    private ScaleConstraintLayout sclSearch;
-    private ScaleConstraintLayout sclHistory;
-    private ScaleConstraintLayout sclFavor;
-    private ScaleConstraintLayout sclSettings;
-    private View mLastFocusedView;
-    private TabHorizontalGridView hgTitle;
-    private TabViewPager vpContent;
-    private TabVideoTypePresenter mVideoTypePresenter;
-    private ArrayObjectAdapter mVideoTypeAdapter;
-    private ChanTabContentVPAdapter mVpAdapter;
+public class MainActivity extends BaseActivity {
 
-    private boolean isFirstIn = true;
-    private int mCurrentPageIndex = 0;
-    private boolean isSkipTabFromViewPager = false;
+    private LinearLayout topLayout;
+    private TextView tvName;
+    private ImageView tvWifi;
+    private ImageView tvFind;
+    private ImageView tvStyle;
+    private ImageView tvDrawer;
+    private ImageView tvMenu;
+    private LinearLayout contentLayout;
+    private TvRecyclerView trvTab;
+    private NoScrollViewPager nvpTab;
+    private HomeTabAdapter mTabAdapter;
 
-    private TextView mOldTitle;
+    private final List<BaseLazyFragment> fragments = new ArrayList<>();
 
-    private final OnChildViewHolderSelectedListener onChildViewHolderSelectedListener = new OnChildViewHolderSelectedListener() {
-        @Override
-        public void onChildViewHolderSelected(RecyclerView parent, RecyclerView.ViewHolder child, int position, int subPosition) {
-            super.onChildViewHolderSelected(parent, child, position, subPosition);
+    private View currentView;
+    private boolean isDownOrUp = false;
+    private boolean sortChange = false;
+    private int currentSelected = 0;
+    private int sortFocused = 0;
+    public View sortFocusView = null;
+    private final Handler mHandler = new Handler();
+    private long mExitTime = 0;
 
-            if (child != null && position != mCurrentPageIndex) {
-                child.itemView.requestFocus();
-
-                Log.e(TAG, "onChildViewHolderSelected: 000 isSkipTabFromViewPager" + isSkipTabFromViewPager);
-                TextView currentTitle = child.itemView.findViewById(R.id.tv_scv_item);
-                if (isSkipTabFromViewPager) {
-                    Log.e(TAG, "onChildViewHolderSelected: 111");
-
-                    if (mOldTitle != null) {
-                        Log.e(TAG, "onChildViewHolderSelected: 222");
-
-                        mOldTitle.setTextColor(getResources().getColor(R.color.colorWhite));
-                        Paint paint = mOldTitle.getPaint();
-                        if (paint != null) {
-                            paint.setFakeBoldText(false);
-                            // viewpager切页标题不刷新，调用invalidate刷新
-                            mOldTitle.invalidate();
-                        }
-                    }
-                    currentTitle.setTextColor(getResources().getColor(R.color.colorBlue));
-                    Paint paint = currentTitle.getPaint();
-                    if (paint != null) {
-                        paint.setFakeBoldText(true);
-                        // viewpager切页标题不刷新，调用invalidate刷新
-                        currentTitle.invalidate();
-                    }
-                }
-                mOldTitle = currentTitle;
-            }
-
-            isSkipTabFromViewPager = false;
-            Log.e(TAG, "onChildViewHolderSelected mViewPager != null: " + (vpContent != null) + " position:" + position);
-            setCurrentItemPosition(position);
-        }
-    };
+    private byte topHide = 0;
 
     @Override
     protected int layout() {
@@ -122,271 +75,176 @@ public class MainActivity extends BaseActivity implements ViewTreeObserver.OnGlo
 
     @Override
     protected void initView() {
-        dlMain = $(R.id.dl_main);
-        clMain = $(R.id.cl_main);
+        topLayout = $(R.id.topLayout);
+        tvName = $(R.id.tvName);
+        tvWifi = $(R.id.tvWifi);
+        tvFind = $(R.id.tvFind);
+        tvStyle = $(R.id.tvStyle);
+        tvDrawer = $(R.id.tvDrawer);
+        tvMenu = $(R.id.tvMenu);
 
-        vgvMenu = $(R.id.vgv_menu);
+        contentLayout = $(R.id.contentLayout);
+        trvTab = $(R.id.trvTab);
+        nvpTab = $(R.id.nvpTab);
 
-        sclSearch = $(R.id.scl_search);
-        sclHistory = $(R.id.scl_history);
-        sclFavor = $(R.id.scl_favor);
-        sclSettings = $(R.id.scl_settings);
-
-        hgTitle = $(R.id.hg_title);
-        vpContent = $(R.id.vp_content);
-
-        vgvMenu.setNumColumns(1);
-        vgvMenu.setVerticalSpacing(ViewUtils.dp2px(2));
-
-        ArrayObjectAdapter adapter = new ArrayObjectAdapter(new ChanPresenter());
-        CHAN_LIST.forEach(adapter::add);
-        ItemBridgeAdapter iba = new ItemBridgeAdapter(adapter);
-        vgvMenu.setAdapter(iba);
-        FocusHighlightHelper.setupBrowseItemFocusHighlight(iba, FocusHighlight.ZOOM_FACTOR_LARGE, false);
-
-        hgTitle.setHorizontalSpacing(ViewUtils.dp2px(4));
-        mVideoTypePresenter = new TabVideoTypePresenter();
-        mVideoTypeAdapter = new ArrayObjectAdapter(mVideoTypePresenter);
-        ItemBridgeAdapter tempAdapter = new ItemBridgeAdapter(mVideoTypeAdapter);
-        hgTitle.setAdapter(tempAdapter);
-        FocusHighlightHelper.setupBrowseItemFocusHighlight(tempAdapter, FocusHighlight.ZOOM_FACTOR_MEDIUM, false);
-
-        vpContent.setOffscreenPageLimit(2);
+        mTabAdapter = new HomeTabAdapter();
+        trvTab.setLayoutManager(new V7LinearLayoutManager(this, 0, false));
+        trvTab.setSpacingWithMargins(0, AutoSizeUtils.dp2px(this, 10.0f));
+        trvTab.setAdapter(mTabAdapter);
     }
 
     @Override
     protected void initData() {
+        mTabAdapter.setNewInstance(ChanRegister.instance.getChanList().get(0).tabList());
+
+        if (isNetworkAvailable()) {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+            if (cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_WIFI) {
+                tvWifi.setImageDrawable(getResources().getDrawable(R.drawable.hm_wifi));
+            } else if (cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_MOBILE) {
+                tvWifi.setImageDrawable(getResources().getDrawable(R.drawable.hm_mobile));
+            } else if (cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_ETHERNET) {
+                tvWifi.setImageDrawable(getResources().getDrawable(R.drawable.hm_lan));
+            }
+        }
+
+        trvTab.requestFocus();
     }
 
     @Override
     protected void initEvent() {
-        dlMain.addDrawerListener(new ActionBarDrawerToggle(this, dlMain, android.R.string.yes, android.R.string.cancel) {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-                super.onDrawerSlide(drawerView, slideOffset);
-                float slideX = drawerView.getWidth() * slideOffset;
-                clMain.setTranslationX(slideX);
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                vgvMenu.requestFocus();
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-                hgTitle.getChildAt(hgTitle.getSelectedPosition()).requestFocus();
-            }
-        });
-
-        vgvMenu.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
-            @Override
-            public void onChildViewHolderSelected(RecyclerView parent, RecyclerView.ViewHolder child, int position, int subPosition) {
-                super.onChildViewHolderSelected(parent, child, position, subPosition);
-                Log.e(TAG, "onChildViewHolderSelected: " + position);
-                if (vgvMenu == null) {
-                    return;
+        trvTab.setOnItemListener(new TvRecyclerView.OnItemListener() {
+            public void onItemPreSelected(TvRecyclerView tvRecyclerView, View view, int position) {
+                if (view != null && !MainActivity.this.isDownOrUp) {
+                    view.animate().scaleX(1.0f).scaleY(1.0f).setDuration(250).start();
+                    TextView tv = view.findViewById(R.id.tvTitle);
+                    tv.getPaint().setFakeBoldText(false);
+                    tv.setTextColor(MainActivity.this.getResources().getColor(R.color.color_FFFFFF_50));
+                    tv.invalidate();
+                    view.findViewById(R.id.tvFilter).setVisibility(View.GONE);
                 }
-                Log.e(TAG, "onChildViewHolderSelected: " + "　isPressUp:" + vgvMenu.isPressUp() + " isPressDown:" + vgvMenu.isPressDown());
-                menuToChan(position);
             }
-        });
 
-        sclSearch.setOnFocusChangeListener(this);
-        sclHistory.setOnFocusChangeListener(this);
-        sclFavor.setOnFocusChangeListener(this);
-        sclSettings.setOnFocusChangeListener(this);
+            public void onItemSelected(TvRecyclerView tvRecyclerView, View view, int position) {
+                if (view != null) {
+                    MainActivity.this.currentView = view;
+                    MainActivity.this.isDownOrUp = false;
+                    MainActivity.this.sortChange = true;
+                    view.animate().scaleX(1.1f).scaleY(1.1f).setInterpolator(new BounceInterpolator()).setDuration(250).start();
+                    TextView tv = view.findViewById(R.id.tvTitle);
+                    tv.getPaint().setFakeBoldText(true);
+                    tv.setTextColor(MainActivity.this.getResources().getColor(R.color.color_FFFFFF));
+                    tv.invalidate();
 
-        hgTitle.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
-            @Override
-            public void onChildViewHolderSelected(RecyclerView parent, RecyclerView.ViewHolder child, int position, int subPosition) {
-                super.onChildViewHolderSelected(parent, child, position, subPosition);
-                child.itemView.setOnFocusChangeListener(MainActivity.this);
-            }
-        });
-
-        getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener(this);
-        hgTitle.addOnChildViewHolderSelectedListener(onChildViewHolderSelectedListener);
-
-        vpContent.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                Log.e(TAG, "onPageSelected position: " + position);
-                if (isFirstIn) {
-                    isFirstIn = false;
-                } else {
-                    isSkipTabFromViewPager = true;
+                    Chan.Tab tab = mTabAdapter.getItem(position);
+                    loadTab(tab);
+                    MainActivity.this.sortFocusView = view;
+                    MainActivity.this.sortFocused = position;
+                    mHandler.removeCallbacks(mDataRunnable);
+                    mHandler.postDelayed(mDataRunnable, 200);
                 }
-                if (position != mCurrentPageIndex) {
-                    hgTitle.setSelectedPosition(position);
+            }
+
+            @Override
+            public void onItemClick(TvRecyclerView parent, View itemView, int position) {
+                if (itemView != null && currentSelected == position) {
+                    BaseLazyFragment baseLazyFragment = fragments.get(currentSelected);
+                    // if ((baseLazyFragment instanceof GridFragment) && !sortAdapter.getItem(position).filters.isEmpty()) {// 弹出筛选
+                    //     ((GridFragment) baseLazyFragment).showFilter();
+                    // } else if (baseLazyFragment instanceof UserFragment) {
+                    //     showSiteSwitch();
+                    // }
                 }
             }
         });
+    }
+
+    private void loadTab(Chan.Tab tab) {
+
     }
 
     @Override
     protected void setDefault() {
-        vgvMenu.postDelayed(() -> menuToChan(vgvMenu.getSelectedPosition()), 200);
     }
 
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        LogUtils.iTag(TAG, event.getAction(), event.getKeyCode());
-        switch (event.getAction()) {
-            case KeyEvent.ACTION_DOWN:
-                switch (event.getKeyCode()) {
-                    case KeyEvent.KEYCODE_MENU:
-                        // 菜单按钮
-                        if (toggleMenu()) {
-                            return true;
-                        }
-                        break;
-                    case KeyEvent.KEYCODE_BACK:
-                        if (closeMenu()) {
-                            return true;
-                        }
-                        break;
-                    default:
-                        break;
+    private void showFilterIcon(int count) {
+        boolean activated = count > 0;
+        currentView.findViewById(R.id.tvFilter).setVisibility(View.VISIBLE);
+        ImageView imgView = currentView.findViewById(R.id.tvFilter);
+        imgView.setColorFilter(activated ? getThemeColor() : Color.WHITE);
+    }
+
+    private final Runnable mDataRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (sortChange) {
+                sortChange = false;
+                if (sortFocused != currentSelected) {
+                    currentSelected = sortFocused;
+                    nvpTab.setCurrentItem(sortFocused, false);
+                    changeTop(sortFocused != 0);
                 }
-                break;
-            default:
-                break;
+            }
         }
-        return super.dispatchKeyEvent(event);
-    }
+    };
 
-    @Override
-    public void onFocusChange(View v, boolean hasFocus) {
-        if (hasFocus) {
-            rememberLastFocusedView(v);
-        }
-    }
+    private void changeTop(boolean hide) {
+        ViewObj viewObj = new ViewObj(topLayout, (ViewGroup.MarginLayoutParams) topLayout.getLayoutParams());
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
 
-    @Override
-    public void onGlobalFocusChanged(View oldFocus, View newFocus) {
-        Log.e(TAG, "onGlobalFocusChanged newFocus: " + newFocus);
-        Log.e(TAG, "onGlobalFocusChanged oldFocus: " + oldFocus);
-        if (newFocus == null || oldFocus == null) {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                topHide = (byte) (hide ? 1 : 0);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+        // Hide Top =======================================================
+        if (hide && topHide == 0) {
+            animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
+                            Integer.valueOf(AutoSizeUtils.mm2px(this, 20.0f)),
+                            Integer.valueOf(AutoSizeUtils.mm2px(this, 0.0f))),
+                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
+                            Integer.valueOf(AutoSizeUtils.mm2px(this, 50.0f)),
+                            Integer.valueOf(AutoSizeUtils.mm2px(this, 1.0f))),
+                    ObjectAnimator.ofFloat(this.topLayout, "alpha", 1.0f, 0.0f));
+            animatorSet.setDuration(250);
+            animatorSet.start();
+            tvName.setFocusable(false);
+            tvWifi.setFocusable(false);
+            tvFind.setFocusable(false);
+            tvStyle.setFocusable(false);
+            tvDrawer.setFocusable(false);
+            tvMenu.setFocusable(false);
             return;
         }
-        if (newFocus.getId() == R.id.tv_scv_item && oldFocus.getId() == R.id.tv_scv_item) {
-            ((TextView) newFocus).setTextColor(getResources().getColor(R.color.colorWhite));
-            ((TextView) newFocus).getPaint().setFakeBoldText(true);
-            ((TextView) oldFocus).setTextColor(getResources().getColor(R.color.colorWhite));
-            ((TextView) oldFocus).getPaint().setFakeBoldText(false);
-        } else if (newFocus.getId() == R.id.tv_scv_item && oldFocus.getId() != R.id.tv_scv_item) {
-            ((TextView) newFocus).setTextColor(getResources().getColor(R.color.colorWhite));
-            ((TextView) newFocus).getPaint().setFakeBoldText(true);
-        } else if (newFocus.getId() != R.id.tv_scv_item && oldFocus.getId() == R.id.tv_scv_item) {
-            ((TextView) oldFocus).setTextColor(getResources().getColor(R.color.colorBlue));
-            ((TextView) oldFocus).getPaint().setFakeBoldText(true);
-        }
-    }
-
-    private boolean openMenu() {
-        if (dlMain.isOpen()) {
-            return false;
-        }
-        dlMain.open();
-        View currentMenuView = vgvMenu.getChildAt(vgvMenu.getSelectedPosition());
-        if (null != currentMenuView) {
-            currentMenuView.requestFocus();
-        }
-        return true;
-    }
-
-    private boolean closeMenu() {
-        if (!dlMain.isOpen()) {
-            return false;
-        }
-        dlMain.close();
-        if (null != mLastFocusedView) {
-            mLastFocusedView.requestFocus();
-        }
-        return true;
-    }
-
-    private boolean toggleMenu() {
-        if (dlMain.isOpen()) {
-            return closeMenu();
-        }
-        return openMenu();
-    }
-
-    private void rememberLastFocusedView(View view) {
-        mLastFocusedView = view;
-    }
-
-    private void menuToChan(int position) {
-        LogUtils.iTag(TAG, "当前菜单选中项", position);
-        if (position < 0 || position >= CHAN_LIST.size()) {
-            return;
-        }
-
-        Chan chan = CHAN_LIST.get(position);
-        refreshPager(chan);
-    }
-
-    private Chan currentChan() {
-        return CHAN_LIST.get(vgvMenu.getSelectedPosition());
-    }
-
-    private Chan.Tab currentTab() {
-        return currentChan().tabList().get(hgTitle.getSelectedPosition());
-    }
-
-    private void refreshPager(Chan chan) {
-        LogUtils.iTag(TAG, "Chan = " + chan.name());
-        mVideoTypeAdapter.removeItems(0, mVideoTypeAdapter.size());
-        mVideoTypeAdapter.addAll(0, chan.tabList());
-
-        mVpAdapter = new ChanTabContentVPAdapter(getSupportFragmentManager(), chan.tabList());
-        vpContent.setAdapter(mVpAdapter);
-    }
-
-    private void setCurrentItemPosition(int position) {
-        if (vpContent != null && position != mCurrentPageIndex) {
-            mCurrentPageIndex = position;
-            vpContent.setCurrentItem(position);
-        }
-    }
-
-    public View getHgTitle() {
-        return hgTitle;
-    }
-
-    public Group getGroup() {
-        return null;
-    }
-
-    private static class ChanPresenter extends Presenter {
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent) {
-            AppCompatTextView tv = new AppCompatTextView(parent.getContext());
-            tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 5);
-            tv.setPadding(0, ViewUtils.dp2px(2), 0, ViewUtils.dp2px(2));
-            tv.setTextColor(Color.WHITE);
-            tv.setGravity(Gravity.CENTER);
-            tv.setBackgroundResource(R.drawable.selector_focus_bg_corner15_without_default_bg);
-            return new ViewHolder(tv);
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder viewHolder, Object item) {
-            AppCompatTextView tv = (AppCompatTextView) viewHolder.view;
-            Chan chan = (Chan) item;
-            tv.setText(chan.name());
-
-            viewHolder.view.setFocusable(true);
-            viewHolder.view.setFocusableInTouchMode(true);
-        }
-
-        @Override
-        public void onUnbindViewHolder(ViewHolder viewHolder) {
+        // Show Top =======================================================
+        if (!hide && topHide == 1) {
+            animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
+                            Integer.valueOf(AutoSizeUtils.mm2px(this, 0.0f)),
+                            Integer.valueOf(AutoSizeUtils.mm2px(this, 20.0f))),
+                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
+                            Integer.valueOf(AutoSizeUtils.mm2px(this, 1.0f)),
+                            Integer.valueOf(AutoSizeUtils.mm2px(this, 50.0f))),
+                    ObjectAnimator.ofFloat(this.topLayout, "alpha", 0.0f, 1.0f));
+            animatorSet.setDuration(250);
+            animatorSet.start();
+            tvName.setFocusable(true);
+            tvWifi.setFocusable(true);
+            tvFind.setFocusable(true);
+            tvStyle.setFocusable(true);
+            tvDrawer.setFocusable(true);
+            tvMenu.setFocusable(true);
         }
     }
 }

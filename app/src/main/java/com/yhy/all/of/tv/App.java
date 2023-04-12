@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.multidex.MultiDexApplication;
 
+import com.kingja.loadsir.core.LoadSir;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.cache.CacheEntity;
 import com.lzy.okgo.cache.CacheMode;
@@ -20,6 +21,8 @@ import com.tencent.smtt.export.external.TbsCoreSettings;
 import com.tencent.smtt.sdk.QbSdk;
 import com.yhy.all.of.tv.api.RandHeaderInterceptor;
 import com.yhy.all.of.tv.cache.KV;
+import com.yhy.all.of.tv.component.callback.EmptyCallback;
+import com.yhy.all.of.tv.component.callback.LoadingCallback;
 import com.yhy.all.of.tv.rand.IpRand;
 import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.FileUtils;
@@ -42,6 +45,8 @@ import java.util.logging.Level;
 
 import io.fastkv.FastKV;
 import io.fastkv.FastKVConfig;
+import me.jessyan.autosize.AutoSizeConfig;
+import me.jessyan.autosize.unit.Subunits;
 import okhttp3.OkHttpClient;
 
 /**
@@ -67,12 +72,28 @@ public class App extends MultiDexApplication {
     }
 
     private void init() {
+        initLoadSir();
+        initLoadAutoSize();
         initUtils();
         initFastKV();
         initRouter();
         initOkGo();
         initX5WebView();
         initPlayer();
+    }
+
+    private void initLoadSir() {
+        LoadSir.beginBuilder()
+                .addCallback(new EmptyCallback())
+                .addCallback(new LoadingCallback())
+                .commit();
+    }
+
+    private void initLoadAutoSize() {
+        AutoSizeConfig.getInstance().setCustomFragment(true).getUnitsManager()
+                .setSupportDP(false)
+                .setSupportSP(false)
+                .setSupportSubunits(Subunits.MM);
     }
 
     private void initFastKV() {

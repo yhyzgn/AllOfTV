@@ -1,6 +1,6 @@
 package com.yhy.all.of.tv.ui;
 
-import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.yhy.all.of.tv.R;
 import com.yhy.all.of.tv.component.base.BaseActivity;
@@ -20,7 +20,7 @@ import com.yhy.router.annotation.Router;
 @Router(url = "/activity/splash")
 public class SplashActivity extends BaseActivity {
 
-    private LinearLayoutCompat llLoading;
+    private ConstraintLayout clRoot;
 
     @Override
     protected int layout() {
@@ -29,13 +29,16 @@ public class SplashActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        llLoading = $(R.id.ll_loading);
+        clRoot = $(R.id.clRoot);
     }
 
     @Override
     protected void initData() {
+        setLoadSir(clRoot);
+        showLoading();
+
         // 进入主页
-        llLoading.postDelayed(() -> {
+        clRoot.postDelayed(() -> {
             EasyRouter.getInstance()
                     .with(this)
                     .to("/activity/main")

@@ -40,7 +40,7 @@
 
         <activity
                 android:name=".ui.SplashActivity"
-                android:screenOrientation="landscape"
+                android:screenOrientation="sensorLandscape"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -51,6 +51,13 @@
 
         <activity
                 android:name=".ui.MainActivity"
-                android:screenOrientation="landscape" />
+                android:screenOrientation="sensorLandscape" />
+
+        <meta-data
+                android:name="design_width_in_dp"
+                android:value="1280" />
+        <meta-data
+                android:name="design_height_in_dp"
+                android:value="720" />
     </application>
 </manifest>
