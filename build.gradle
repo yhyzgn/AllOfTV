@@ -1,0 +1,42 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    id 'com.android.application' version '7.4.2' apply false
+    id 'com.android.library' version '7.4.2' apply false
+}
+
+apply from: 'config.gradle'
+
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+    }
+
+    tasks.withType(Test) {
+        systemProperty "file.encoding", "UTF-8"
+    }
+}
+
+subprojects {
+    def releaseTasks = project.getTasksByName("assembleRelease", false)
+    copyApkFile(releaseTasks, project)
+}
+
+def copyApkFile(Set<Task> tasks, Project project) {
+    def rootDir = rootProject.getRootDir().getAbsolutePath()
+    for (task in tasks) {
+        def dir = project.getProjectDir().getAbsolutePath()
+        println("Assemble release dir = $dir")
+        def releaseDir = "$dir/build/outputs/apk/release"
+        task.doLast {
+            def apks = fileTree(releaseDir).filter { it.isFile() && it.name.endsWith(".apk") }.files.absolutePath
+            for (apk in apks) {
+                copy {
+                    println("Copy apk file [$apk] ...")
+                    from apk
+                    into "$rootDir/release/"
+                    println("Apk file [$apk] Copied.")
+                }
+            }
+        }
+    }
+}

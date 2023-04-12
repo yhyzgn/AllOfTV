@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name_debug">全剧得开发版</string>
+    <string name="app_name_release">全剧得</string>
+</resources>

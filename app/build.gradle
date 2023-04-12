@@ -1,0 +1,144 @@
+plugins {
+    id 'com.android.application'
+}
+
+def config = rootProject.ext
+
+android {
+    namespace 'com.yhy.all.of.tv'
+    compileSdk config.sdk.compileSdk
+
+    // 配置密钥
+    signingConfigs {
+        debug {
+            storeFile file(config.keyDebug.storeFile)
+            storePassword config.keyDebug.storePassword
+            keyAlias config.keyDebug.keyAlias
+            keyPassword config.keyDebug.keyPassword
+        }
+
+        release {
+            storeFile file(config.keyRelease.storeFile)
+            storePassword config.keyRelease.storePassword
+            keyAlias config.keyRelease.keyAlias
+            keyPassword config.keyRelease.keyPassword
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.yhy.all.of.tv"
+        minSdk config.sdk.minSdk
+        targetSdk config.sdk.targetSdk
+        versionCode config.version.code
+        versionName config.version.name
+
+        // 开启多分包
+        multiDexEnabled true
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [moduleName: project.name]
+            }
+        }
+
+        ndk {
+            // 设置支持的 so 库架构
+            abiFilters "arm64-v8a", "armeabi-v7a", "x86"
+        }
+    }
+
+
+    buildTypes {
+        // 调试版
+        debug {
+            minifyEnabled false
+            debuggable true
+            signingConfig signingConfigs.debug
+            applicationIdSuffix '.debug'
+            resValue "string", "app_name", "@string/app_name_debug"
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        // 发行版
+        release {
+            minifyEnabled false
+            debuggable false
+            signingConfig signingConfigs.release
+            resValue "string", "app_name", "@string/app_name_release"
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            excludes += ['META-INF/*']
+        }
+        resources {
+            excludes += ['META-INF/*']
+        }
+    }
+
+    // 打包apk自动生成名称
+    android.applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            outputFileName = "全剧得_v${defaultConfig.versionName}_${defaultConfig.versionCode}.apk"
+        }
+    }
+
+    // 忽略打包时的警告
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+        disable 'TransformException'
+        ignoreWarnings true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation "androidx.drawerlayout:drawerlayout:1.1.1"
+    implementation "androidx.multidex:multidex:2.0.1"
+    implementation 'androidx.leanback:leanback:1.0.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.github.bumptech.glide:glide:4.14.2'
+
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'com.github.jeasonlzy.okhttp-OkGo:okgo:v3.0.4'
+
+    // OkHttp
+    implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
+    implementation 'com.squareup.okio:okio:3.3.0'
+
+    implementation 'io.github.azhon:appupdate:4.2.6'
+    implementation 'com.tencent.tbs:tbssdk:44275'
+
+    // Picasso
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
+    // SweetDialog
+    implementation 'com.github.thomper:sweet-alert-dialog:1.4.0'
+
+    implementation 'io.github.billywei01:fastkv:1.1.3'
+
+    implementation 'com.google.android.exoplayer:exoplayer:2.18.2'
+    implementation 'com.google.android.exoplayer:exoplayer-hls:2.18.2'
+    implementation 'ink.lodz:mmsplayer:1.1.2'
+
+    implementation 'me.jessyan:autosize:1.2.1'
+    implementation 'com.github.yhyzgn:Evtor:2.0.1'
+    implementation 'com.github.yhyzgn.EasyRouter:router:2.0.1'
+
+    annotationProcessor 'com.github.yhyzgn.EasyRouter:router-compiler:2.0.1'
+
+    androidTestImplementation 'org.junit.jupiter:junit-jupiter:5.8.0'
+    androidTestImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation 'androidx.test:rules:1.4.0'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

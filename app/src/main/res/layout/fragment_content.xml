@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <com.yhy.all.of.tv.widget.TabVerticalGridView
+            android:id="@+id/hg_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
+            app:focusOutEnd="true"
+            app:focusOutFront="true" />
+
+    <ProgressBar
+            android:id="@+id/pb_loading"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:indeterminate="false"
+            android:layout_centerInParent="true"
+            android:indeterminateTint="@color/colorPrimary" />
+</RelativeLayout>

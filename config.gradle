@@ -1,0 +1,23 @@
+ext {
+    sdk = [
+            compileSdk: 33,
+            minSdk    : 26,
+            targetSdk : 33,
+    ]
+    version = [
+            code: 1,
+            name: '1.0.0-alpha'
+    ]
+    keyDebug = [
+            storeFile    : rootDir.absolutePath + '/jks/debug.jks',
+            storePassword: 'debug@2023',
+            keyAlias     : 'debug',
+            keyPassword  : 'debug@2023'
+    ]
+    keyRelease = [
+            storeFile    : rootDir.absolutePath + '/jks/release.jks',
+            storePassword: 'release@2023',
+            keyAlias     : 'release',
+            keyPassword  : 'release@2023'
+    ]
+}

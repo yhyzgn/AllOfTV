@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ScaleConstraintLayout">
+        <attr name="scale_mode">
+            <enum name="ZOOM_FACTOR_SMALL" value="1" />
+            <enum name="ZOOM_FACTOR_XSMALL" value="4" />
+            <enum name="ZOOM_FACTOR_XXSMALL" value="5" />
+            <enum name="ZOOM_FACTOR_XXXSMALL" value="6" />
+            <enum name="ZOOM_FACTOR_MEDIUM" value="2" />
+            <enum name="ZOOM_FACTOR_LARGE" value="3" />
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="ShadowImageView">
+        <attr name="shadowRound" format="dimension" />
+        <attr name="shadowSrc" format="reference" />
+        <attr name="shadowColor" format="color" />
+    </declare-styleable>
+</resources>

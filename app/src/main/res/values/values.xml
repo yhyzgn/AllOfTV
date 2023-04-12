@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="lb_focus_zoom_factor_xlarge" type="fraction">124%</item>
+    <item name="lb_focus_zoom_factor_large" type="fraction">112%</item>
+    <item name="lb_focus_zoom_factor_medium" type="fraction">108%</item>
+    <item name="lb_focus_zoom_factor_small" type="fraction">106%</item>
+    <item name="lb_focus_zoom_factor_xsmall" type="fraction">104%</item>
+    <item name="lb_focus_zoom_factor_xxsmall" type="fraction">102%</item>
+    <item name="lb_focus_zoom_factor_xxxsmall" type="fraction">100%</item>
+</resources>
