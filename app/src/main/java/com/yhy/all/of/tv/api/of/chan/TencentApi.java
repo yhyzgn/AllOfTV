@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
-import com.yhy.all.of.tv.api.model.XunVideo;
+import com.yhy.all.of.tv.api.model.TencentVideo;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
@@ -79,7 +79,7 @@ public class TencentApi {
                         ja = jo.getJSONObject("children_list").getJSONObject("list").getJSONArray("cards");
                         String json = ja.toString();
 
-                        List<XunVideo> list = gson.fromJson(json, new TypeToken<List<XunVideo>>() {
+                        List<TencentVideo> list = gson.fromJson(json, new TypeToken<List<TencentVideo>>() {
                         });
                         List<Video> res = list.stream().map(it -> {
                             Video vd = new Video();

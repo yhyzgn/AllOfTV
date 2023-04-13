@@ -10,7 +10,7 @@ import com.google.gson.reflect.TypeToken;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
-import com.yhy.all.of.tv.api.model.YiVideo;
+import com.yhy.all.of.tv.api.model.IQiYiVideo;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
 import com.yhy.all.of.tv.utils.LogUtils;
@@ -54,7 +54,7 @@ public class IQiYiApi {
                         JSONArray ja = jo.getJSONArray("data");
                         String json = ja.toString();
 
-                        List<YiVideo> list = gson.fromJson(json, new TypeToken<List<YiVideo>>() {
+                        List<IQiYiVideo> list = gson.fromJson(json, new TypeToken<List<IQiYiVideo>>() {
                         });
                         List<Video> res = list.stream().map(it -> {
                             Video vd = new Video();

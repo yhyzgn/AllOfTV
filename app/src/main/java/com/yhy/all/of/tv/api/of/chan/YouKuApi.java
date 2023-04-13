@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
-import com.yhy.all.of.tv.api.model.KuVideo;
+import com.yhy.all.of.tv.api.model.YouKuVideo;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
@@ -76,7 +76,7 @@ public class YouKuApi {
                         JSONArray ja = jo.getJSONArray("listData");
                         String json = ja.toString();
 
-                        List<KuVideo> list = gson.fromJson(json, new TypeToken<List<KuVideo>>() {
+                        List<YouKuVideo> list = gson.fromJson(json, new TypeToken<List<YouKuVideo>>() {
                         });
                         List<Video> res = list.stream().map(it -> {
                             Video vd = new Video();

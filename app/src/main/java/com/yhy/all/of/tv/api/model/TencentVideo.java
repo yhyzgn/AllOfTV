@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class XunVideo {
+public class TencentVideo {
     /**
      * id
      */
