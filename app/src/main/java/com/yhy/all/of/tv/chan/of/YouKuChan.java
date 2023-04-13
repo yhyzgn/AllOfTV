@@ -1,6 +1,5 @@
 package com.yhy.all.of.tv.chan.of;
 
-import com.yhy.all.of.tv.api.of.chan.TencentApi;
 import com.yhy.all.of.tv.api.of.chan.YouKuApi;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.internal.Lists;
@@ -26,8 +25,8 @@ public class YouKuChan implements Chan {
     @Override
     public List<Tab> tabList() {
         return Lists.of(
-                Tab.create(VideoType.FILM, params -> YouKuApi.instance.page(params.getInt("page"), VideoType.FILM, 11)),
-                Tab.create(VideoType.EPISODE, params -> YouKuApi.instance.page(params.getInt("page"), VideoType.EPISODE, 11))
+            Tab.create(VideoType.FILM, (liveData, params) -> YouKuApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
+            Tab.create(VideoType.EPISODE, (liveData, params) -> YouKuApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
         );
     }
 }

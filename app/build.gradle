@@ -129,6 +129,7 @@ dependencies {
 
     // SweetDialog
     implementation 'com.github.thomper:sweet-alert-dialog:1.4.0'
+    implementation 'com.github.GrenderG:Toasty:1.5.2'
 
     implementation 'io.github.billywei01:fastkv:1.1.3'
 

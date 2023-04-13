@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.BounceInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.viewpager.widget.ViewPager;
 
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
@@ -29,8 +31,12 @@ import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.chan.ChanRegister;
 import com.yhy.all.of.tv.component.adapter.HomeTabAdapter;
 import com.yhy.all.of.tv.component.adapter.SelectDialogAdapter;
+import com.yhy.all.of.tv.component.adapter.VideoPagerAdapter;
 import com.yhy.all.of.tv.component.base.BaseActivity;
 import com.yhy.all.of.tv.component.base.BaseLazyFragment;
+import com.yhy.all.of.tv.ui.fragment.GridFragment;
+import com.yhy.all.of.tv.widget.DefaultTransformer;
+import com.yhy.all.of.tv.widget.FixedSpeedScroller;
 import com.yhy.all.of.tv.widget.NoScrollViewPager;
 import com.yhy.all.of.tv.widget.ViewObj;
 import com.yhy.all.of.tv.widget.dialog.SelectDialog;
@@ -38,6 +44,7 @@ import com.yhy.router.annotation.Router;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,6 +90,7 @@ public class MainActivity extends BaseActivity {
 
     private List<Chan> mChanList;
     private Chan mCurrentChan;
+    private VideoPagerAdapter pageAdapter;
 
     @Override
     protected int layout() {
@@ -136,7 +144,27 @@ public class MainActivity extends BaseActivity {
         tvName.setText(mCurrentChan.name());
         trvTab.requestFocus();
 
+        initViewPager();
+
         showSuccess();
+    }
+
+    private void initViewPager() {
+        mCurrentChan.tabList().forEach(it -> fragments.add(GridFragment.newInstance(it)));
+        pageAdapter = new VideoPagerAdapter(getSupportFragmentManager(), fragments);
+
+        try {
+            Field field = ViewPager.class.getDeclaredField("mScroller");
+            field.setAccessible(true);
+            FixedSpeedScroller scroller = new FixedSpeedScroller(this, new AccelerateInterpolator());
+            field.set(nvpTab, scroller);
+            scroller.setDuration(300);
+        } catch (Exception e) {
+        }
+
+        nvpTab.setPageTransformer(true, new DefaultTransformer());
+        nvpTab.setAdapter(pageAdapter);
+        nvpTab.setCurrentItem(currentSelected, false);
     }
 
     @Override
@@ -179,11 +207,7 @@ public class MainActivity extends BaseActivity {
             public void onItemClick(TvRecyclerView parent, View itemView, int position) {
                 if (itemView != null && currentSelected == position) {
                     BaseLazyFragment baseLazyFragment = fragments.get(currentSelected);
-                    // if ((baseLazyFragment instanceof GridFragment) && !sortAdapter.getItem(position).filters.isEmpty()) {// 弹出筛选
-                    //     ((GridFragment) baseLazyFragment).showFilter();
-                    // } else if (baseLazyFragment instanceof UserFragment) {
-                    //     showSiteSwitch();
-                    // }
+                    // Do Nothing
                 }
             }
         });
@@ -311,11 +335,11 @@ public class MainActivity extends BaseActivity {
         // Hide Top =======================================================
         if (hide && topHide == 0) {
             animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                    Integer.valueOf(AutoSizeUtils.mm2px(this, 20.0f)),
-                    Integer.valueOf(AutoSizeUtils.mm2px(this, 0.0f))),
+                    AutoSizeUtils.mm2px(this, 20.0f),
+                    AutoSizeUtils.mm2px(this, 0.0f)),
                 ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                    Integer.valueOf(AutoSizeUtils.mm2px(this, 50.0f)),
-                    Integer.valueOf(AutoSizeUtils.mm2px(this, 1.0f))),
+                    AutoSizeUtils.mm2px(this, 50.0f),
+                    AutoSizeUtils.mm2px(this, 1.0f)),
                 ObjectAnimator.ofFloat(this.topLayout, "alpha", 1.0f, 0.0f));
             animatorSet.setDuration(250);
             animatorSet.start();
@@ -330,11 +354,11 @@ public class MainActivity extends BaseActivity {
         // Show Top =======================================================
         if (!hide && topHide == 1) {
             animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                    Integer.valueOf(AutoSizeUtils.mm2px(this, 0.0f)),
-                    Integer.valueOf(AutoSizeUtils.mm2px(this, 20.0f))),
+                    AutoSizeUtils.mm2px(this, 0.0f),
+                    AutoSizeUtils.mm2px(this, 20.0f)),
                 ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                    Integer.valueOf(AutoSizeUtils.mm2px(this, 1.0f)),
-                    Integer.valueOf(AutoSizeUtils.mm2px(this, 50.0f))),
+                    AutoSizeUtils.mm2px(this, 1.0f),
+                    AutoSizeUtils.mm2px(this, 50.0f)),
                 ObjectAnimator.ofFloat(this.topLayout, "alpha", 0.0f, 1.0f));
             animatorSet.setDuration(250);
             animatorSet.start();

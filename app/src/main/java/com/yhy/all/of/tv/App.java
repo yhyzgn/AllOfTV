@@ -23,6 +23,7 @@ import com.yhy.all.of.tv.api.RandHeaderInterceptor;
 import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.component.callback.EmptyCallback;
 import com.yhy.all.of.tv.component.callback.LoadingCallback;
+import com.yhy.all.of.tv.component.transform.RoundTransformation;
 import com.yhy.all.of.tv.rand.IpRand;
 import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.FileUtils;
@@ -47,6 +48,7 @@ import io.fastkv.FastKV;
 import io.fastkv.FastKVConfig;
 import me.jessyan.autosize.AutoSizeConfig;
 import me.jessyan.autosize.unit.Subunits;
+import me.jessyan.autosize.utils.AutoSizeUtils;
 import okhttp3.OkHttpClient;
 
 /**
@@ -84,16 +86,16 @@ public class App extends MultiDexApplication {
 
     private void initLoadSir() {
         LoadSir.beginBuilder()
-                .addCallback(new EmptyCallback())
-                .addCallback(new LoadingCallback())
-                .commit();
+            .addCallback(new EmptyCallback())
+            .addCallback(new LoadingCallback())
+            .commit();
     }
 
     private void initLoadAutoSize() {
         AutoSizeConfig.getInstance().setCustomFragment(true).getUnitsManager()
-                .setSupportDP(false)
-                .setSupportSP(false)
-                .setSupportSubunits(Subunits.MM);
+            .setSupportDP(false)
+            .setSupportSP(false)
+            .setSupportSubunits(Subunits.MM);
     }
 
     private void initFastKV() {
@@ -161,16 +163,24 @@ public class App extends MultiDexApplication {
                     throw new IllegalArgumentException("Unknown model [ " + model + " ] of image resource.");
                 }
 
+                rc.transform(
+                    new RoundTransformation(model.toString())
+                        .centerCorp(true)
+                        .override(AutoSizeUtils.mm2px(ctx, 300), AutoSizeUtils.mm2px(ctx, 400))
+                        .roundRadius(AutoSizeUtils.mm2px(ctx, 15), RoundTransformation.RoundType.ALL)
+                );
+
                 Drawable drawable = iv.getDrawable();
                 if (null == drawable) {
                     rc.placeholder(R.mipmap.ic_img_holder);
                     rc.error(R.mipmap.ic_img_holder);
                 } else {
                     rc.placeholder(drawable)
-                            .error(drawable);
+                        .error(drawable);
                 }
 
                 rc.into(iv);
+
                 LogUtils.iTag(TAG, "图片加载完成：", model);
             }
         });
@@ -179,19 +189,19 @@ public class App extends MultiDexApplication {
     private void initRouter() {
         // 路由组件
         EasyRouter.getInstance()
-                .init(this)
-                .debug(BuildConfig.DEBUG)
-                .jsonParser(new JsonConverter() {
-                    @Override
-                    public <T> T fromJson(String json, Type type) {
-                        return JsonUtils.fromJson(json, type);
-                    }
+            .init(this)
+            .debug(BuildConfig.DEBUG)
+            .jsonParser(new JsonConverter() {
+                @Override
+                public <T> T fromJson(String json, Type type) {
+                    return JsonUtils.fromJson(json, type);
+                }
 
-                    @Override
-                    public <T> String toJson(T obj) {
-                        return JsonUtils.toJson(obj);
-                    }
-                });
+                @Override
+                public <T> String toJson(T obj) {
+                    return JsonUtils.toJson(obj);
+                }
+            });
     }
 
     private void initX5WebView() {
@@ -247,12 +257,12 @@ public class App extends MultiDexApplication {
         headers.put("X-Forwarded-For", IpRand.get());
 
         OkGo.getInstance()
-                .init(this)                               // 必须调用初始化
-                .setOkHttpClient(builder.build())               // 建议设置OkHttpClient，不设置将使用默认的
-                .setCacheMode(CacheMode.NO_CACHE)               // 全局统一缓存模式，默认不使用缓存，可以不传
-                .setCacheTime(CacheEntity.CACHE_NEVER_EXPIRE)   // 全局统一缓存时间，默认永不过期，可以不传
-                .setRetryCount(3)                               // 全局统一超时重连次数，默认为三次，那么最差的情况会请求4次(一次原始请求，三次重连请求)，不需要可以设置为0
-                .addCommonHeaders(headers);                     // 全局公共头;
+            .init(this)                               // 必须调用初始化
+            .setOkHttpClient(builder.build())               // 建议设置OkHttpClient，不设置将使用默认的
+            .setCacheMode(CacheMode.NO_CACHE)               // 全局统一缓存模式，默认不使用缓存，可以不传
+            .setCacheTime(CacheEntity.CACHE_NEVER_EXPIRE)   // 全局统一缓存时间，默认永不过期，可以不传
+            .setRetryCount(3)                               // 全局统一超时重连次数，默认为三次，那么最差的情况会请求4次(一次原始请求，三次重连请求)，不需要可以设置为0
+            .addCommonHeaders(headers);                     // 全局公共头;
     }
 
     public boolean isX5Already() {

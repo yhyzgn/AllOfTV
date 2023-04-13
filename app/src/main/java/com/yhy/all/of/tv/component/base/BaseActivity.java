@@ -26,6 +26,7 @@ import com.yhy.all.of.tv.R;
 import com.yhy.all.of.tv.component.callback.EmptyCallback;
 import com.yhy.all.of.tv.component.callback.LoadingCallback;
 
+import es.dmoral.toasty.Toasty;
 import me.jessyan.autosize.AutoSizeCompat;
 import me.jessyan.autosize.internal.CustomAdapt;
 import xyz.doikki.videoplayer.util.CutoutUtil;
@@ -98,12 +99,15 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     }
 
     public void success(String text) {
+        Toasty.success(this, text).show();
     }
 
     public void warning(String text) {
+        Toasty.warning(this, text).show();
     }
 
     public void error(String text) {
+        Toasty.error(this, text).show();
     }
 
     protected void setLoadSir(View view) {

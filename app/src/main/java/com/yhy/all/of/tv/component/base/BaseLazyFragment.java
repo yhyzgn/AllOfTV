@@ -22,6 +22,7 @@ import com.yhy.all.of.tv.component.callback.LoadingCallback;
 
 import java.util.List;
 
+import es.dmoral.toasty.Toasty;
 import me.jessyan.autosize.AutoSize;
 import me.jessyan.autosize.internal.CustomAdapt;
 
@@ -271,6 +272,18 @@ public abstract class BaseLazyFragment extends Fragment implements CustomAdapt {
         if (null != mLoadService) {
             mLoadService.showSuccess();
         }
+    }
+
+    public void success(String text) {
+        ((BaseActivity) mActivity).success(text);
+    }
+
+    public void warning(String text) {
+        ((BaseActivity) mActivity).warning(text);
+    }
+
+    public void error(String text) {
+        ((BaseActivity) mActivity).error(text);
     }
 
     public void jumpActivity(Class<? extends BaseActivity> clazz) {

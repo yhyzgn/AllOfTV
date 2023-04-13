@@ -2,6 +2,8 @@ package com.yhy.all.of.tv.chan;
 
 import android.os.Bundle;
 
+import androidx.lifecycle.MutableLiveData;
+
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
 
@@ -40,6 +42,6 @@ public interface Chan {
     @FunctionalInterface
     interface TabLoader {
 
-        List<Video> load(Bundle params) throws Exception;
+        void load(MutableLiveData<List<Video>> liveData, Bundle params) throws Exception;
     }
 }

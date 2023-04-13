@@ -2,8 +2,8 @@ package com.yhy.all.of.tv.api.of.chan;
 
 import android.text.TextUtils;
 
-import com.google.common.util.concurrent.AbstractFuture;
-import com.google.common.util.concurrent.ListenableFuture;
+import androidx.lifecycle.MutableLiveData;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -39,57 +39,52 @@ public class IQiYiApi {
         gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     }
 
-    public List<Video> page(int page, VideoType type, int mode) throws Exception {
-        ListenableFuture<List<Video>> future = new AbstractFuture<List<Video>>() {
-            {
-                OkGo.<String>get("https://mesh.if.iqiyi.com/portal/videolib/pcw/data")
-                        .params("ret_num", 30)
-                        .params("page_id", Math.max(1, page))
-                        .params("channel_id", type == VideoType.FILM ? 1 : 2)
-                        .params("mode", mode)
-                        .execute(new StringCallback() {
-                            @Override
-                            public void onSuccess(Response<String> response) {
-                                String result = response.body();
-                                try {
-                                    JSONObject jo = new JSONObject(result);
-                                    JSONArray ja = jo.getJSONArray("data");
-                                    String json = ja.toString();
+    public void page(MutableLiveData<List<Video>> liveData, int page, VideoType type, int mode) throws Exception {
+        OkGo.<String>get("https://mesh.if.iqiyi.com/portal/videolib/pcw/data")
+            .params("ret_num", 30)
+            .params("page_id", Math.max(1, page))
+            .params("channel_id", type == VideoType.FILM ? 1 : 2)
+            .params("mode", mode)
+            .execute(new StringCallback() {
+                @Override
+                public void onSuccess(Response<String> response) {
+                    String result = response.body();
+                    try {
+                        JSONObject jo = new JSONObject(result);
+                        JSONArray ja = jo.getJSONArray("data");
+                        String json = ja.toString();
 
-                                    List<YiVideo> list = gson.fromJson(json, new TypeToken<List<YiVideo>>() {
-                                    });
-                                    List<Video> res = list.stream().map(it -> {
-                                        Video vd = new Video();
-                                        vd.id = it.filmId + "";
-                                        vd.title = it.title;
-                                        vd.description = it.description;
-                                        vd.score = it.snsScore;
-                                        vd.imgCover = it.imageUrlNormal;
-                                        vd.pageUrl = it.pageUrl;
-                                        vd.channel = "爱奇艺";
-                                        vd.type = type;
-                                        vd.tags = TextUtils.isEmpty(it.tag) ? null : Arrays.stream(it.tag.split(",")).collect(Collectors.toList());
-                                        vd.directors = it.creator.stream().map(dto -> dto.name).collect(Collectors.toList());
-                                        vd.actors = it.contributor.stream().map(dto -> dto.name).collect(Collectors.toList());
-
-                                        return vd;
-                                    }).collect(Collectors.toList());
-
-                                    set(res);
-                                } catch (JSONException e) {
-                                    LogUtils.e(e.getMessage());
-                                    throw new RuntimeException(e);
-                                }
-                            }
-
-                            @Override
-                            public void onError(Response<String> response) {
-                                LogUtils.e(response.getException().getMessage());
-                                setException(response.getException());
-                            }
+                        List<YiVideo> list = gson.fromJson(json, new TypeToken<List<YiVideo>>() {
                         });
-            }
-        };
-        return future.get();
+                        List<Video> res = list.stream().map(it -> {
+                            Video vd = new Video();
+                            vd.id = it.filmId + "";
+                            vd.title = it.title;
+                            vd.description = it.description;
+                            vd.score = it.snsScore;
+                            vd.imgCover = it.imageUrlNormal;
+                            vd.pageUrl = it.pageUrl;
+                            vd.channel = "爱奇艺";
+                            vd.type = type;
+                            vd.tags = TextUtils.isEmpty(it.tag) ? null : Arrays.stream(it.tag.split(",")).collect(Collectors.toList());
+                            vd.directors = it.creator.stream().map(dto -> dto.name).collect(Collectors.toList());
+                            vd.actors = it.contributor.stream().map(dto -> dto.name).collect(Collectors.toList());
+
+                            return vd;
+                        }).collect(Collectors.toList());
+
+                        liveData.postValue(res);
+                    } catch (JSONException e) {
+                        LogUtils.e(e.getMessage());
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                @Override
+                public void onError(Response<String> response) {
+                    LogUtils.e(response.getException().getMessage());
+                    liveData.postValue(null);
+                }
+            });
     }
 }

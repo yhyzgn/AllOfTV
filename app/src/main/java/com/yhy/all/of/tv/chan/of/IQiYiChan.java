@@ -25,8 +25,8 @@ public class IQiYiChan implements Chan {
     @Override
     public List<Tab> tabList() {
         return Lists.of(
-                Tab.create(VideoType.FILM, params -> IQiYiApi.instance.page(params.getInt("page"), VideoType.FILM, 11)),
-                Tab.create(VideoType.EPISODE, params -> IQiYiApi.instance.page(params.getInt("page"), VideoType.EPISODE, 11))
+            Tab.create(VideoType.FILM, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
+            Tab.create(VideoType.EPISODE, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
         );
     }
 }

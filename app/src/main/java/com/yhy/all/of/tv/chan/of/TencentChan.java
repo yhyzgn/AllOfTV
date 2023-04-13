@@ -25,8 +25,8 @@ public class TencentChan implements Chan {
     @Override
     public List<Tab> tabList() {
         return Lists.of(
-                Tab.create(VideoType.FILM, params -> TencentApi.instance.page(params.getInt("page"), VideoType.FILM, 11)),
-                Tab.create(VideoType.EPISODE, params -> TencentApi.instance.page(params.getInt("page"), VideoType.EPISODE, 11))
+            Tab.create(VideoType.FILM, (liveData, params) -> TencentApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
+            Tab.create(VideoType.EPISODE, (liveData, params) -> TencentApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
         );
     }
 }
