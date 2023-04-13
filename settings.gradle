@@ -21,5 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "AllOfTV"
 include ':app'
-include ':doikki'
-include ':danmaku'
