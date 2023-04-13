@@ -6,8 +6,6 @@ import android.view.animation.BounceInterpolator;
 
 import androidx.lifecycle.ViewModelProvider;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.chad.library.adapter.base.listener.OnItemClickListener;
 import com.chad.library.adapter.base.module.BaseLoadMoreModule;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
@@ -22,6 +20,7 @@ import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.vm.SourceVM;
 import com.yhy.all.of.tv.widget.LoadMoreView;
 import com.yhy.all.of.tv.widget.dialog.GridFilterDialog;
+import com.yhy.router.EasyRouter;
 
 import java.util.Stack;
 
@@ -177,31 +176,15 @@ public class GridFragment extends BaseLazyFragment {
             }
             return false;
         });
-        gridAdapter.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                FastClickCheckUtils.check(view);
-                Video video = gridAdapter.getData().get(position);
-                if (video != null) {
-                    success(video.title);
-
-                    //Bundle bundle = new Bundle();
-                    //bundle.putString("id", video.id);
-                    //bundle.putString("sourceKey", video.sourceKey);
-                    //bundle.putString("title", video.name);
-                    //
-                    //SourceBean homeSourceBean = ApiConfig.get().getHomeSourceBean();
-                    //if (("12".indexOf(getUITag()) != -1) && video.tag.equals("folder")) {
-                    //    focusedView = view;
-                    //    changeView(video.id);
-                    //} else {
-                    //    if (video.id == null || video.id.isEmpty() || video.id.startsWith("msearch:")) {
-                    //        jumpActivity(FastSearchActivity.class, bundle);
-                    //    } else {
-                    //        jumpActivity(DetailActivity.class, bundle);
-                    //    }
-                    //}
-                }
+        gridAdapter.setOnItemClickListener((adapter, view, position) -> {
+            FastClickCheckUtils.check(view);
+            Video video = gridAdapter.getData().get(position);
+            if (video != null) {
+                EasyRouter.getInstance()
+                    .with(this)
+                    .to("/activity/detail")
+                    .param("video", video)
+                    .go();
             }
         });
 

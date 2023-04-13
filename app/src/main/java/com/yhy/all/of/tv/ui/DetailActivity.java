@@ -2,6 +2,10 @@ package com.yhy.all.of.tv.ui;
 
 import com.yhy.all.of.tv.R;
 import com.yhy.all.of.tv.component.base.BaseActivity;
+import com.yhy.all.of.tv.model.Video;
+import com.yhy.all.of.tv.widget.TVPlayer;
+import com.yhy.router.EasyRouter;
+import com.yhy.router.annotation.Autowired;
 import com.yhy.router.annotation.Router;
 
 /**
@@ -15,6 +19,10 @@ import com.yhy.router.annotation.Router;
  */
 @Router(url = "/activity/detail")
 public class DetailActivity extends BaseActivity {
+    @Autowired("video")
+    public Video mVideo;
+
+    private TVPlayer tvPlayer;
 
     @Override
     protected int layout() {
@@ -23,12 +31,20 @@ public class DetailActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-
+        tvPlayer = $(R.id.tvPlayer);
     }
+
 
     @Override
     protected void initData() {
+        EasyRouter.getInstance().inject(this);
 
+        // 借用了jjdxm_ijkplayer的URL
+        String source1 = "https://res.exexm.com/cw_145225549855002";
+        String source2 = "http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear3/prog_index.m3u8";
+
+        tvPlayer.setUp(source1, false, "测试视频");
+        tvPlayer.startPlayLogic();
     }
 
     @Override
@@ -39,5 +55,23 @@ public class DetailActivity extends BaseActivity {
     @Override
     protected void setDefault() {
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        tvPlayer.onVideoPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        tvPlayer.onVideoResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        tvPlayer.release();
     }
 }

@@ -17,14 +17,10 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3">
 
-            <!--            <androidx.fragment.app.FragmentContainerView-->
-            <!--                    android:id="@+id/previewPlayer"-->
-            <!--                    android:layout_width="@dimen/vs_530"-->
-            <!--                    android:layout_height="@dimen/vs_300"-->
-            <!--                    android:layout_marginStart="@dimen/vs_50"-->
-            <!--                    android:layout_marginLeft="@dimen/vs_50"-->
-            <!--                    android:layout_marginTop="@dimen/vs_20"-->
-            <!--                    android:visibility="gone" />-->
+            <com.yhy.all.of.tv.widget.TVPlayer
+                    android:id="@+id/tvPlayer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
         </FrameLayout>
 
         <LinearLayout
