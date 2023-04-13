@@ -26,16 +26,18 @@ public interface Chan {
     List<Tab> tabList();
 
     class Tab implements Serializable {
-        public VideoType type;
-        public TabLoader loader;
+        public final Chan chan;
+        public final VideoType type;
+        public final TabLoader loader;
 
-        public Tab(VideoType type, TabLoader loader) {
+        public Tab(Chan chan, VideoType type, TabLoader loader) {
+            this.chan = chan;
             this.type = type;
             this.loader = loader;
         }
 
-        public static Tab create(VideoType type, TabLoader loader) {
-            return new Tab(type, loader);
+        public static Tab create(Chan chan, VideoType type, TabLoader loader) {
+            return new Tab(chan, type, loader);
         }
     }
 

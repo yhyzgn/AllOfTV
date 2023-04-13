@@ -19,7 +19,6 @@ import com.yhy.all.of.tv.utils.FastClickCheckUtils;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.vm.SourceVM;
 import com.yhy.all.of.tv.widget.LoadMoreView;
-import com.yhy.all.of.tv.widget.dialog.GridFilterDialog;
 import com.yhy.router.EasyRouter;
 
 import java.util.Stack;
@@ -36,7 +35,6 @@ public class GridFragment extends BaseLazyFragment {
     private Chan.Tab mTab;
     private TvRecyclerView mGridView;
     private SourceVM sourceVM;
-    private GridFilterDialog gridFilterDialog;
     private GridAdapter gridAdapter;
     private BaseLoadMoreModule loadMoreModule;
     private int page = 1;
@@ -45,7 +43,7 @@ public class GridFragment extends BaseLazyFragment {
     private boolean isTop = true;
     private View focusedView = null;
 
-    private class GridInfo {
+    private static class GridInfo {
         public Chan.Tab tab;
         public TvRecyclerView mGridView;
         public GridAdapter gridAdapter;
@@ -55,7 +53,7 @@ public class GridFragment extends BaseLazyFragment {
         public View focusedView = null;
     }
 
-    Stack<GridInfo> mGrids = new Stack<>(); //ui栈
+    Stack<GridInfo> mGrids = new Stack<>(); // ui栈
 
     public static GridFragment newInstance(Chan.Tab tab) {
         return new GridFragment().setArguments(tab);
@@ -181,10 +179,11 @@ public class GridFragment extends BaseLazyFragment {
             Video video = gridAdapter.getData().get(position);
             if (video != null) {
                 EasyRouter.getInstance()
-                    .with(this)
-                    .to("/activity/detail")
-                    .param("video", video)
-                    .go();
+                        .with(this)
+                        .to("/activity/detail")
+                        .param("chanName", mTab.chan.name())
+                        .param("video", video)
+                        .go();
             }
         });
 
@@ -238,7 +237,7 @@ public class GridFragment extends BaseLazyFragment {
     }
 
     public boolean isLoad() {
-        return isLoad || !mGrids.empty(); //如果有缓存页的话也可以认为是加载了数据的
+        return isLoad || !mGrids.empty(); // 如果有缓存页的话也可以认为是加载了数据的
     }
 
     private void initData() {

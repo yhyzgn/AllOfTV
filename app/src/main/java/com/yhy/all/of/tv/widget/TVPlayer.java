@@ -18,16 +18,19 @@ public class TVPlayer extends StandardGSYVideoPlayer {
 
     public TVPlayer(Context context, Boolean fullFlag) {
         super(context, fullFlag);
+        init();
     }
 
     public TVPlayer(Context context) {
         super(context);
+        init();
     }
 
     public TVPlayer(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
-    private void init(){
+    private void init() {
     }
 }
