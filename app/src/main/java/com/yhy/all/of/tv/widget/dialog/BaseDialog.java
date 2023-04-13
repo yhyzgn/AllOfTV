@@ -11,8 +11,6 @@ import androidx.annotation.NonNull;
 
 import com.yhy.all.of.tv.R;
 
-import xyz.doikki.videoplayer.util.CutoutUtil;
-
 /**
  * Created on 2023-04-13 9:29
  *
@@ -31,8 +29,6 @@ public class BaseDialog extends Dialog {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // 设置刘海
-        CutoutUtil.adaptCutoutAboveAndroidP(this, true);
         super.onCreate(savedInstanceState);
     }
 

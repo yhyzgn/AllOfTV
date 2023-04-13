@@ -29,7 +29,6 @@ import com.yhy.all.of.tv.component.callback.LoadingCallback;
 import es.dmoral.toasty.Toasty;
 import me.jessyan.autosize.AutoSizeCompat;
 import me.jessyan.autosize.internal.CustomAdapt;
-import xyz.doikki.videoplayer.util.CutoutUtil;
 
 /**
  * Activity 基类
@@ -69,9 +68,6 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
 
         beforeLayout();
         setContentView(layout());
-
-        // 设置刘海
-        CutoutUtil.adaptCutoutAboveAndroidP(this, true);
 
         initView();
         initData();
