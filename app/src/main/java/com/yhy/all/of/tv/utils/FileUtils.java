@@ -6,6 +6,8 @@ import android.media.MediaScannerConnection;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
+import com.yhy.all.of.tv.App;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -263,5 +265,17 @@ public abstract class FileUtils {
      */
     public static String getMimeType(File file) {
         return null == file ? null : getMimeType(file.getName());
+    }
+
+    public static File getCacheDir() {
+        return mCtx.getCacheDir();
+    }
+
+    public static File getExternalCacheDir() {
+        return mCtx.getExternalCacheDir();
+    }
+
+    public static String getExternalCachePath() {
+        return getExternalCacheDir().getAbsolutePath();
     }
 }
