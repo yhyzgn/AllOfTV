@@ -18,5 +18,8 @@ dependencyResolutionManagement {
         maven { url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2' }
     }
 }
+
 rootProject.name = "AllOfTV"
 include ':app'
+include ':doikki'
+include ':danmaku'

@@ -48,8 +48,8 @@
 
         <ImageView
                 android:id="@+id/tvWifi"
-                android:layout_width="@dimen/vs_45"
-                android:layout_height="@dimen/vs_45"
+                android:layout_width="@dimen/vs_40"
+                android:layout_height="@dimen/vs_40"
                 android:layout_marginStart="@dimen/vs_15"
                 android:layout_marginLeft="@dimen/vs_15"
                 android:layout_marginEnd="@dimen/vs_15"
@@ -63,8 +63,8 @@
 
         <ImageView
                 android:id="@+id/tvFind"
-                android:layout_width="@dimen/vs_45"
-                android:layout_height="@dimen/vs_45"
+                android:layout_width="@dimen/vs_40"
+                android:layout_height="@dimen/vs_40"
                 android:layout_marginStart="@dimen/vs_15"
                 android:layout_marginLeft="@dimen/vs_15"
                 android:layout_marginEnd="@dimen/vs_15"
@@ -77,8 +77,8 @@
 
         <ImageView
                 android:id="@+id/tvStyle"
-                android:layout_width="@dimen/vs_45"
-                android:layout_height="@dimen/vs_45"
+                android:layout_width="@dimen/vs_40"
+                android:layout_height="@dimen/vs_40"
                 android:layout_marginStart="@dimen/vs_15"
                 android:layout_marginLeft="@dimen/vs_15"
                 android:layout_marginEnd="@dimen/vs_15"
@@ -91,8 +91,8 @@
 
         <ImageView
                 android:id="@+id/tvDrawer"
-                android:layout_width="@dimen/vs_45"
-                android:layout_height="@dimen/vs_45"
+                android:layout_width="@dimen/vs_40"
+                android:layout_height="@dimen/vs_40"
                 android:layout_marginStart="@dimen/vs_15"
                 android:layout_marginLeft="@dimen/vs_15"
                 android:layout_marginEnd="@dimen/vs_15"
@@ -105,8 +105,8 @@
 
         <ImageView
                 android:id="@+id/tvMenu"
-                android:layout_width="@dimen/vs_45"
-                android:layout_height="@dimen/vs_45"
+                android:layout_width="@dimen/vs_40"
+                android:layout_height="@dimen/vs_40"
                 android:layout_marginStart="@dimen/vs_15"
                 android:layout_marginLeft="@dimen/vs_15"
                 android:layout_marginEnd="@dimen/vs_15"

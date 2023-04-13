@@ -43,7 +43,7 @@ android {
 
         ndk {
             // 设置支持的 so 库架构
-            abiFilters "arm64-v8a", "armeabi-v7a", "x86"
+            abiFilters "arm64-v8a", "armeabi-v7a"
         }
     }
 
@@ -94,8 +94,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
@@ -132,13 +132,11 @@ dependencies {
 
     implementation 'io.github.billywei01:fastkv:1.1.3'
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.18.2'
-    implementation 'com.google.android.exoplayer:exoplayer-hls:2.18.2'
-    implementation 'ink.lodz:mmsplayer:1.1.2'
-
     implementation 'me.jessyan:autosize:1.2.1'
     implementation 'com.github.yhyzgn:Evtor:2.0.1'
     implementation 'com.github.yhyzgn.EasyRouter:router:2.0.1'
+
+    api project(':doikki')
 
     annotationProcessor 'com.github.yhyzgn.EasyRouter:router-compiler:2.0.1'
 

@@ -28,6 +28,7 @@ import com.yhy.all.of.tv.component.callback.LoadingCallback;
 
 import me.jessyan.autosize.AutoSizeCompat;
 import me.jessyan.autosize.internal.CustomAdapt;
+import xyz.doikki.videoplayer.util.CutoutUtil;
 
 /**
  * Activity 基类
@@ -68,6 +69,9 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         beforeLayout();
         setContentView(layout());
 
+        // 设置刘海
+        CutoutUtil.adaptCutoutAboveAndroidP(this, true);
+
         initView();
         initData();
         initEvent();
@@ -105,6 +109,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     protected void setLoadSir(View view) {
         if (mLoadService == null) {
             mLoadService = LoadSir.getDefault().register(view, (Callback.OnReloadListener) v -> {
+                initData();
             });
         }
     }

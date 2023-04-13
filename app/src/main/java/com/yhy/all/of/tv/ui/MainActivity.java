@@ -4,9 +4,12 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.IntEvaluator;
 import android.animation.ObjectAnimator;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Handler;
+import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.BounceInterpolator;
@@ -14,17 +17,26 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
+import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import com.yhy.all.of.tv.R;
+import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.chan.ChanRegister;
 import com.yhy.all.of.tv.component.adapter.HomeTabAdapter;
+import com.yhy.all.of.tv.component.adapter.SelectDialogAdapter;
 import com.yhy.all.of.tv.component.base.BaseActivity;
 import com.yhy.all.of.tv.component.base.BaseLazyFragment;
 import com.yhy.all.of.tv.widget.NoScrollViewPager;
 import com.yhy.all.of.tv.widget.ViewObj;
+import com.yhy.all.of.tv.widget.dialog.SelectDialog;
 import com.yhy.router.annotation.Router;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +54,7 @@ import me.jessyan.autosize.utils.AutoSizeUtils;
  */
 @Router(url = "/activity/main")
 public class MainActivity extends BaseActivity {
+    private final static String CURRENT_CHAN_NAME = "current_chan_name";
 
     private LinearLayout topLayout;
     private TextView tvName;
@@ -68,6 +81,9 @@ public class MainActivity extends BaseActivity {
 
     private byte topHide = 0;
 
+    private List<Chan> mChanList;
+    private Chan mCurrentChan;
+
     @Override
     protected int layout() {
         return R.layout.activity_main;
@@ -91,11 +107,20 @@ public class MainActivity extends BaseActivity {
         trvTab.setLayoutManager(new V7LinearLayoutManager(this, 0, false));
         trvTab.setSpacingWithMargins(0, AutoSizeUtils.dp2px(this, 10.0f));
         trvTab.setAdapter(mTabAdapter);
+
+        setLoadSir(contentLayout);
     }
 
     @Override
     protected void initData() {
-        mTabAdapter.setNewInstance(ChanRegister.instance.getChanList().get(0).tabList());
+        showLoading();
+
+        mChanList = ChanRegister.instance.getChanList();
+
+        String currentChanName = KV.instance.kv().getString(CURRENT_CHAN_NAME);
+        mCurrentChan = !TextUtils.isEmpty(currentChanName) ? ChanRegister.instance.getChanByName(currentChanName) : mChanList.get(0);
+
+        mTabAdapter.setNewInstance(mCurrentChan.tabList());
 
         if (isNetworkAvailable()) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
@@ -108,11 +133,16 @@ public class MainActivity extends BaseActivity {
             }
         }
 
+        tvName.setText(mCurrentChan.name());
         trvTab.requestFocus();
+
+        showSuccess();
     }
 
     @Override
     protected void initEvent() {
+        tvName.setOnClickListener(v -> showChanDialog());
+
         trvTab.setOnItemListener(new TvRecyclerView.OnItemListener() {
             public void onItemPreSelected(TvRecyclerView tvRecyclerView, View view, int position) {
                 if (view != null && !MainActivity.this.isDownOrUp) {
@@ -167,6 +197,75 @@ public class MainActivity extends BaseActivity {
     protected void setDefault() {
     }
 
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (topHide < 0) {
+            return false;
+        }
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            if (event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
+                // 按了菜单键
+                showChanDialog();
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    private void showChanDialog() {
+        SelectDialog<Chan> dialog = new SelectDialog<>(this);
+        // Multi Column Selection
+        int spanCount = (int) Math.floor(mChanList.size() / 10);
+        if (spanCount <= 1) spanCount = 1;
+        if (spanCount >= 3) spanCount = 3;
+
+        TvRecyclerView tvRecyclerView = dialog.findViewById(R.id.list);
+        tvRecyclerView.setLayoutManager(new V7GridLayoutManager(dialog.getContext(), spanCount));
+        LinearLayout cl_root = dialog.findViewById(R.id.cl_root);
+        ViewGroup.LayoutParams clp = cl_root.getLayoutParams();
+        if (spanCount != 1) {
+            clp.width = AutoSizeUtils.mm2px(dialog.getContext(), 400 + 260 * (spanCount - 1));
+        }
+
+        dialog.setTip(getString(R.string.dia_source));
+        dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<>() {
+            @Override
+            public void click(Chan chan, int pos) {
+                dialog.dismiss();
+
+                checkToChan(chan);
+            }
+
+            @Override
+            public String getDisplay(Chan chan) {
+                return chan.name();
+            }
+        }, new DiffUtil.ItemCallback<Chan>() {
+            @Override
+            public boolean areItemsTheSame(@NonNull @NotNull Chan oldItem, @NonNull @NotNull Chan newItem) {
+                return oldItem == newItem;
+            }
+
+            @Override
+            public boolean areContentsTheSame(@NonNull @NotNull Chan oldItem, @NonNull @NotNull Chan newItem) {
+                return oldItem.name().equals(newItem.name());
+            }
+        }, mChanList, ChanRegister.instance.getPositionOfChan(mCurrentChan));
+        dialog.show();
+    }
+
+    private void checkToChan(Chan chan) {
+        mCurrentChan = chan;
+        KV.instance.kv().putString(CURRENT_CHAN_NAME, chan.name());
+        restartPage();
+    }
+
+    private void restartPage() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
     private void showFilterIcon(int count) {
         boolean activated = count > 0;
         currentView.findViewById(R.id.tvFilter).setVisibility(View.VISIBLE);
@@ -212,12 +311,12 @@ public class MainActivity extends BaseActivity {
         // Hide Top =======================================================
         if (hide && topHide == 0) {
             animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                            Integer.valueOf(AutoSizeUtils.mm2px(this, 20.0f)),
-                            Integer.valueOf(AutoSizeUtils.mm2px(this, 0.0f))),
-                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                            Integer.valueOf(AutoSizeUtils.mm2px(this, 50.0f)),
-                            Integer.valueOf(AutoSizeUtils.mm2px(this, 1.0f))),
-                    ObjectAnimator.ofFloat(this.topLayout, "alpha", 1.0f, 0.0f));
+                    Integer.valueOf(AutoSizeUtils.mm2px(this, 20.0f)),
+                    Integer.valueOf(AutoSizeUtils.mm2px(this, 0.0f))),
+                ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
+                    Integer.valueOf(AutoSizeUtils.mm2px(this, 50.0f)),
+                    Integer.valueOf(AutoSizeUtils.mm2px(this, 1.0f))),
+                ObjectAnimator.ofFloat(this.topLayout, "alpha", 1.0f, 0.0f));
             animatorSet.setDuration(250);
             animatorSet.start();
             tvName.setFocusable(false);
@@ -231,12 +330,12 @@ public class MainActivity extends BaseActivity {
         // Show Top =======================================================
         if (!hide && topHide == 1) {
             animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                            Integer.valueOf(AutoSizeUtils.mm2px(this, 0.0f)),
-                            Integer.valueOf(AutoSizeUtils.mm2px(this, 20.0f))),
-                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                            Integer.valueOf(AutoSizeUtils.mm2px(this, 1.0f)),
-                            Integer.valueOf(AutoSizeUtils.mm2px(this, 50.0f))),
-                    ObjectAnimator.ofFloat(this.topLayout, "alpha", 0.0f, 1.0f));
+                    Integer.valueOf(AutoSizeUtils.mm2px(this, 0.0f)),
+                    Integer.valueOf(AutoSizeUtils.mm2px(this, 20.0f))),
+                ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
+                    Integer.valueOf(AutoSizeUtils.mm2px(this, 1.0f)),
+                    Integer.valueOf(AutoSizeUtils.mm2px(this, 50.0f))),
+                ObjectAnimator.ofFloat(this.topLayout, "alpha", 0.0f, 1.0f));
             animatorSet.setDuration(250);
             animatorSet.start();
             tvName.setFocusable(true);
