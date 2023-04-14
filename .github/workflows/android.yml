@@ -7,9 +7,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: set up JDK 11
@@ -28,6 +26,16 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew assembleRelease
+      
+    - name: Create release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        draft: false
+        prerelease: false
  
     - uses: actions/checkout@v1
       id: cache
@@ -40,4 +48,4 @@ jobs:
       run: sudo gem install fir-cli
     - name: Upload to Fir.im
       run: fir login ${{ secrets.FIR_TOKEN }}
-    - run: fir publish app/build/outputs/apk/release/全剧得*.apk
+    - run: fir publish app/build/outputs/apk/release/全剧得_v${{ github.ref }}.apk
