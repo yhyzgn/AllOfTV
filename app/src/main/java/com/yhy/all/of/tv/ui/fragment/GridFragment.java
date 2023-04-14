@@ -56,10 +56,10 @@ public class GridFragment extends BaseLazyFragment {
     Stack<GridInfo> mGrids = new Stack<>(); // ui栈
 
     public static GridFragment newInstance(Chan.Tab tab) {
-        return new GridFragment().setArguments(tab);
+        return new GridFragment().setTab(tab);
     }
 
-    public GridFragment setArguments(Chan.Tab tab) {
+    public GridFragment setTab(Chan.Tab tab) {
         mTab = tab;
         return this;
     }
@@ -179,11 +179,11 @@ public class GridFragment extends BaseLazyFragment {
             Video video = gridAdapter.getData().get(position);
             if (video != null) {
                 EasyRouter.getInstance()
-                        .with(this)
-                        .to("/activity/detail")
-                        .param("chanName", mTab.chan.name())
-                        .param("video", video)
-                        .go();
+                    .with(this)
+                    .to("/activity/detail")
+                    .param("chanName", mTab.chan.name())
+                    .param("video", video)
+                    .go();
             }
         });
 

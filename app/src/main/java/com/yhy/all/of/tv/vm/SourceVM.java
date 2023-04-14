@@ -21,6 +21,9 @@ public class SourceVM extends ViewModel {
     public MutableLiveData<List<Video>> videoListData = new MutableLiveData<>();
 
     public void loadVideoList(Chan.Tab tab, int page) {
+        if (null == tab || null == tab.loader) {
+            return;
+        }
         Bundle params = new Bundle();
         params.putInt("page", page);
         try {

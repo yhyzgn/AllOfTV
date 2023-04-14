@@ -263,7 +263,7 @@ public class MainActivity extends BaseActivity {
             public String getDisplay(Chan chan) {
                 return chan.name();
             }
-        }, new DiffUtil.ItemCallback<Chan>() {
+        }, new DiffUtil.ItemCallback<>() {
             @Override
             public boolean areItemsTheSame(@NonNull @NotNull Chan oldItem, @NonNull @NotNull Chan newItem) {
                 return oldItem == newItem;
