@@ -50,16 +50,12 @@ public class GridAdapter extends BaseQuickAdapter<Video, BaseViewHolder> impleme
             return;
         }
 
-        TextView tvYear = helper.getView(R.id.tvYear);
-        //if (item.year <= 0) {
-        tvYear.setVisibility(View.GONE);
-        //} else {
-        //    tvYear.setText(String.valueOf(item.year));
-        //    tvYear.setVisibility(View.VISIBLE);
-        //}
+        helper.setVisible(R.id.tvYear, item.year > 0);
+        helper.setText(R.id.tvYear, item.year + "");
 
         TextView tvLang = helper.getView(R.id.tvLang);
         tvLang.setVisibility(View.GONE);
+
         TextView tvArea = helper.getView(R.id.tvArea);
         tvArea.setVisibility(View.GONE);
 

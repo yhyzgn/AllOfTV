@@ -9,6 +9,7 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.yhy.all.of.tv.api.model.TencentVideo;
+import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
@@ -18,6 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -79,9 +81,10 @@ public class TencentApi {
                         ja = jo.getJSONObject("children_list").getJSONObject("list").getJSONArray("cards");
                         String json = ja.toString();
 
-                        List<TencentVideo> list = gson.fromJson(json, new TypeToken<List<TencentVideo>>() {
+                        List<TencentVideo> list = gson.fromJson(json, new TypeToken<>() {
                         });
                         List<Video> res = list.stream().map(it -> {
+                            List<Integer> publishDate = Arrays.stream(it.params.publishDate.split("-")).map(Integer::valueOf).collect(Collectors.toList());
                             Video vd = new Video();
                             vd.id = it.params.cid;
                             vd.title = it.params.title;
@@ -91,6 +94,13 @@ public class TencentApi {
                             vd.pageUrl = "https://v.qq.com/x/cover/" + it.params.cid + ".html";
                             vd.channel = "腾讯";
                             vd.type = type;
+                            vd.year = publishDate.get(0);
+                            vd.month = publishDate.get(1);
+                            vd.day = publishDate.get(2);
+                            if (type == VideoType.FILM) {
+                                // 电影类型的话，把自己添加到剧集里
+                                vd.episodes = Lists.of(vd);
+                            }
                             return vd;
                         }).collect(Collectors.toList());
 

@@ -11,6 +11,7 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.yhy.all.of.tv.api.model.IQiYiVideo;
+import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
 import com.yhy.all.of.tv.utils.LogUtils;
@@ -54,7 +55,7 @@ public class IQiYiApi {
                         JSONArray ja = jo.getJSONArray("data");
                         String json = ja.toString();
 
-                        List<IQiYiVideo> list = gson.fromJson(json, new TypeToken<List<IQiYiVideo>>() {
+                        List<IQiYiVideo> list = gson.fromJson(json, new TypeToken<>() {
                         });
                         List<Video> res = list.stream().map(it -> {
                             Video vd = new Video();
@@ -66,10 +67,16 @@ public class IQiYiApi {
                             vd.pageUrl = it.pageUrl;
                             vd.channel = "爱奇艺";
                             vd.type = type;
+                            vd.year = it.date.year;
+                            vd.month = it.date.month;
+                            vd.day = it.date.day;
                             vd.tags = TextUtils.isEmpty(it.tag) ? null : Arrays.stream(it.tag.split(",")).collect(Collectors.toList());
                             vd.directors = it.creator.stream().map(dto -> dto.name).collect(Collectors.toList());
                             vd.actors = it.contributor.stream().map(dto -> dto.name).collect(Collectors.toList());
-
+                            if (type == VideoType.FILM) {
+                                // 电影类型的话，把自己添加到剧集里
+                                vd.episodes = Lists.of(vd);
+                            }
                             return vd;
                         }).collect(Collectors.toList());
 

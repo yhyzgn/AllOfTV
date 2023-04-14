@@ -102,6 +102,11 @@ public class TencentVideo {
          */
         @SerializedName("series_name")
         public String seriesName;
+        /**
+         * publishDate
+         */
+        @SerializedName("publish_date")
+        public String publishDate;
     }
 
     public static class ChildrenListDTO {
