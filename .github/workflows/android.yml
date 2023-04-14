@@ -28,11 +28,11 @@ jobs:
       run: ./gradlew assembleRelease
       
     - name: Create release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: "app/build/outputs/apk/release/*.apk"
-          token: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: "app/build/outputs/apk/release/*.apk"
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - uses: actions/checkout@v1
       id: cache
