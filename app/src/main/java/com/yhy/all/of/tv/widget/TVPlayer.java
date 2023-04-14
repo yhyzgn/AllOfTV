@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
+import com.yhy.all.of.tv.R;
 
 /**
  * TV 播放器
@@ -32,5 +33,10 @@ public class TVPlayer extends StandardGSYVideoPlayer {
     }
 
     private void init() {
+    }
+
+    @Override
+    public int getLayoutId() {
+        return R.layout.video_player_control;
     }
 }

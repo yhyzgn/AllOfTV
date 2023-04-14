@@ -1,5 +1,7 @@
 package com.yhy.all.of.tv.component.base;
 
+import android.view.KeyEvent;
+
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
 import com.shuyu.gsyvideoplayer.listener.GSYVideoProgressListener;
@@ -32,7 +34,7 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
     public void enterFullScreen() {
         // 不需要屏幕旋转，必须调该方法
         player().setNeedOrientationUtils(false);
-        // 第一个true是否需要隐藏 actionbar，第二个true是否需要隐藏 statusbar
+        // 第一个true是否需要隐藏 actionBar，第二个true是否需要隐藏 statusBar
         player().startWindowFullscreen(this, false, false);
     }
 
@@ -86,11 +88,50 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
 
     protected abstract GSYVideoOptionBuilder optionBuilder(String url, long position);
 
-    protected abstract void onFullScreen();
-
     protected abstract boolean shouldAutoPlay();
 
     protected abstract String videoTag();
+
+    protected void onFullScreen() {
+    }
+
+    private void seekBack() {
+        long seek = Math.max(0, player().getCurrentPositionWhenPlaying() - 5);
+        player().seekTo(seek);
+    }
+
+    private void seekForward() {
+        long total = player().getDuration();
+        long seek = Math.min(total, player().getCurrentPositionWhenPlaying() + 5);
+        player().seekTo(seek);
+    }
+
+    private void playOrPause() {
+        if (player().isInPlayingState()) {
+            player().onVideoPause();
+            return;
+        }
+        player().startPlayLogic();
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        // 全屏状态下才处理这些事件
+        if (player().isIfCurrentIsFullscreen() && event.getAction() == KeyEvent.ACTION_UP) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_DPAD_LEFT:
+                    seekBack();
+                    break;
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    seekForward();
+                    break;
+                case KeyEvent.KEYCODE_DPAD_CENTER:
+                    playOrPause();
+                    break;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
 
     @Override
     public void onProgress(long progress, long secProgress, long currentPosition, long duration) {
@@ -146,12 +187,10 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
 
     @Override
     public void onAutoComplete(String url, Object... objects) {
-
     }
 
     @Override
     public void onComplete(String url, Object... objects) {
-
     }
 
     @Override

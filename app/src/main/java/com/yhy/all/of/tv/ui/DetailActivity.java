@@ -1,6 +1,5 @@
 package com.yhy.all.of.tv.ui;
 
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -19,6 +18,7 @@ import com.yhy.all.of.tv.component.base.VideoActivity;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.parse.ParserRegister;
+import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.widget.TVPlayer;
 import com.yhy.router.EasyRouter;
 import com.yhy.router.annotation.Autowired;
@@ -38,6 +38,7 @@ import java.util.Objects;
  */
 @Router(url = "/activity/detail")
 public class DetailActivity extends VideoActivity {
+    private static final String TAG = "DetailActivity";
     @Autowired("chanName")
     public String mChanName;
     @Autowired("video")
@@ -96,10 +97,6 @@ public class DetailActivity extends VideoActivity {
         tvPlayUrl = $(R.id.ivPlayUrl);
         trvParser = $(R.id.trvParser);
         trvVod = $(R.id.trvVod);
-
-        tvPlayer.getBackButton().setVisibility(View.GONE);
-        tvPlayer.getTitleTextView().setVisibility(View.GONE);
-        tvPlayer.getFullscreenButton().setVisibility(View.GONE);
 
         trvParser.setHasFixedSize(true);
         trvParser.setLayoutManager(new V7LinearLayoutManager(this, 0, false));
@@ -179,6 +176,7 @@ public class DetailActivity extends VideoActivity {
 
     @Override
     protected void onFullScreen() {
+        LogUtils.iTag(TAG, "全屏播放了");
     }
 
     @Override
