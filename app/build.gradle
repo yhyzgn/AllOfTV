@@ -76,6 +76,8 @@ android {
         resources {
             excludes += ['META-INF/*']
         }
+
+        pickFirst 'lib/*/*.so'
     }
 
     // 打包apk自动生成名称
