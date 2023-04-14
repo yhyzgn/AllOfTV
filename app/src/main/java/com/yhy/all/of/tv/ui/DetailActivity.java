@@ -1,8 +1,6 @@
 package com.yhy.all.of.tv.ui;
 
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -12,11 +10,12 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.common.base.Joiner;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
-import com.shuyu.gsyvideoplayer.listener.GSYVideoProgressListener;
+import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
+import com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer;
+import com.tencent.smtt.utils.Md5Utils;
 import com.yhy.all.of.tv.R;
-import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.component.adapter.SeriesFlagAdapter;
-import com.yhy.all.of.tv.component.base.BaseActivity;
+import com.yhy.all.of.tv.component.base.VideoActivity;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.parse.ParserRegister;
@@ -28,8 +27,6 @@ import com.yhy.router.annotation.Router;
 import java.util.List;
 import java.util.Objects;
 
-import me.jessyan.autosize.utils.ScreenUtils;
-
 /**
  * 详情页
  * <p>
@@ -40,7 +37,7 @@ import me.jessyan.autosize.utils.ScreenUtils;
  * @since 1.0.0
  */
 @Router(url = "/activity/detail")
-public class DetailActivity extends BaseActivity {
+public class DetailActivity extends VideoActivity {
     @Autowired("chanName")
     public String mChanName;
     @Autowired("video")
@@ -126,8 +123,7 @@ public class DetailActivity extends BaseActivity {
 
         mLiveData = new MutableLiveData<>();
         mLiveData.observe(this, url -> {
-            tvPlayer.setUp(url, false, mVideo.title);
-            tvPlayer.setSeekOnStart(KV.instance.kv().getLong(mVideo.pageUrl, 0));
+            playWithBuilder(url);
             tvPlayer.startPlayLogic();
 
             // 停止 WebView 加载
@@ -146,20 +142,8 @@ public class DetailActivity extends BaseActivity {
 
     @Override
     protected void initEvent() {
-        tvPlayer.setGSYVideoProgressListener(new GSYVideoProgressListener() {
-            @Override
-            public void onProgress(long progress, long secProgress, long currentPosition, long duration) {
-                if (currentPosition == duration) {
-                    KV.instance.kv().remove(mVideo.pageUrl);
-                    return;
-                }
-                if (currentPosition > 0 && null != mVideo) {
-                    KV.instance.kv().putLong(mVideo.pageUrl, currentPosition);
-                }
-            }
-        });
-
         tvFullScreen.setOnClickListener(v -> {
+            enterFullScreen();
         });
 
         mSeriesFlagAdapter.setOnItemClickListener((adapter, view, position) -> {
@@ -178,58 +162,41 @@ public class DetailActivity extends BaseActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        tvPlayer.onVideoPause();
+    protected GSYBaseVideoPlayer player() {
+        return tvPlayer;
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        tvPlayer.onVideoResume();
+    protected GSYVideoOptionBuilder optionBuilder(String url, long position) {
+        return new GSYVideoOptionBuilder()
+            .setUrl(url)
+            .setShowFullAnimation(true)
+            .setShowPauseCover(true)
+            .setSeekRatio(1.0f)
+            .setLockLand(true)
+            .setSeekOnStart(position);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        tvPlayer.release();
+    protected void onFullScreen() {
     }
 
     @Override
-    public void onBackPressed() {
-        if (tvPlayer.isIfCurrentIsFullscreen()) {
-            tvPlayer.onBackFullscreen();
-            return;
-        }
-        super.onBackPressed();
+    protected boolean shouldAutoPlay() {
+        return true;
+    }
+
+    @Override
+    protected String videoTag() {
+        return Md5Utils.getMD5(mVideo.pageUrl);
     }
 
     private void loadVideoAndPlay() {
-        tvPlayer.release();
+        tvPlayer.getCurrentPlayer().release();
         getCurrentParser().load(this, mLiveData, mVideo.pageUrl);
     }
 
     private Parser getCurrentParser() {
         return mParserList.get(mCurrentParserIndex);
-    }
-
-    private void toggleScreen(boolean fullscreen) {
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
-        ViewGroup.LayoutParams params = tvPlayer.getLayoutParams();
-        if (!fullscreen) {
-            params.width = mPlayerWidth;
-            params.height = mPlayerHeight;
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        } else {
-            int[] sizes = ScreenUtils.getScreenSize(this);
-            params.width = sizes[0];
-            params.height = sizes[1];
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
-        tvPlayer.setLayoutParams(params);
-        tvPlayer.setKeepScreenOn(fullscreen);
     }
 }

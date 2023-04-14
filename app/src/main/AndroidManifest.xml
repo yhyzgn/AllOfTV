@@ -57,7 +57,7 @@
         <activity
                 android:name=".ui.DetailActivity"
                 android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
-                android:screenOrientation="fullSensor" />
+                android:screenOrientation="sensorLandscape" />
 
         <service
                 android:name="com.tencent.smtt.export.external.DexClassLoaderProviderService"
