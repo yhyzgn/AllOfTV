@@ -11,6 +11,16 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Set Env
+      run: |
+        echo "runNumber=$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
+        echo "tagName=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
+
+    - name: Resolve Version
+      run: |
+        sed -i "s/code: [0-9]+$/code: ${{ env.runNumber }}/g" config.gradle
+        sed -i "s/name: v[0-9\\.]+$/name: ${{ env.tagName }}/g" config.gradle
+
     - name: set up JDK 11
       uses: actions/setup-java@v3
       with:
@@ -29,7 +39,6 @@ jobs:
       
     - name: Create release
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
       with:
         files: "app/build/outputs/apk/release/*.apk"
         token: ${{ secrets.GITHUB_TOKEN }}
