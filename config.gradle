@@ -6,7 +6,7 @@ ext {
     ]
     version = [
             code: 1,
-            name: '1.0.0-alpha'
+            name: '1.0.0'
     ]
     keyDebug = [
             storeFile    : rootDir.absolutePath + '/jks/debug.jks',
