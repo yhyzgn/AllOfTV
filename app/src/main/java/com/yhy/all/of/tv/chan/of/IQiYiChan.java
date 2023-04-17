@@ -1,8 +1,11 @@
 package com.yhy.all.of.tv.chan.of;
 
+import androidx.lifecycle.MutableLiveData;
+
 import com.yhy.all.of.tv.api.of.chan.IQiYiApi;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.internal.Lists;
+import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
 
 import java.util.List;
@@ -25,8 +28,13 @@ public class IQiYiChan implements Chan {
     @Override
     public List<Tab> tabList() {
         return Lists.of(
-                Tab.create(this, VideoType.FILM, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
-                Tab.create(this, VideoType.EPISODE, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
+            Tab.create(this, VideoType.FILM, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
+            Tab.create(this, VideoType.EPISODE, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
         );
+    }
+
+    @Override
+    public void loadPlayList(Video root, MutableLiveData<Video> liveData) {
+        IQiYiApi.instance.playList(root, liveData);
     }
 }

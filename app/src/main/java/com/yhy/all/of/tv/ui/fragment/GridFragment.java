@@ -182,7 +182,7 @@ public class GridFragment extends BaseLazyFragment {
                     .with(this)
                     .to("/activity/detail")
                     .param("chanName", mTab.chan.name())
-                    .param("video", video)
+                    .param("rootVideo", video)
                     .go();
             }
         });

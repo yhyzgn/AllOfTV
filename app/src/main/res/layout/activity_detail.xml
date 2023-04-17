@@ -266,7 +266,7 @@
                 app:tv_selectedItemIsCentered="true" />
 
         <com.owen.tvrecyclerview.widget.TvRecyclerView
-                android:id="@+id/trvVod"
+                android:id="@+id/trvPlayListVod"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="@dimen/vs_10"

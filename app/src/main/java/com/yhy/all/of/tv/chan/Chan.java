@@ -25,6 +25,8 @@ public interface Chan {
 
     List<Tab> tabList();
 
+    void loadPlayList(Video root, MutableLiveData<Video> liveData);
+
     class Tab implements Serializable {
         public final Chan chan;
         public final VideoType type;

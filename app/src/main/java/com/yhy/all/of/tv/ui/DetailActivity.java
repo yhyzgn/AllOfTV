@@ -7,14 +7,20 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.lifecycle.MutableLiveData;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.common.base.Joiner;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
+import com.owen.tvrecyclerview.widget.V7StaggeredGridLayoutManager;
 import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
 import com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer;
 import com.tencent.smtt.utils.Md5Utils;
 import com.yhy.all.of.tv.R;
+import com.yhy.all.of.tv.chan.Chan;
+import com.yhy.all.of.tv.chan.ChanRegister;
+import com.yhy.all.of.tv.component.adapter.PlayListVodAdapter;
 import com.yhy.all.of.tv.component.adapter.SeriesFlagAdapter;
 import com.yhy.all.of.tv.component.base.VideoActivity;
 import com.yhy.all.of.tv.model.Video;
@@ -45,8 +51,8 @@ public class DetailActivity extends VideoActivity {
     private static final String TAG = "DetailActivity";
     @Autowired("chanName")
     public String mChanName;
-    @Autowired("video")
-    public Video mVideo;
+    @Autowired("rootVideo")
+    public Video mRootVideo;
 
     private MutableLiveData<String> mLiveData;
 
@@ -69,13 +75,13 @@ public class DetailActivity extends VideoActivity {
     private TextView tvCollect;
     private ImageView tvPlayUrl;
     private TvRecyclerView trvParser;
-    private TvRecyclerView trvVod;
+    private TvRecyclerView trvPlayListVod;
     private List<Parser> mParserList;
 
     private int mCurrentParserIndex = 0;
     private SeriesFlagAdapter mSeriesFlagAdapter;
-    private int mPlayerWidth;
-    private int mPlayerHeight;
+    private PlayListVodAdapter mPlayListVodAdapter;
+    private int mCurrentPlayingIndex = 0;
 
     @Override
     protected int layout() {
@@ -104,13 +110,13 @@ public class DetailActivity extends VideoActivity {
         tvCollect = $(R.id.tvCollect);
         tvPlayUrl = $(R.id.ivPlayUrl);
         trvParser = $(R.id.trvParser);
-        trvVod = $(R.id.trvVod);
+        trvPlayListVod = $(R.id.trvPlayListVod);
 
         trvParser.setHasFixedSize(true);
-        trvParser.setLayoutManager(new V7LinearLayoutManager(this, 0, false));
+        trvParser.setLayoutManager(new V7LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
-        mPlayerWidth = tvPlayer.getMeasuredWidth();
-        mPlayerHeight = tvPlayer.getMeasuredHeight();
+        trvPlayListVod.setHasFixedSize(true);
+        trvPlayListVod.setLayoutManager(new V7StaggeredGridLayoutManager(12, StaggeredGridLayoutManager.VERTICAL));
 
         setLoadSir(llRoot);
     }
@@ -121,11 +127,11 @@ public class DetailActivity extends VideoActivity {
         EasyRouter.getInstance().inject(this);
         Evtor.instance.register(this);
 
-        tvName.setText(mVideo.title);
+        tvName.setText(mRootVideo.title);
         tvSite.setText("片源：" + mChanName);
-        tvActor.setText("演员：" + (null != mVideo.actors ? Joiner.on(" ").join(mVideo.actors) : ""));
-        tvDirector.setText("导演：" + (null != mVideo.directors ? Joiner.on(" ").join(mVideo.directors) : ""));
-        tvDes.setText("简介：" + mVideo.description);
+        tvActor.setText("演员：" + (null != mRootVideo.actors ? Joiner.on(" ").join(mRootVideo.actors) : ""));
+        tvDirector.setText("导演：" + (null != mRootVideo.directors ? Joiner.on(" ").join(mRootVideo.directors) : ""));
+        tvDes.setText("简介：" + mRootVideo.description);
 
         mLiveData = new MutableLiveData<>();
         mLiveData.observe(this, url -> {
@@ -137,11 +143,16 @@ public class DetailActivity extends VideoActivity {
         });
 
         mParserList = ParserRegister.instance.supportedParserList(mChanName);
-        loadVideoAndPlay();
+
+        // 加载播放列表
+        loadPlayList();
 
         mSeriesFlagAdapter = new SeriesFlagAdapter(parser -> Objects.equals(getCurrentParser().name(), parser.name()));
         trvParser.setAdapter(mSeriesFlagAdapter);
         mSeriesFlagAdapter.setNewInstance(mParserList);
+
+        mPlayListVodAdapter = new PlayListVodAdapter(video -> Objects.equals(getCurrentPlayingVideo().title, video.title));
+        trvPlayListVod.setAdapter(mPlayListVodAdapter);
 
         // 全屏按钮获取焦点
         tvFullScreen.requestFocus();
@@ -165,10 +176,26 @@ public class DetailActivity extends VideoActivity {
         });
 
         mSeriesFlagAdapter.setOnItemClickListener((adapter, view, position) -> {
+            if (position == mCurrentParserIndex) {
+                return;
+            }
             int lastIndex = mCurrentParserIndex;
             mCurrentParserIndex = position;
             adapter.notifyItemChanged(lastIndex);
             adapter.notifyItemChanged(mCurrentParserIndex);
+
+            // 重新加载
+            loadVideoAndPlay();
+        });
+
+        mPlayListVodAdapter.setOnItemClickListener((adapter, view, position) -> {
+            if (position == mCurrentPlayingIndex) {
+                return;
+            }
+            int lastIndex = mCurrentPlayingIndex;
+            mCurrentPlayingIndex = position;
+            adapter.notifyItemChanged(lastIndex);
+            adapter.notifyItemChanged(mCurrentPlayingIndex);
 
             // 重新加载
             loadVideoAndPlay();
@@ -207,7 +234,7 @@ public class DetailActivity extends VideoActivity {
 
     @Override
     protected String videoTag() {
-        return Md5Utils.getMD5(mVideo.pageUrl);
+        return Md5Utils.getMD5(mRootVideo.pageUrl);
     }
 
     @Override
@@ -223,15 +250,36 @@ public class DetailActivity extends VideoActivity {
         Evtor.instance.unregister(this);
     }
 
+    private void loadPlayList() {
+        MutableLiveData<Video> playListLiveData = new MutableLiveData<>();
+        playListLiveData.observe(this, video -> {
+            if (null != video && null != video.episodes) {
+                LogUtils.iTag(TAG, "播放列表加载成功", video);
+                mPlayListVodAdapter.setNewInstance(video.episodes);
+                // 开始播放
+                loadVideoAndPlay();
+            }
+        });
+        getCurrentChan().loadPlayList(mRootVideo, playListLiveData);
+    }
+
     private void loadVideoAndPlay() {
         tvPlayer.getCurrentPlayer().release();
         rlParsing.setVisibility(View.VISIBLE);
         tvPlayer.setVisibility(View.GONE);
-        getCurrentParser().load(this, mLiveData, mVideo.pageUrl);
+        getCurrentParser().load(this, mLiveData, getCurrentPlayingVideo().pageUrl);
+    }
+
+    private Video getCurrentPlayingVideo() {
+        return mPlayListVodAdapter.getItem(mCurrentPlayingIndex);
     }
 
     private Parser getCurrentParser() {
         return mParserList.get(mCurrentParserIndex);
+    }
+
+    private Chan getCurrentChan() {
+        return ChanRegister.instance.getChanByName(mChanName);
     }
 
     @Subscribe("parserLog")

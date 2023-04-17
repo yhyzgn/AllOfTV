@@ -88,10 +88,6 @@ public class YouKuApi {
                             vd.pageUrl = "https:" + it.videoLink.substring(0, it.videoLink.indexOf("?"));
                             vd.channel = "优酷";
                             vd.type = type;
-                            if (type == VideoType.FILM) {
-                                // 电影类型的话，把自己添加到剧集里
-                                vd.episodes = Lists.of(vd);
-                            }
                             return vd;
                         }).collect(Collectors.toList());
 
@@ -108,5 +104,15 @@ public class YouKuApi {
                     liveData.postValue(null);
                 }
             });
+    }
+
+
+    /**
+     * 获取视频播放列表
+     *
+     * @param root     视频根信息
+     * @param liveData 加载回调
+     */
+    public void playList(Video root, MutableLiveData<Video> liveData) {
     }
 }

@@ -97,10 +97,6 @@ public class TencentApi {
                             vd.year = publishDate.get(0);
                             vd.month = publishDate.get(1);
                             vd.day = publishDate.get(2);
-                            if (type == VideoType.FILM) {
-                                // 电影类型的话，把自己添加到剧集里
-                                vd.episodes = Lists.of(vd);
-                            }
                             return vd;
                         }).collect(Collectors.toList());
 
@@ -132,5 +128,14 @@ public class TencentApi {
                 }
             });
         return "";
+    }
+
+    /**
+     * 获取视频播放列表
+     *
+     * @param root     视频根信息
+     * @param liveData 加载回调
+     */
+    public void playList(Video root, MutableLiveData<Video> liveData) {
     }
 }

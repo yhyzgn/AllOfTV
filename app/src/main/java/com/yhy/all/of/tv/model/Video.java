@@ -34,4 +34,25 @@ public class Video implements Serializable {
      * 剧集
      */
     public List<Video> episodes;
+
+    @Override
+    public String toString() {
+        return "Video{" +
+            "id='" + id + '\'' +
+            ", title='" + title + '\'' +
+            ", description='" + description + '\'' +
+            ", score=" + score +
+            ", imgCover='" + imgCover + '\'' +
+            ", pageUrl='" + pageUrl + '\'' +
+            ", channel='" + channel + '\'' +
+            ", type=" + type +
+            ", tags=" + tags +
+            ", directors=" + directors +
+            ", actors=" + actors +
+            ", year=" + year +
+            ", month=" + month +
+            ", day=" + day +
+            ", episodes=" + episodes +
+            '}';
+    }
 }
