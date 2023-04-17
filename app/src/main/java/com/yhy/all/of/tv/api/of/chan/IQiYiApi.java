@@ -145,7 +145,7 @@ public class IQiYiApi {
                         .filter(it -> Objects.equals("1", it.contentType)) // 1：正片，3：预告片
                         .map(it -> {
                             Video vd = new Video();
-                            vd.title = it.title.replaceAll("^.*?(第\\d+集)$", "$1");
+                            vd.title = it.title.replaceAll("^.*?(第\\d+集).*?$", "$1");
                             vd.pageUrl = it.pageUrl;
                             vd.channel = "爱奇艺";
                             return vd;

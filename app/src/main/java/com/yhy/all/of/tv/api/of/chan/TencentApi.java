@@ -143,7 +143,7 @@ public class TencentApi {
         String pageUrl = "https://v.qq.com/x/cover/" + root.id + ".html";
 
         MutableLiveData<String> tempLiveData = new MutableLiveData<>();
-        JsExtractWebView wv = new JsExtractWebView(activity).attach(activity, pageUrl, tempLiveData, "__pinia");
+        JsExtractWebView wv = new JsExtractWebView(activity).attach(activity, pageUrl, tempLiveData, "window.__pinia");
         tempLiveData.observe(activity, pinia -> {
             LogUtils.i("pinia", pinia);
             if (!TextUtils.isEmpty(pinia)) {
@@ -170,7 +170,7 @@ public class TencentApi {
                             .map(it -> {
                                 Video vd = new Video();
                                 vd.id = Objects.requireNonNull(it.get("vid")).toString();
-                                vd.title = Objects.requireNonNull(it.get("playTitle")).toString().replaceAll("^.*?(第\\d+集)$", "$1");
+                                vd.title = Objects.requireNonNull(it.get("playTitle")).toString().replaceAll("^.*?(第\\d+集).*?$", "$1");
                                 vd.pageUrl = "https://v.qq.com/x/cover/" + root.id + "/" + vd.id + ".html";
                                 return vd;
                             }).collect(Collectors.toList());

@@ -130,12 +130,12 @@ public class JsExtractWebView extends WebView {
         enabledCookie();
     }
 
-    public JsExtractWebView attach(AppCompatActivity activity, String url, MutableLiveData<String> liveData, String varName) {
+    public JsExtractWebView attach(AppCompatActivity activity, String url, MutableLiveData<String> liveData, String jsCode) {
         mActivity = activity;
         mUrl = url;
         mLiveData = liveData;
 
-        setWebViewClient(new SysWebClient(liveData, varName));
+        setWebViewClient(new SysWebClient(this, liveData, jsCode));
 
         ViewGroup.LayoutParams lp = BuildConfig.DEBUG ? new ViewGroup.LayoutParams(400, 400) : new ViewGroup.LayoutParams(1, 1);
         MarginLayoutParams mlp = new MarginLayoutParams(lp);
@@ -183,18 +183,20 @@ public class JsExtractWebView extends WebView {
     private static class SysWebClient extends WebViewClient {
         private static final String TAG = "ParserWebViewDefault.SysWebClient";
 
+        private final WebView mWv;
         private final MutableLiveData<String> mInnerLiveData;
-        private final String mVarName;
+        private final String mJsCode;
 
-        private SysWebClient(MutableLiveData<String> liveData, String varName) {
+        private SysWebClient(WebView wv, MutableLiveData<String> liveData, String jsCode) {
+            mWv = wv;
             mInnerLiveData = new MutableLiveData<>();
-            mVarName = varName;
+            mJsCode = jsCode;
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            view.loadUrl("javascript:window.extractor.onExtracted(JSON.stringify(window." + mVarName + "));");
+            mWv.postDelayed(() -> view.loadUrl("javascript:window.extractor.onExtracted(JSON.stringify(" + mJsCode + "));"), 3000);
         }
 
         @Override

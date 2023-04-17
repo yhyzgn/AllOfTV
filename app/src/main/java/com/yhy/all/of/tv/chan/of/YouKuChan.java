@@ -29,12 +29,13 @@ public class YouKuChan implements Chan {
     @Override
     public List<Tab> tabList() {
         return Lists.of(
-            Tab.create(this, VideoType.FILM, (liveData, params) -> YouKuApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
-            Tab.create(this, VideoType.EPISODE, (liveData, params) -> YouKuApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
+                Tab.create(this, VideoType.FILM, (liveData, params) -> YouKuApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
+                Tab.create(this, VideoType.EPISODE, (liveData, params) -> YouKuApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
         );
     }
 
     @Override
     public void loadPlayList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
+        YouKuApi.instance.playList(activity, root, liveData);
     }
 }

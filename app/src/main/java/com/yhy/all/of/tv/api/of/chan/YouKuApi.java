@@ -2,6 +2,7 @@ package com.yhy.all.of.tv.api.of.chan;
 
 import android.text.TextUtils;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.gson.Gson;
@@ -10,12 +11,14 @@ import com.google.gson.reflect.TypeToken;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
+import com.yhy.all.of.tv.api.model.YouKuEpisode;
 import com.yhy.all.of.tv.api.model.YouKuVideo;
 import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
 import com.yhy.all.of.tv.utils.LogUtils;
+import com.yhy.all.of.tv.widget.web.JsExtractWebView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,46 +70,46 @@ public class YouKuApi {
         sessionMap.put("category", typeStr);
 
         OkGo.<String>get("https://youku.com/category/data")
-            .headers("referer", "https://youku.com/channel/webmovie/list?filter=type_" + URLEncoder.encode(typeStr, "utf-8") + "_sort_7&spm=a2hja.14919748_WEBMOVIE_JINGXUAN.drawer3.d_sort_2")
-            .params("params", gson.toJson(json))
-            .params("session", gson.toJson(sessionMap))
-            .params("pageNo", page)
-            .execute(new StringCallback() {
-                @Override
-                public void onSuccess(Response<String> response) {
-                    String result = response.body();
-                    try {
-                        JSONObject jo = new JSONObject(result).getJSONObject("data").getJSONObject("filterData");
-                        JSONArray ja = jo.getJSONArray("listData");
-                        String json = ja.toString();
+                .headers("referer", "https://youku.com/channel/webmovie/list?filter=type_" + URLEncoder.encode(typeStr, "utf-8") + "_sort_7&spm=a2hja.14919748_WEBMOVIE_JINGXUAN.drawer3.d_sort_2")
+                .params("params", gson.toJson(json))
+                .params("session", gson.toJson(sessionMap))
+                .params("pageNo", page)
+                .execute(new StringCallback() {
+                    @Override
+                    public void onSuccess(Response<String> response) {
+                        String result = response.body();
+                        try {
+                            JSONObject jo = new JSONObject(result).getJSONObject("data").getJSONObject("filterData");
+                            JSONArray ja = jo.getJSONArray("listData");
+                            String json = ja.toString();
 
-                        List<YouKuVideo> list = gson.fromJson(json, new TypeToken<>() {
-                        });
-                        List<Video> res = list.stream().map(it -> {
-                            Video vd = new Video();
-                            vd.title = it.title;
-                            vd.description = it.subTitle;
-                            vd.score = type == VideoType.FILM && null != it.summary ? Float.parseFloat(it.summary) : 0;
-                            vd.imgCover = it.img;
-                            vd.pageUrl = "https:" + it.videoLink.substring(0, it.videoLink.indexOf("?"));
-                            vd.channel = "优酷";
-                            vd.type = type;
-                            return vd;
-                        }).collect(Collectors.toList());
+                            List<YouKuVideo> list = gson.fromJson(json, new TypeToken<>() {
+                            });
+                            List<Video> res = list.stream().map(it -> {
+                                Video vd = new Video();
+                                vd.title = it.title;
+                                vd.description = it.subTitle;
+                                vd.score = type == VideoType.FILM && null != it.summary ? Float.parseFloat(it.summary) : 0;
+                                vd.imgCover = it.img;
+                                vd.pageUrl = "https:" + it.videoLink;
+                                vd.channel = "优酷";
+                                vd.type = type;
+                                return vd;
+                            }).collect(Collectors.toList());
 
-                        liveData.postValue(res);
-                    } catch (JSONException e) {
-                        LogUtils.e(e.getMessage());
-                        throw new RuntimeException(e);
+                            liveData.postValue(res);
+                        } catch (JSONException e) {
+                            LogUtils.e(e.getMessage());
+                            throw new RuntimeException(e);
+                        }
                     }
-                }
 
-                @Override
-                public void onError(Response<String> response) {
-                    LogUtils.e(response.getException().getMessage());
-                    liveData.postValue(null);
-                }
-            });
+                    @Override
+                    public void onError(Response<String> response) {
+                        LogUtils.e(response.getException().getMessage());
+                        liveData.postValue(null);
+                    }
+                });
     }
 
 
@@ -116,38 +119,53 @@ public class YouKuApi {
      * @param root     视频根信息
      * @param liveData 加载回调
      */
-    public void playList(Video root, MutableLiveData<Video> liveData) {
+    public void playList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
+        if (root.type == VideoType.FILM) {
+            // 电影的话，把自己加到播放列表就行了
+            root.episodes = Lists.of(gson.fromJson(gson.toJson(root), Video.class));
+            liveData.postValue(root);
+            return;
+        }
+
+        getHtmlPage(activity, root, liveData);
     }
 
-    private void getHtmlPage(Video root, MutableLiveData<Video> liveData) {
-        String pageUrl = "https://v.youku.com/v_show/id_XNTkyNjUwNTA4MA==.html?spm=a2hcb.12701310.app.5~5!3~5!3~5~5~5!4~5~5~5~A&s=aadfdb1cf537468a82c0";
-        OkGo.<String>get(pageUrl)
-            .execute(new StringCallback() {
-                @Override
-                public void onSuccess(Response<String> response) {
-                    String html = response.body();
-                    // 提取 __pinia 全局变量
-                    String pinia = html.replaceAll(".*?<script>.*?window.__pinia=(.*?)<script>.*?", "$1");
-                    if (!TextUtils.isEmpty(pinia)) {
-                        try {
-                            JSONObject jo = new JSONObject(pinia).getJSONObject("episodeMain");
-                            JSONArray ja = jo.getJSONArray("listData").getJSONObject(0).getJSONArray("list").getJSONArray(0);
+    private void getHtmlPage(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
+        String pageUrl = root.pageUrl;
 
-                            List<Map<String, Object>> list = gson.fromJson(ja.toString(), new TypeToken<>() {
-                            });
-                            root.episodes = list.stream().map(it -> {
+        MutableLiveData<String> tempLiveData = new MutableLiveData<>();
+        JsExtractWebView wv = new JsExtractWebView(activity).attach(activity, pageUrl, tempLiveData, "window.__INITIAL_DATA__");
+        tempLiveData.observe(activity, data -> {
+            LogUtils.i("data", data);
+            if (!TextUtils.isEmpty(data)) {
+                try {
+                    JSONObject jo = new JSONObject(data);
+                    // 播放列表
+                    jo = jo.getJSONObject("data").getJSONObject("model").getJSONObject("detail").getJSONObject("data");
+                    JSONArray ja = jo.getJSONArray("nodes").getJSONObject(0).getJSONArray("nodes").getJSONObject(2).getJSONArray("nodes");
+                    LogUtils.i(ja.toString());
+                    List<YouKuEpisode> list = gson.fromJson(ja.toString(), new TypeToken<>() {
+                    });
+
+                    root.episodes = list.stream()
+                            .filter(it -> Objects.equals(it.data.videoType, "正片"))
+                            .map(it -> {
                                 Video vd = new Video();
-                                vd.id = Objects.requireNonNull(it.get("vid")).toString();
-                                vd.title = Objects.requireNonNull(it.get("playTitle")).toString().replaceAll("^.*?(第\\d+集)$", "$1");
-                                vd.pageUrl = "https://v.qq.com/x/cover/" + root.id + "/" + vd.id + ".html";
+                                vd.id = it.id + "";
+                                vd.title = it.data.title.replaceAll("^.*?(第\\d+集).*?$", "$1");
+                                vd.pageUrl = "https://v.youku.com/v_show/id_" + it.data.action.value + ".html";
                                 return vd;
                             }).collect(Collectors.toList());
-                            liveData.postValue(root);
-                        } catch (JSONException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+
+                    liveData.postValue(root);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
                 }
-            });
+            } else {
+                liveData.postValue(null);
+            }
+            wv.stop(true);
+        });
+        wv.start();
     }
 }

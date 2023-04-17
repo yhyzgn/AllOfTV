@@ -233,7 +233,7 @@ public class DetailActivity extends VideoActivity {
 
     @Override
     protected String videoTag() {
-        return Md5Utils.getMD5(mRootVideo.pageUrl);
+        return Md5Utils.getMD5(getCurrentPlayingVideo().pageUrl);
     }
 
     @Override
