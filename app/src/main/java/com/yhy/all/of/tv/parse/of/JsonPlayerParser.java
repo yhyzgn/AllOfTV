@@ -32,15 +32,18 @@ public class JsonPlayerParser extends AbstractParser {
     @Override
     public List<Chan> supportedChanList() {
         return Lists.of(
-                new IQiYiChan(),
-                new TencentChan(),
-                new YouKuChan()
+            new IQiYiChan(),
+            new TencentChan(),
+            new YouKuChan()
         );
     }
 
     @Override
     public boolean isVideoUrl(String url) {
         // https://110.42.2.115:9092/c/m3u8_301/d14977a5a27cbea7ce0d6dd3f6d917c9.m3u8?vkey=2fadEjZDjnhVZtuNt6zEqWKJ6djffjLJf0_vzFTM
-        return url.contains(".m3u8?vkey=");
+        // https://110.42.2.115:9092/c/qq_301/omd9c6b174751ce0373beb4a55e1b4209e.mp4?vkey=5d086MpQ3l_88doDUFDeEe6aeyxHKUkKt35x0oQy
+        return url.contains(".m3u8?vkey=") // 爱奇艺
+            || url.contains(".mp4?vkey=") // 腾讯
+            ;
     }
 }

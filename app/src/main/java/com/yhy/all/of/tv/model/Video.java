@@ -26,9 +26,9 @@ public class Video implements Serializable {
     public List<String> tags;
     public List<String> directors;
     public List<String> actors;
-    public Integer year;
-    public Integer month;
-    public Integer day;
+    public int year;
+    public int month;
+    public int day;
 
     /**
      * 剧集

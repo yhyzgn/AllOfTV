@@ -1,5 +1,7 @@
 package com.yhy.all.of.tv.api.of.chan;
 
+import android.text.TextUtils;
+
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.gson.Gson;
@@ -19,9 +21,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -84,7 +88,6 @@ public class TencentApi {
                         List<TencentVideo> list = gson.fromJson(json, new TypeToken<>() {
                         });
                         List<Video> res = list.stream().map(it -> {
-                            List<Integer> publishDate = Arrays.stream(it.params.publishDate.split("-")).map(Integer::valueOf).collect(Collectors.toList());
                             Video vd = new Video();
                             vd.id = it.params.cid;
                             vd.title = it.params.title;
@@ -94,9 +97,10 @@ public class TencentApi {
                             vd.pageUrl = "https://v.qq.com/x/cover/" + it.params.cid + ".html";
                             vd.channel = "腾讯";
                             vd.type = type;
-                            vd.year = publishDate.get(0);
-                            vd.month = publishDate.get(1);
-                            vd.day = publishDate.get(2);
+                            if (!TextUtils.isEmpty(it.params.publishDate)) {
+                                LocalDate date = LocalDate.parse(it.params.publishDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                                vd.year = date.getYear();
+                            }
                             return vd;
                         }).collect(Collectors.toList());
 
@@ -115,21 +119,6 @@ public class TencentApi {
             });
     }
 
-    public String getHtmlPage(String videoId) {
-        String pageUrl = "https://v.qq.com/x/cover/" + videoId + ".html";
-        OkGo.<String>get(pageUrl)
-            .execute(new StringCallback() {
-                @Override
-                public void onSuccess(Response<String> response) {
-                    String html = response.body();
-                    // 提取 __pinia 全局变量
-                    String pinia = html.replaceAll(".*?<script>.*?window.__pinia=(.*?)<script>.*?", "$1");
-                    LogUtils.i(pinia);
-                }
-            });
-        return "";
-    }
-
     /**
      * 获取视频播放列表
      *
@@ -137,5 +126,45 @@ public class TencentApi {
      * @param liveData 加载回调
      */
     public void playList(Video root, MutableLiveData<Video> liveData) {
+        if (root.type == VideoType.FILM) {
+            // 电影的话，把自己加到播放列表就行了
+            root.episodes = Lists.of(gson.fromJson(gson.toJson(root), Video.class));
+            liveData.postValue(root);
+            return;
+        }
+
+        getHtmlPage(root, liveData);
+    }
+
+    private void getHtmlPage(Video root, MutableLiveData<Video> liveData) {
+        String pageUrl = "https://v.qq.com/x/cover/" + root.id + ".html";
+        OkGo.<String>get(pageUrl)
+            .execute(new StringCallback() {
+                @Override
+                public void onSuccess(Response<String> response) {
+                    String html = response.body();
+                    // 提取 __pinia 全局变量
+                    String pinia = html.replaceAll(".*?<script>.*?window.__pinia=(.*?)<script>.*?", "$1");
+                    if (!TextUtils.isEmpty(pinia)) {
+                        try {
+                            JSONObject jo = new JSONObject(pinia).getJSONObject("episodeMain");
+                            JSONArray ja = jo.getJSONArray("listData").getJSONObject(0).getJSONArray("list").getJSONArray(0);
+
+                            List<Map<String, Object>> list = gson.fromJson(ja.toString(), new TypeToken<>() {
+                            });
+                            root.episodes = list.stream().map(it -> {
+                                Video vd = new Video();
+                                vd.id = Objects.requireNonNull(it.get("vid")).toString();
+                                vd.title = Objects.requireNonNull(it.get("playTitle")).toString().replaceAll("^.*?(第\\d+集)$", "$1");
+                                vd.pageUrl = "https://v.qq.com/x/cover/" + root.id + "/" + vd.id + ".html";
+                                return vd;
+                            }).collect(Collectors.toList());
+                            liveData.postValue(root);
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            });
     }
 }

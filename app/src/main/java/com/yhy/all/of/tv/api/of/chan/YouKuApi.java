@@ -1,5 +1,7 @@
 package com.yhy.all.of.tv.api.of.chan;
 
+import android.text.TextUtils;
+
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.gson.Gson;
@@ -23,6 +25,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -114,5 +117,37 @@ public class YouKuApi {
      * @param liveData 加载回调
      */
     public void playList(Video root, MutableLiveData<Video> liveData) {
+    }
+
+    private void getHtmlPage(Video root, MutableLiveData<Video> liveData) {
+        String pageUrl = "https://v.youku.com/v_show/id_XNTkyNjUwNTA4MA==.html?spm=a2hcb.12701310.app.5~5!3~5!3~5~5~5!4~5~5~5~A&s=aadfdb1cf537468a82c0";
+        OkGo.<String>get(pageUrl)
+            .execute(new StringCallback() {
+                @Override
+                public void onSuccess(Response<String> response) {
+                    String html = response.body();
+                    // 提取 __pinia 全局变量
+                    String pinia = html.replaceAll(".*?<script>.*?window.__pinia=(.*?)<script>.*?", "$1");
+                    if (!TextUtils.isEmpty(pinia)) {
+                        try {
+                            JSONObject jo = new JSONObject(pinia).getJSONObject("episodeMain");
+                            JSONArray ja = jo.getJSONArray("listData").getJSONObject(0).getJSONArray("list").getJSONArray(0);
+
+                            List<Map<String, Object>> list = gson.fromJson(ja.toString(), new TypeToken<>() {
+                            });
+                            root.episodes = list.stream().map(it -> {
+                                Video vd = new Video();
+                                vd.id = Objects.requireNonNull(it.get("vid")).toString();
+                                vd.title = Objects.requireNonNull(it.get("playTitle")).toString().replaceAll("^.*?(第\\d+集)$", "$1");
+                                vd.pageUrl = "https://v.qq.com/x/cover/" + root.id + "/" + vd.id + ".html";
+                                return vd;
+                            }).collect(Collectors.toList());
+                            liveData.postValue(root);
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            });
     }
 }
