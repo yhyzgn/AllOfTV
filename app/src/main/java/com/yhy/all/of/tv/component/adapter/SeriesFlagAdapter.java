@@ -1,7 +1,5 @@
 package com.yhy.all.of.tv.component.adapter;
 
-import android.view.View;
-
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.yhy.all.of.tv.R;
@@ -27,7 +25,6 @@ public class SeriesFlagAdapter extends BaseQuickAdapter<Parser, BaseViewHolder> 
 
     @Override
     protected void convert(BaseViewHolder helper, Parser item) {
-        View select = helper.getView(R.id.tvSeriesFlagSelect);
         helper.setVisible(R.id.tvSeriesFlagSelect, mMatcher.selected(item));
         helper.setText(R.id.tvSeriesFlag, item.name());
     }

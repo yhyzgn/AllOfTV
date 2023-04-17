@@ -17,6 +17,7 @@ import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -31,6 +32,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.utils.LogUtils;
+import com.yhy.evtor.Evtor;
 
 /**
  * 视频解析提取器
@@ -218,12 +220,29 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
             super.onLoadResource(view, url);
         }
 
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            super.onReceivedError(view, errorCode, description, failingUrl);
+            onParsedError(description);
+        }
+
+        @Override
+        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+            super.onReceivedError(view, request, error);
+            onParsedError(error.getDescription());
+        }
+
+        @Override
+        public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+            super.onReceivedHttpError(view, request, errorResponse);
+            onParsedError(errorResponse.getReasonPhrase());
+        }
+
         private void judgeExtracted(String url) {
             synchronized (ParserWebView.class) {
                 if (mParser.isVideoUrl(url) && !mExtracted) {
                     mExtracted = true;
                     mLiveData.postValue(url);
-
                 }
             }
         }
@@ -231,7 +250,13 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
         private void parsingLog(String url) {
             synchronized (ParserWebView.class) {
                 LogUtils.iTag(TAG, "LoadURL: " + url);
+                Evtor.instance.subscribe("parserLog").emit(url);
             }
+        }
+
+        private void onParsedError(CharSequence error) {
+            LogUtils.eTag(TAG, error);
+            Evtor.instance.subscribe("parsingError").emit(error.toString());
         }
     }
 }

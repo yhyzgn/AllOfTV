@@ -21,7 +21,36 @@
             <com.yhy.all.of.tv.widget.TVPlayer
                     android:id="@+id/tvPlayer"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+
+            <RelativeLayout
+                    android:id="@+id/rlParsing"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/colorBlack">
+
+                <ProgressBar
+                        android:layout_width="@dimen/vs_50"
+                        android:layout_height="@dimen/vs_50"
+                        android:indeterminateBehavior="repeat"
+                        android:indeterminateDrawable="@drawable/anim_loading"
+                        android:indeterminateOnly="true"
+                        android:layout_centerInParent="true" />
+
+                <TextView
+                        android:id="@+id/tvParsingLog"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:text="解析日志"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:textSize="@dimen/vs_20"
+                        android:paddingHorizontal="@dimen/vs_12"
+                        android:paddingVertical="@dimen/vs_8"
+                        android:textColor="@color/colorWhite" />
+            </RelativeLayout>
         </FrameLayout>
 
         <LinearLayout
@@ -160,6 +189,7 @@
                         android:layout_marginRight="@dimen/vs_10"
                         android:background="@drawable/button_detail_all"
                         android:focusable="true"
+                        android:focusableInTouchMode="true"
                         android:gravity="center"
                         android:text="@string/det_expand"
                         android:textColor="@android:color/white"
@@ -173,6 +203,7 @@
                         android:layout_marginRight="@dimen/vs_10"
                         android:background="@drawable/button_detail_all"
                         android:focusable="true"
+                        android:focusableInTouchMode="true"
                         android:gravity="center"
                         android:text="@string/det_search"
                         android:textColor="@android:color/white"
@@ -186,6 +217,7 @@
                         android:layout_marginRight="@dimen/vs_10"
                         android:background="@drawable/button_detail_all"
                         android:focusable="true"
+                        android:focusableInTouchMode="true"
                         android:gravity="center"
                         android:text="@string/det_sort"
                         android:textColor="@android:color/white"
@@ -197,6 +229,7 @@
                         android:layout_height="@dimen/vs_40"
                         android:background="@drawable/button_detail_all"
                         android:focusable="true"
+                        android:focusableInTouchMode="true"
                         android:gravity="center"
                         android:text="@string/det_fav"
                         android:textColor="@android:color/white"
@@ -209,7 +242,8 @@
                         android:layout_gravity="center"
                         android:layout_marginStart="@dimen/vs_15"
                         android:layout_marginLeft="@dimen/vs_15"
-                        android:focusable="false"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
                         app:srcCompat="@drawable/button_detail_link" />
             </LinearLayout>
         </LinearLayout>

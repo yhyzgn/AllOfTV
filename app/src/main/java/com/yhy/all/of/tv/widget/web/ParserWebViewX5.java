@@ -17,6 +17,7 @@ import com.tencent.smtt.export.external.interfaces.JsPromptResult;
 import com.tencent.smtt.export.external.interfaces.JsResult;
 import com.tencent.smtt.export.external.interfaces.SslError;
 import com.tencent.smtt.export.external.interfaces.SslErrorHandler;
+import com.tencent.smtt.export.external.interfaces.WebResourceError;
 import com.tencent.smtt.export.external.interfaces.WebResourceRequest;
 import com.tencent.smtt.export.external.interfaces.WebResourceResponse;
 import com.tencent.smtt.sdk.CookieManager;
@@ -28,6 +29,7 @@ import com.tencent.smtt.sdk.WebViewClient;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.utils.LogUtils;
+import com.yhy.evtor.Evtor;
 
 import java.util.Map;
 
@@ -220,6 +222,24 @@ public class ParserWebViewX5 extends WebView implements ParserWebView {
             super.onLoadResource(webView, url);
         }
 
+        @Override
+        public void onReceivedError(WebView webView, int i, String s, String s1) {
+            super.onReceivedError(webView, i, s, s1);
+            onParsedError(s);
+        }
+
+        @Override
+        public void onReceivedError(WebView webView, WebResourceRequest webResourceRequest, WebResourceError webResourceError) {
+            super.onReceivedError(webView, webResourceRequest, webResourceError);
+            onParsedError(webResourceError.getDescription());
+        }
+
+        @Override
+        public void onReceivedHttpError(WebView webView, WebResourceRequest webResourceRequest, WebResourceResponse webResourceResponse) {
+            super.onReceivedHttpError(webView, webResourceRequest, webResourceResponse);
+            onParsedError(webResourceResponse.getReasonPhrase());
+        }
+
         private void judgeExtracted(String url) {
             synchronized (ParserWebView.class) {
                 if (mParser.isVideoUrl(url) && !mExtracted) {
@@ -232,7 +252,13 @@ public class ParserWebViewX5 extends WebView implements ParserWebView {
         private void parsingLog(String url) {
             synchronized (ParserWebView.class) {
                 LogUtils.iTag(TAG, "LoadURL: " + url);
+                Evtor.instance.subscribe("parserLog").emit(url);
             }
+        }
+
+        private void onParsedError(CharSequence error) {
+            LogUtils.eTag(TAG, error);
+            Evtor.instance.subscribe("parsingError").emit(error.toString());
         }
     }
 }

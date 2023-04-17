@@ -1,7 +1,9 @@
 package com.yhy.all.of.tv.ui;
 
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.lifecycle.MutableLiveData;
@@ -20,6 +22,8 @@ import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.parse.ParserRegister;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.widget.TVPlayer;
+import com.yhy.evtor.Evtor;
+import com.yhy.evtor.annotation.Subscribe;
 import com.yhy.router.EasyRouter;
 import com.yhy.router.annotation.Autowired;
 import com.yhy.router.annotation.Router;
@@ -47,6 +51,8 @@ public class DetailActivity extends VideoActivity {
     private MutableLiveData<String> mLiveData;
 
     private LinearLayout llRoot;
+    private RelativeLayout rlParsing;
+    private TextView tvParsingLog;
     private TVPlayer tvPlayer;
     private TextView tvName;
     private TextView tvSite;
@@ -79,6 +85,8 @@ public class DetailActivity extends VideoActivity {
     @Override
     protected void initView() {
         llRoot = $(R.id.llRoot);
+        rlParsing = $(R.id.rlParsing);
+        tvParsingLog = $(R.id.tvParsingLog);
         tvPlayer = $(R.id.tvPlayer);
 
         tvName = $(R.id.tvName);
@@ -111,6 +119,7 @@ public class DetailActivity extends VideoActivity {
     protected void initData() {
         showLoading();
         EasyRouter.getInstance().inject(this);
+        Evtor.instance.register(this);
 
         tvName.setText(mVideo.title);
         tvSite.setText("片源：" + mChanName);
@@ -134,6 +143,9 @@ public class DetailActivity extends VideoActivity {
         trvParser.setAdapter(mSeriesFlagAdapter);
         mSeriesFlagAdapter.setNewInstance(mParserList);
 
+        // 全屏按钮获取焦点
+        tvFullScreen.requestFocus();
+
         showSuccess();
     }
 
@@ -141,6 +153,15 @@ public class DetailActivity extends VideoActivity {
     protected void initEvent() {
         tvFullScreen.setOnClickListener(v -> {
             enterFullScreen();
+        });
+
+        tvQuickSearch.setOnClickListener(v -> {
+        });
+
+        tvSort.setOnClickListener(v -> {
+        });
+
+        tvCollect.setOnClickListener(v -> {
         });
 
         mSeriesFlagAdapter.setOnItemClickListener((adapter, view, position) -> {
@@ -189,12 +210,38 @@ public class DetailActivity extends VideoActivity {
         return Md5Utils.getMD5(mVideo.pageUrl);
     }
 
+    @Override
+    protected void onPlayStarted(String url, Object... objects) {
+        // 开始播放回调
+        tvPlayer.setVisibility(View.VISIBLE);
+        rlParsing.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Evtor.instance.unregister(this);
+    }
+
     private void loadVideoAndPlay() {
         tvPlayer.getCurrentPlayer().release();
+        rlParsing.setVisibility(View.VISIBLE);
+        tvPlayer.setVisibility(View.GONE);
         getCurrentParser().load(this, mLiveData, mVideo.pageUrl);
     }
 
     private Parser getCurrentParser() {
         return mParserList.get(mCurrentParserIndex);
+    }
+
+    @Subscribe("parserLog")
+    public void parserLog(String text) {
+        tvParsingLog.setText("正在解析：" + text);
+    }
+
+    @Subscribe("parsingError")
+    public void parsingError(String error) {
+        getCurrentParser().stop(true);
+        tvParsingLog.setText("解析失败：" + error);
     }
 }

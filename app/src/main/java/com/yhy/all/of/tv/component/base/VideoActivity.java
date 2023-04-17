@@ -95,6 +95,9 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
     protected void onFullScreen() {
     }
 
+    protected void onPlayStarted(String url, Object... objects) {
+    }
+
     private void seekBack() {
         long seek = Math.max(0, player().getCurrentPositionWhenPlaying() - 5);
         player().seekTo(seek);
@@ -150,6 +153,7 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
 
     @Override
     public void onPrepared(String url, Object... objects) {
+        onPlayStarted(url, objects);
         mIsPlaying = true;
     }
 
