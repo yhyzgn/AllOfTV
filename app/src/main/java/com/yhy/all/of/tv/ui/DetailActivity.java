@@ -28,6 +28,7 @@ import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.parse.ParserRegister;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.widget.TVPlayer;
+import com.yhy.all.of.tv.widget.web.ParserWebView;
 import com.yhy.evtor.Evtor;
 import com.yhy.evtor.annotation.Subscribe;
 import com.yhy.router.EasyRouter;
@@ -83,6 +84,8 @@ public class DetailActivity extends VideoActivity {
     private PlayListVodAdapter mPlayListVodAdapter;
     private int mCurrentPlayingIndex = 0;
 
+    private ParserWebView mLastParserWebView;
+
     @Override
     protected int layout() {
         return R.layout.activity_detail;
@@ -127,11 +130,7 @@ public class DetailActivity extends VideoActivity {
         EasyRouter.getInstance().inject(this);
         Evtor.instance.register(this);
 
-        tvName.setText(mRootVideo.title);
-        tvSite.setText("片源：" + mChanName);
-        tvActor.setText("演员：" + (null != mRootVideo.actors ? Joiner.on(" ").join(mRootVideo.actors) : ""));
-        tvDirector.setText("导演：" + (null != mRootVideo.directors ? Joiner.on(" ").join(mRootVideo.directors) : ""));
-        tvDes.setText("简介：" + mRootVideo.description);
+        refreshVideoInfo();
 
         mLiveData = new MutableLiveData<>();
         mLiveData.observe(this, url -> {
@@ -214,12 +213,12 @@ public class DetailActivity extends VideoActivity {
     @Override
     protected GSYVideoOptionBuilder optionBuilder(String url, long position) {
         return new GSYVideoOptionBuilder()
-            .setUrl(url)
-            .setShowFullAnimation(true)
-            .setShowPauseCover(true)
-            .setSeekRatio(1.0f)
-            .setLockLand(true)
-            .setSeekOnStart(position);
+                .setUrl(url)
+                .setShowFullAnimation(true)
+                .setShowPauseCover(true)
+                .setSeekRatio(1.0f)
+                .setLockLand(true)
+                .setSeekOnStart(position);
     }
 
     @Override
@@ -250,17 +249,28 @@ public class DetailActivity extends VideoActivity {
         Evtor.instance.unregister(this);
     }
 
+    private void refreshVideoInfo() {
+        tvName.setText(mRootVideo.title);
+        tvSite.setText("片源：" + mChanName);
+        tvActor.setText("演员：" + (null != mRootVideo.actors ? Joiner.on(" ").join(mRootVideo.actors) : ""));
+        tvDirector.setText("导演：" + (null != mRootVideo.directors ? Joiner.on(" ").join(mRootVideo.directors) : ""));
+        tvDes.setText("简介：" + mRootVideo.description);
+    }
+
     private void loadPlayList() {
         MutableLiveData<Video> playListLiveData = new MutableLiveData<>();
         playListLiveData.observe(this, video -> {
             if (null != video && null != video.episodes) {
                 LogUtils.iTag(TAG, "播放列表加载成功", video);
+                mRootVideo = video;
+                refreshVideoInfo();
+
                 mPlayListVodAdapter.setNewInstance(video.episodes);
                 // 开始播放
                 loadVideoAndPlay();
             }
         });
-        getCurrentChan().loadPlayList(mRootVideo, playListLiveData);
+        getCurrentChan().loadPlayList(this, mRootVideo, playListLiveData);
     }
 
     private void loadVideoAndPlay() {
@@ -280,6 +290,14 @@ public class DetailActivity extends VideoActivity {
 
     private Chan getCurrentChan() {
         return ChanRegister.instance.getChanByName(mChanName);
+    }
+
+    public void setLastParserWebView(ParserWebView webView) {
+        mLastParserWebView = webView;
+    }
+
+    public ParserWebView getLastParserWebView() {
+        return mLastParserWebView;
     }
 
     @Subscribe("parserLog")

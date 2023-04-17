@@ -1,10 +1,7 @@
 package com.yhy.all.of.tv.widget.web;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Color;
-import android.net.http.SslError;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
@@ -13,9 +10,9 @@ import android.view.ViewGroup;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
-import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -30,12 +27,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.yhy.all.of.tv.BuildConfig;
-import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.utils.LogUtils;
-import com.yhy.evtor.Evtor;
 
 /**
- * 视频解析提取器
+ * JS 提取器 WebView
  * <p>
  * Created on 2023-01-29 21:20
  *
@@ -43,23 +38,25 @@ import com.yhy.evtor.Evtor;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class ParserWebViewDefault extends WebView implements ParserWebView {
+public class JsExtractWebView extends WebView {
+    private static final String TAG = "JsExtractWebView";
     private AppCompatActivity mActivity;
     private String mUrl;
+    private MutableLiveData<String> mLiveData;
 
-    public ParserWebViewDefault(@NonNull Context context) {
+    public JsExtractWebView(@NonNull Context context) {
         this(context, null);
     }
 
-    public ParserWebViewDefault(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public JsExtractWebView(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public ParserWebViewDefault(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public JsExtractWebView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         this(context, attrs, defStyleAttr, 0);
     }
 
-    public ParserWebViewDefault(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public JsExtractWebView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context, attrs);
     }
@@ -105,6 +102,9 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
         settings.setDefaultTextEncodingName("utf-8");
         settings.setUserAgentString("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36");
 
+        // 添加回调
+        addJavascriptInterface(this, "extractor");
+
         setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
@@ -130,12 +130,12 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
         enabledCookie();
     }
 
-    @Override
-    public void attach(AppCompatActivity activity, Parser parser, String url, MutableLiveData<String> liveData) {
+    public JsExtractWebView attach(AppCompatActivity activity, String url, MutableLiveData<String> liveData, String varName) {
         mActivity = activity;
         mUrl = url;
+        mLiveData = liveData;
 
-        setWebViewClient(new SysWebClient(parser, liveData));
+        setWebViewClient(new SysWebClient(liveData, varName));
 
         ViewGroup.LayoutParams lp = BuildConfig.DEBUG ? new ViewGroup.LayoutParams(400, 400) : new ViewGroup.LayoutParams(1, 1);
         MarginLayoutParams mlp = new MarginLayoutParams(lp);
@@ -143,14 +143,13 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
         mlp.topMargin = -1;
         activity.addContentView(this, mlp);
         setVisibility(BuildConfig.DEBUG ? VISIBLE : INVISIBLE);
+        return this;
     }
 
-    @Override
     public void start() {
         loadUrl(mUrl);
     }
 
-    @Override
     public void stop(boolean destroy) {
         if (null != mActivity) {
             mActivity.runOnUiThread(() -> {
@@ -163,7 +162,6 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
                 }
             });
         }
-        mActivity = null;
     }
 
     @Override
@@ -184,41 +182,19 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
 
     private static class SysWebClient extends WebViewClient {
         private static final String TAG = "ParserWebViewDefault.SysWebClient";
-        private final Parser mParser;
-        private final MutableLiveData<String> mLiveData;
-        private boolean mExtracted = false;
 
-        public SysWebClient(Parser parser, MutableLiveData<String> liveData) {
-            mParser = parser;
-            mLiveData = liveData;
-        }
+        private final MutableLiveData<String> mInnerLiveData;
+        private final String mVarName;
 
-        @SuppressLint("WebViewClientOnReceivedSslError")
-        @Override
-        public void onReceivedSslError(WebView webView, SslErrorHandler sslErrorHandler, SslError sslError) {
-            sslErrorHandler.proceed();
-        }
-
-        @Nullable
-        @Override
-        public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-            parsingLog(url);
-            judgeExtracted(url);
-            return super.shouldInterceptRequest(view, url);
-        }
-
-        @Nullable
-        @Override
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-            return shouldInterceptRequest(view, request.getUrl().toString());
+        private SysWebClient(MutableLiveData<String> liveData, String varName) {
+            mInnerLiveData = new MutableLiveData<>();
+            mVarName = varName;
         }
 
         @Override
-        public void onLoadResource(WebView view, String url) {
-            parsingLog(url);
-            judgeExtracted(url);
-            super.onLoadResource(view, url);
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            view.loadUrl("javascript:window.extractor.onExtracted(JSON.stringify(window." + mVarName + "));");
         }
 
         @Override
@@ -239,25 +215,15 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
             onParsedError(errorResponse.getReasonPhrase());
         }
 
-        private void judgeExtracted(String url) {
-            synchronized (ParserWebView.class) {
-                if (mParser.isVideoUrl(url) && !mExtracted) {
-                    mExtracted = true;
-                    mLiveData.postValue(url);
-                }
-            }
-        }
-
-        private void parsingLog(String url) {
-            synchronized (ParserWebView.class) {
-                LogUtils.iTag(TAG, "LoadURL: " + url);
-                Evtor.instance.subscribe("parserLog").emit(url);
-            }
-        }
-
         private void onParsedError(CharSequence error) {
             LogUtils.eTag(TAG, error);
-            Evtor.instance.subscribe("parsingError").emit(error.toString());
+            mInnerLiveData.postValue(null);
         }
+    }
+
+    @JavascriptInterface
+    public void onExtracted(String result) {
+        LogUtils.iTag(TAG, result);
+        postDelayed(() -> mLiveData.postValue(result), 10);
     }
 }

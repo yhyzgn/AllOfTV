@@ -1,5 +1,6 @@
 package com.yhy.all.of.tv.chan.of;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.yhy.all.of.tv.api.of.chan.YouKuApi;
@@ -34,6 +35,6 @@ public class YouKuChan implements Chan {
     }
 
     @Override
-    public void loadPlayList(Video root, MutableLiveData<Video> liveData) {
+    public void loadPlayList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
     }
 }

@@ -1,5 +1,6 @@
 package com.yhy.all.of.tv.chan.of;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.yhy.all.of.tv.api.of.chan.TencentApi;
@@ -28,13 +29,13 @@ public class TencentChan implements Chan {
     @Override
     public List<Tab> tabList() {
         return Lists.of(
-            Tab.create(this, VideoType.FILM, (liveData, params) -> TencentApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
-            Tab.create(this, VideoType.EPISODE, (liveData, params) -> TencentApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
+                Tab.create(this, VideoType.FILM, (liveData, params) -> TencentApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
+                Tab.create(this, VideoType.EPISODE, (liveData, params) -> TencentApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
         );
     }
 
     @Override
-    public void loadPlayList(Video root, MutableLiveData<Video> liveData) {
-        TencentApi.instance.playList(root, liveData);
+    public void loadPlayList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
+        TencentApi.instance.playList(activity, root, liveData);
     }
 }

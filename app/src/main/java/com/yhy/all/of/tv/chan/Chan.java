@@ -2,6 +2,7 @@ package com.yhy.all.of.tv.chan;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.yhy.all.of.tv.model.Video;
@@ -25,7 +26,7 @@ public interface Chan {
 
     List<Tab> tabList();
 
-    void loadPlayList(Video root, MutableLiveData<Video> liveData);
+    void loadPlayList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData);
 
     class Tab implements Serializable {
         public final Chan chan;
