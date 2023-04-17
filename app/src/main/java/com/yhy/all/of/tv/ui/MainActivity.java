@@ -22,10 +22,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.viewpager.widget.ViewPager;
 
+import com.azhon.appupdate.manager.DownloadManager;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import com.yhy.all.of.tv.R;
+import com.yhy.all.of.tv.api.model.FirVersionInfo;
+import com.yhy.all.of.tv.api.of.fir.FirApi;
 import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.chan.ChanRegister;
@@ -35,6 +38,10 @@ import com.yhy.all.of.tv.component.adapter.VideoPagerAdapter;
 import com.yhy.all.of.tv.component.base.BaseActivity;
 import com.yhy.all.of.tv.component.base.BaseLazyFragment;
 import com.yhy.all.of.tv.ui.fragment.GridFragment;
+import com.yhy.all.of.tv.utils.FileUtils;
+import com.yhy.all.of.tv.utils.JsonUtils;
+import com.yhy.all.of.tv.utils.LogUtils;
+import com.yhy.all.of.tv.utils.SysUtils;
 import com.yhy.all.of.tv.widget.DefaultTransformer;
 import com.yhy.all.of.tv.widget.FixedSpeedScroller;
 import com.yhy.all.of.tv.widget.NoScrollViewPager;
@@ -61,6 +68,7 @@ import me.jessyan.autosize.utils.AutoSizeUtils;
  */
 @Router(url = "/activity/main")
 public class MainActivity extends BaseActivity {
+    private static final String TAG = "MainActivity";
     private final static String CURRENT_CHAN_NAME = "current_chan_name";
 
     private LinearLayout topLayout;
@@ -122,6 +130,9 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initData() {
         showLoading();
+
+        // 新版本检查
+        checkNewVersion();
 
         mChanList = ChanRegister.instance.getChanList();
 
@@ -295,6 +306,37 @@ public class MainActivity extends BaseActivity {
         currentView.findViewById(R.id.tvFilter).setVisibility(View.VISIBLE);
         ImageView imgView = currentView.findViewById(R.id.tvFilter);
         imgView.setColorFilter(activated ? getThemeColor() : Color.WHITE);
+    }
+
+    private void checkNewVersion() {
+        FirApi.instance.versionQuery(vi -> {
+            if (null != vi) {
+                // 存在版本信息
+                LogUtils.iTag(TAG, JsonUtils.toJson(vi));
+                long versionCode = SysUtils.getVersionCode();
+                if (versionCode < Long.parseLong(vi.version)) {
+                    // 发现新版本
+                    downloadApk(vi);
+                }
+            }
+        });
+    }
+
+    private void downloadApk(FirVersionInfo version) {
+        DownloadManager manager = new DownloadManager.Builder(this)
+            .apkName(version.name + "_" + version.versionShort + ".apk")
+            .apkUrl(version.directInstallUrl)
+            .apkDescription(version.changeLog)
+            .smallIcon(R.mipmap.ic_launcher)
+            .apkSize(FileUtils.formatSize(version.binary.fSize))
+            .showNotification(true)
+            .forcedUpgrade(true)
+            .jumpInstallPage(true)
+            .showNewerToast(true)
+            .showBgdToast(true)
+            .build();
+
+        manager.download();
     }
 
     private final Runnable mDataRunnable = new Runnable() {
