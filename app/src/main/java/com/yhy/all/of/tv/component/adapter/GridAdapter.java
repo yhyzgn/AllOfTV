@@ -62,12 +62,8 @@ public class GridAdapter extends BaseQuickAdapter<Video, BaseViewHolder> impleme
         helper.setVisible(R.id.tvScore, item.score > 0);
         helper.setText(R.id.tvScore, item.score + "");
 
-        //if (TextUtils.isEmpty(item.note)) {
-        //    helper.setVisible(R.id.tvNote, false);
-        //} else {
-        //    helper.setVisible(R.id.tvNote, true);
-        //    helper.setText(R.id.tvNote, item.note);
-        //}
+        helper.setVisible(R.id.tvNote, !TextUtils.isEmpty(item.updateStatus));
+        helper.setText(R.id.tvNote, item.updateStatus);
     }
 
     @NotNull

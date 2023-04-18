@@ -80,6 +80,7 @@ public class IQiYiApi {
                             vd.year = it.date.year;
                             vd.month = it.date.month;
                             vd.day = it.date.day;
+                            vd.updateStatus = it.dqUpdatestatus;
                             vd.tags = TextUtils.isEmpty(it.tag) ? null : Arrays.stream(it.tag.split(",")).collect(Collectors.toList());
                             vd.directors = it.creator.stream().map(dto -> dto.name).collect(Collectors.toList());
                             vd.actors = it.contributor.stream().map(dto -> dto.name).collect(Collectors.toList());

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Handler;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -75,10 +76,7 @@ public class MainActivity extends BaseActivity {
     private TextView tvName;
     private ImageView tvWifi;
     private ImageView tvFind;
-    private ImageView tvStyle;
-    private ImageView tvDrawer;
-    private ImageView tvMenu;
-    private LinearLayout contentLayout;
+    private ImageView tvSettings;
     private TvRecyclerView trvTab;
     private NoScrollViewPager nvpTab;
     private HomeTabAdapter mTabAdapter;
@@ -111,11 +109,9 @@ public class MainActivity extends BaseActivity {
         tvName = $(R.id.tvName);
         tvWifi = $(R.id.tvWifi);
         tvFind = $(R.id.tvFind);
-        tvStyle = $(R.id.tvStyle);
-        tvDrawer = $(R.id.tvDrawer);
-        tvMenu = $(R.id.tvMenu);
+        tvSettings = $(R.id.tvSettings);
 
-        contentLayout = $(R.id.contentLayout);
+        LinearLayout contentLayout = $(R.id.contentLayout);
         trvTab = $(R.id.trvTab);
         nvpTab = $(R.id.nvpTab);
 
@@ -157,6 +153,8 @@ public class MainActivity extends BaseActivity {
 
         initViewPager();
 
+        trvTab.requestFocus();
+
         showSuccess();
     }
 
@@ -181,6 +179,16 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initEvent() {
         tvName.setOnClickListener(v -> showChanDialog());
+
+        tvWifi.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)));
+
+        tvFind.setOnClickListener(v -> {
+            warning("开发中");
+        });
+
+        tvSettings.setOnClickListener(v -> {
+            warning("开发中");
+        });
 
         trvTab.setOnItemListener(new TvRecyclerView.OnItemListener() {
             public void onItemPreSelected(TvRecyclerView tvRecyclerView, View view, int position) {
@@ -388,9 +396,7 @@ public class MainActivity extends BaseActivity {
             tvName.setFocusable(false);
             tvWifi.setFocusable(false);
             tvFind.setFocusable(false);
-            tvStyle.setFocusable(false);
-            tvDrawer.setFocusable(false);
-            tvMenu.setFocusable(false);
+            tvSettings.setFocusable(false);
             return;
         }
         // Show Top =======================================================
@@ -407,9 +413,7 @@ public class MainActivity extends BaseActivity {
             tvName.setFocusable(true);
             tvWifi.setFocusable(true);
             tvFind.setFocusable(true);
-            tvStyle.setFocusable(true);
-            tvDrawer.setFocusable(true);
-            tvMenu.setFocusable(true);
+            tvSettings.setFocusable(true);
         }
     }
 }

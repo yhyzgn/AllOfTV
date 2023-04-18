@@ -29,6 +29,7 @@ public class Video implements Serializable {
     public int year;
     public int month;
     public int day;
+    public String updateStatus;
 
     /**
      * 剧集

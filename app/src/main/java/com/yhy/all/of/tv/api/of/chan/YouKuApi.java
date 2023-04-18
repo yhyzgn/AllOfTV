@@ -93,6 +93,7 @@ public class YouKuApi {
                             vd.pageUrl = "https:" + it.videoLink;
                             vd.channel = "优酷";
                             vd.type = type;
+                            vd.updateStatus = type != VideoType.FILM ? it.summary : "";
                             return vd;
                         }).collect(Collectors.toList());
 

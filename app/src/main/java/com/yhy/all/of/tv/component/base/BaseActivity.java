@@ -251,11 +251,10 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     }
 
     public int getThemeColor() {
-        try (TypedArray a = obtainStyledAttributes(R.styleable.themeColor)) {
-            int themeColor = a.getColor(R.styleable.themeColor_color_theme, 0);
-            a.recycle();
-            return themeColor;
-        }
+        TypedArray a = obtainStyledAttributes(R.styleable.themeColor);
+        int themeColor = a.getColor(R.styleable.themeColor_color_theme, 0);
+        a.recycle();
+        return themeColor;
     }
 
     public boolean isNetworkAvailable() {
