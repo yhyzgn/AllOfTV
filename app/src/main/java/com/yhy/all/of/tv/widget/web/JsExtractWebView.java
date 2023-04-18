@@ -189,7 +189,7 @@ public class JsExtractWebView extends WebView {
 
         private SysWebClient(WebView wv, MutableLiveData<String> liveData, String jsCode) {
             mWv = wv;
-            mInnerLiveData = new MutableLiveData<>();
+            mInnerLiveData = liveData;
             mJsCode = jsCode;
         }
 
