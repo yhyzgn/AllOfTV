@@ -23,7 +23,7 @@ public class FirVersionInfo implements Serializable {
      * version
      */
     @SerializedName("version")
-    public String version;
+    public Integer version;
     /**
      * changelog
      */

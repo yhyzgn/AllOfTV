@@ -322,7 +322,7 @@ public class MainActivity extends BaseActivity {
                 // 存在版本信息
                 LogUtils.iTag(TAG, JsonUtils.toJson(vi));
                 long versionCode = SysUtils.getVersionCode();
-                if (versionCode < Long.parseLong(vi.version)) {
+                if (versionCode < vi.version) {
                     // 发现新版本
                     downloadApk(vi);
                 }
@@ -334,9 +334,11 @@ public class MainActivity extends BaseActivity {
         DownloadManager manager = new DownloadManager.Builder(this)
             .apkName(version.name + "_" + version.versionShort + ".apk")
             .apkUrl(version.directInstallUrl)
-            .apkDescription(version.changeLog)
+            .apkDescription(!TextUtils.isEmpty(version.changeLog) ? version.changeLog : "检查到新版本")
             .smallIcon(R.mipmap.ic_launcher)
             .apkSize(FileUtils.formatSize(version.binary.fSize))
+            //.apkVersionCode(version.version)
+            //.apkVersionName(version.versionShort)
             .showNotification(true)
             .forcedUpgrade(true)
             .jumpInstallPage(true)

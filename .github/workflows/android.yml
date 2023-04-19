@@ -16,6 +16,22 @@ jobs:
           echo "runNumber=$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
           echo "tagName=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
 
+      - name: Get previous tag
+        id: previousTag
+        run: |
+          name=$(git --no-pager tag --sort=creatordate --merged ${{ github.ref_name }} | tail -2 | head -1)
+          echo "previousTag: $name"
+          echo "previousTag=$name" >> $GITHUB_ENV
+
+      - name: Update CHANGELOG
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          fromTag: ${{ env.tagName }}
+          toTag: ${{ env.previousTag }}
+          writeToFile: false
+
       - name: Resolve Version
         run: |
           sed -i "s/code: [0-9]+$/code: ${{ env.runNumber }}/g" config.gradle
@@ -37,6 +53,17 @@ jobs:
       - name: Release with Gradle
         run: ./gradlew assembleRelease
 
+      - name: Create Github Release
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          allowUpdates: true
+          draft: true
+          makeLatest: true
+          name: ${{ env.tagName }}
+          body: ${{ steps.changelog.outputs.changes }}
+          artifacts: app/build/outputs/apk/release/全剧得_*.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: actions/checkout@v1
         id: cache
         with:
@@ -50,4 +77,4 @@ jobs:
       - name: Upload to Fir.im
         run: |
           fir login ${{ secrets.FIR_TOKEN }}
-          fir publish app/build/outputs/apk/release/全剧得_*.apk
+          fir publish app/build/outputs/apk/release/全剧得_*.apk -c ${{ steps.changelog.outputs.changes }}

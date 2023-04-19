@@ -22,6 +22,10 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
     protected boolean mIsPlaying = false;
     protected boolean mIsPausing = false;
 
+    protected long mCurrentPosition = 0;
+
+    private boolean seekLock = false;
+
     private void initVideo() {
         GSYVideoManager.backFromWindowFull(this);
         if (null != player().getFullscreenButton()) {
@@ -99,14 +103,20 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
     }
 
     private void seekBack() {
-        long seek = Math.max(0, player().getCurrentPositionWhenPlaying() - 5);
+        seekLock = true;
+        mCurrentPosition -= 10;
+        long seek = Math.max(0, mCurrentPosition);
         player().seekTo(seek);
+        seekLock = false;
     }
 
     private void seekForward() {
+        seekLock = true;
+        mCurrentPosition += 10;
         long total = player().getDuration();
-        long seek = Math.min(total, player().getCurrentPositionWhenPlaying() + 5);
+        long seek = Math.min(total, mCurrentPosition);
         player().seekTo(seek);
+        seekLock = false;
     }
 
     private void playOrPause() {
@@ -114,7 +124,7 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
             player().onVideoPause();
             return;
         }
-        player().startPlayLogic();
+        player().onVideoResume();
     }
 
     @Override
@@ -122,15 +132,18 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
         // 全屏状态下才处理这些事件
         if (player().isIfCurrentIsFullscreen() && event.getAction() == KeyEvent.ACTION_UP) {
             switch (event.getKeyCode()) {
-                case KeyEvent.KEYCODE_DPAD_LEFT:
+                case KeyEvent.KEYCODE_DPAD_LEFT -> {
                     seekBack();
-                    break;
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    return true;
+                }
+                case KeyEvent.KEYCODE_DPAD_RIGHT -> {
                     seekForward();
-                    break;
-                case KeyEvent.KEYCODE_DPAD_CENTER:
+                    return true;
+                }
+                case KeyEvent.KEYCODE_DPAD_CENTER -> {
                     playOrPause();
-                    break;
+                    return true;
+                }
             }
         }
         return super.dispatchKeyEvent(event);
@@ -138,6 +151,9 @@ public abstract class VideoActivity extends BaseActivity implements VideoAllCall
 
     @Override
     public void onProgress(long progress, long secProgress, long currentPosition, long duration) {
+        if (!seekLock) {
+            mCurrentPosition = currentPosition;
+        }
         if (currentPosition == duration) {
             KV.instance.kv().remove(videoTag());
             return;
