@@ -62,6 +62,7 @@ jobs:
           name: ${{ env.tagName }}
           body: ${{ steps.changelog.outputs.changes }}
           artifacts: app/build/outputs/apk/release/全剧得_*.apk
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - uses: actions/checkout@v1
         id: cache
