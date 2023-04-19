@@ -17,7 +17,7 @@ jobs:
           echo "tagName=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
           echo "previousTagName=`echo $(git --no-pager tag --sort=creatordate --merged ${{ github.ref_name }} | tail -2 | head -1)`" >> $GITHUB_ENV
 
-      - name: Update CHANGELOG
+      - name: Update ChangeLog
         id: changelog
         uses: requarks/changelog-action@v1
         with:
