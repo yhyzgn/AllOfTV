@@ -15,13 +15,7 @@ jobs:
         run: |
           echo "runNumber=$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
           echo "tagName=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
-
-      - name: Get previous tag
-        id: previousTag
-        run: |
-          name=$(git --no-pager tag --sort=creatordate --merged ${{ github.ref_name }} | tail -2 | head -1)
-          echo "previousTag: $name"
-          echo "previousTag=$name" >> $GITHUB_ENV
+          echo "previousTagName=`echo $(git --no-pager tag --sort=creatordate --merged ${{ github.ref_name }} | tail -2 | head -1)`" >> $GITHUB_ENV
 
       - name: Update CHANGELOG
         id: changelog
@@ -29,7 +23,7 @@ jobs:
         with:
           token: ${{ github.token }}
           fromTag: ${{ env.tagName }}
-          toTag: ${{ env.previousTag }}
+          toTag: ${{ env.previousTagName }}
           writeToFile: false
 
       - name: Resolve Version
