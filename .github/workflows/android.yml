@@ -62,7 +62,7 @@ jobs:
           makeLatest: true
           name: ${{ env.tagName }}
           body: ${{ steps.changelog.outputs.changes }}
-          artifacts: "app/build/outputs/apk/release/${{ env.tagName }}"
+          artifacts: app/build/outputs/apk/release/*.apk
           token: ${{ secrets.RELEASE_TOKEN }}
 
       - uses: actions/checkout@v1
@@ -78,4 +78,4 @@ jobs:
       - name: Upload to Fir.im
         run: |
           fir login ${{ secrets.FIR_TOKEN }}
-          fir publish "app/build/outputs/apk/release/${{ env.tagName }}" -c "${{ steps.changelog.outputs.changes }}"
+          fir publish app/build/outputs/apk/release/*.apk -c "${{ steps.changelog.outputs.changes }}"
