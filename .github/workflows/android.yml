@@ -68,12 +68,10 @@ jobs:
           artifacts: app/build/outputs/apk/release/*.apk
           token: ${{ secrets.RELEASE_TOKEN }}
 
-      - uses: actions/checkout@v1
-        id: cache
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@359bebbc29cbe6c87da6bc9ea3bc930432750108
         with:
-          path: ~/local/rubies
-          key: ruby-2.6.5
-          clean: false
+          ruby-version: '3.1'
 
       - name: install fir.im
         run: sudo gem install fir-cli
@@ -81,4 +79,4 @@ jobs:
       - name: Upload to Fir.im
         run: |
           fir login ${{ secrets.FIR_TOKEN }}
-          fir publish app/build/outputs/apk/release/*.apk -c "${{ steps.changelog.outputs.changes }}" --force-pin-history --open
+          fir publish app/build/outputs/apk/release/*.apk -c "${{ steps.changelog.outputs.changes }}" --force-pin-history --open --specify-app-display-name=全剧得
