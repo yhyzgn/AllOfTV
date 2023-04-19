@@ -8,20 +8,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set Env
         run: |
           echo "runNumber=$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
           echo "tagName=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
           echo "previousTagName=`echo $(git --no-pager tag --sort=creatordate --merged ${{ github.ref_name }} | tail -2 | head -1)`" >> $GITHUB_ENV
+          echo runNumber = ${{ env.runNumber }}, tagName = ${{ env.tagName }}, previousTagName = ${{ env.previousTagName }}
 
       - name: Update ChangeLog
-        id: changelog
+        id: changeLog
         uses: requarks/changelog-action@v1
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fromTag: ${{ env.tagName }}
           toTag: ${{ env.previousTagName }}
           writeToFile: false
