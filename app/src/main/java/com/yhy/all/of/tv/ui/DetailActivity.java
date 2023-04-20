@@ -14,8 +14,6 @@ import com.google.common.base.Joiner;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import com.owen.tvrecyclerview.widget.V7StaggeredGridLayoutManager;
-import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
-import com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer;
 import com.tencent.smtt.utils.Md5Utils;
 import com.yhy.all.of.tv.R;
 import com.yhy.all.of.tv.chan.Chan;
@@ -27,10 +25,10 @@ import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.parse.ParserRegister;
 import com.yhy.all.of.tv.utils.LogUtils;
-import com.yhy.all.of.tv.widget.TVPlayer;
 import com.yhy.all.of.tv.widget.web.ParserWebView;
 import com.yhy.evtor.Evtor;
 import com.yhy.evtor.annotation.Subscribe;
+import com.yhy.player.widget.TvPlayer;
 import com.yhy.router.EasyRouter;
 import com.yhy.router.annotation.Autowired;
 import com.yhy.router.annotation.Router;
@@ -60,7 +58,7 @@ public class DetailActivity extends VideoActivity {
     private LinearLayout llRoot;
     private RelativeLayout rlParsing;
     private TextView tvParsingLog;
-    private TVPlayer tvPlayer;
+    private TvPlayer tvPlayer;
     private TextView tvName;
     private TextView tvSite;
     private TextView tvYear;
@@ -134,8 +132,11 @@ public class DetailActivity extends VideoActivity {
 
         mLiveData = new MutableLiveData<>();
         mLiveData.observe(this, url -> {
-            playWithBuilder(url);
-            tvPlayer.startPlayLogic();
+            // TODO 开始播放
+            //playWithBuilder(url);
+            //tvPlayer.startPlayLogic();
+
+            tvPlayer.play("asdf", url);
 
             // 停止 WebView 加载
             getCurrentParser().stop(true);
@@ -162,7 +163,7 @@ public class DetailActivity extends VideoActivity {
     @Override
     protected void initEvent() {
         tvFullScreen.setOnClickListener(v -> {
-            enterFullScreen();
+            //enterFullScreen();
         });
 
         tvQuickSearch.setOnClickListener(v -> {
@@ -205,21 +206,21 @@ public class DetailActivity extends VideoActivity {
     protected void setDefault() {
     }
 
-    @Override
-    protected GSYBaseVideoPlayer player() {
-        return tvPlayer;
-    }
-
-    @Override
-    protected GSYVideoOptionBuilder optionBuilder(String url, long position) {
-        return new GSYVideoOptionBuilder()
-                .setUrl(url)
-                .setShowFullAnimation(true)
-                .setShowPauseCover(true)
-                .setSeekRatio(1.0f)
-                .setLockLand(true)
-                .setSeekOnStart(position);
-    }
+    //@Override
+    //protected GSYBaseVideoPlayer player() {
+    //    return tvPlayer;
+    //}
+    //
+    //@Override
+    //protected GSYVideoOptionBuilder optionBuilder(String url, long position) {
+    //    return new GSYVideoOptionBuilder()
+    //        .setUrl(url)
+    //        .setShowFullAnimation(true)
+    //        .setShowPauseCover(true)
+    //        .setSeekRatio(1.0f)
+    //        .setLockLand(true)
+    //        .setSeekOnStart(position);
+    //}
 
     @Override
     protected void onFullScreen() {
@@ -239,8 +240,8 @@ public class DetailActivity extends VideoActivity {
     @Override
     protected void onPlayStarted(String url, Object... objects) {
         // 开始播放回调
-        tvPlayer.setVisibility(View.VISIBLE);
-        rlParsing.setVisibility(View.GONE);
+        //tvPlayer.setVisibility(View.VISIBLE);
+        //rlParsing.setVisibility(View.GONE);
     }
 
     @Override
@@ -274,9 +275,10 @@ public class DetailActivity extends VideoActivity {
     }
 
     private void loadVideoAndPlay() {
-        tvPlayer.getCurrentPlayer().release();
-        rlParsing.setVisibility(View.VISIBLE);
-        tvPlayer.setVisibility(View.GONE);
+        // TODO 释放播放器
+        //tvPlayer.getCurrentPlayer().release();
+        //rlParsing.setVisibility(View.VISIBLE);
+        //tvPlayer.setVisibility(View.GONE);
         getCurrentParser().load(this, mLiveData, getCurrentPlayingVideo().pageUrl);
     }
 

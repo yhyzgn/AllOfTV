@@ -18,17 +18,17 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3">
 
-            <com.yhy.all.of.tv.widget.TVPlayer
+            <com.yhy.player.widget.TvPlayer
                     android:id="@+id/tvPlayer"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:visibility="gone" />
+                    android:layout_height="match_parent" />
 
             <RelativeLayout
                     android:id="@+id/rlParsing"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/colorBlack">
+                    android:background="@color/colorBlack"
+                    android:visibility="gone">
 
                 <ProgressBar
                         android:layout_width="@dimen/vs_50"

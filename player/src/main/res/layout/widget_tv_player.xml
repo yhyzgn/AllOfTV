@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black">
+
+    <com.google.android.exoplayer2.ui.StyledPlayerView
+            android:id="@+id/spv_exo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_controller"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="6dp">
+
+            <TextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    tools:text="这里是标题"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textSize="14sp"
+                    android:layout_weight="1" />
+
+            <TextClock
+                    android:id="@+id/tc_now"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:layout_marginStart="8dp"
+                    android:format12Hour="HH:mm:ss"
+                    android:format24Hour="HH:mm:ss"
+                    android:theme="@style/ClockTimerTheme" />
+        </LinearLayout>
+
+        <ImageView
+                android:id="@+id/iv_play_or_pause"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:contentDescription="@string/play_or_pause" />
+
+        <ProgressBar
+                android:id="@+id/pb_loading"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:indeterminate="false"
+                android:indeterminateTint="@color/progressAccent" />
+
+        <com.yhy.player.widget.SilenceTimeBar
+                android:id="@+id/stb_drag"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:played_color="@color/progressAccent"
+                app:unplayed_color="@color/progressBg"
+                app:buffered_color="@color/white"
+                app:scrubber_disabled_size="0dp" />
+
+        <com.yhy.player.widget.SilenceTimeBar
+                android:id="@+id/stb_position"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:played_color="@color/progressAccent"
+                app:unplayed_color="@color/progressBg"
+                app:buffered_color="@color/white"
+                app:bar_height="1dp"
+                app:ad_marker_width="0dp"
+                app:touch_target_height="1dp"
+                app:scrubber_disabled_size="0dp"
+                app:scrubber_dragged_size="0dp"
+                app:scrubber_enabled_size="0dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
