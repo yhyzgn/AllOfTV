@@ -1,9 +1,8 @@
 package com.yhy.player.widget;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -25,6 +24,9 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.yhy.player.R;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * TV 播放器
  * <p>
@@ -35,7 +37,12 @@ import com.yhy.player.R;
  * @since 1.0.0
  */
 public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
+    private final static String TAG = "TvPlayer";
 
+    /**
+     * 控制面板隐藏的延迟时间长度
+     */
+    private final static long MS_DELAY_CTRL_DISMISS = 3000L;
     private StyledPlayerView spvExo;
     private ConstraintLayout clController;
     private TextView tvTitle;
@@ -43,10 +50,14 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private ProgressBar pbLoading;
     private SilenceTimeBar stbDrag;
     private SilenceTimeBar stbPosition;
-
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
-
     private ExoPlayer mPlayer;
+
+    /**
+     * 上一次操作时的时间戳
+     */
+    private long mLastOperateMillis;
+
+    private Timer mTimer;
 
     public TvPlayer(@NonNull Context context) {
         this(context, null);
@@ -77,9 +88,9 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         stbPosition = rootView.findViewById(R.id.stb_position);
 
         mPlayer = new ExoPlayer.Builder(context)
-            .setSeekBackIncrementMs(5000)
-            .setSeekForwardIncrementMs(5000)
-            .build();
+                .setSeekBackIncrementMs(5000)
+                .setSeekForwardIncrementMs(5000)
+                .build();
         mPlayer.setPlayWhenReady(true);
         mPlayer.setRepeatMode(ExoPlayer.REPEAT_MODE_OFF);
 
@@ -100,27 +111,63 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         }
 
         MediaItem mi = new MediaItem.Builder()
-            .setTag(url)
-            .setUri(url)
-            .build();
+                .setTag(url)
+                .setUri(url)
+                .build();
 
         tvTitle.setText(title);
-
         mPlayer.setMediaItem(mi);
 
         mPlayer.prepare();
         mPlayer.play();
 
-        stbDrag.setDuration(65536);
-        stbDrag.setPosition(32001);
-        stbDrag.setBufferedPosition(42001);
+        resetTimeBar();
+    }
 
-        stbPosition.setDuration(65536);
-        stbPosition.setPosition(32001);
-        stbPosition.setBufferedPosition(42001);
+    private void resetTimeBar() {
+        if (null != mTimer) {
+            mTimer.cancel();
+            mTimer = null;
+        }
+        mTimer = new Timer();
+        mTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                long duration = mPlayer.getDuration();
+                long bufferedPosition = mPlayer.getBufferedPosition();
+                long currentPosition = mPlayer.getCurrentPosition();
+
+                Log.i(TAG, "duration = " + duration + ", bufferedPosition = " + bufferedPosition + ", currentPosition" + currentPosition);
+            }
+        }, 0, 1000);
+    }
+
+    private void refreshPosition(long duration, long bufferedPosition, long currentPosition) {
+        post(() -> {
+            // stbDrag.setDuration(65536);
+            // stbDrag.setPosition(32001);
+            // stbDrag.setBufferedPosition(42001);
+            //
+            // stbPosition.setDuration(65536);
+            // stbPosition.setPosition(32001);
+            // stbPosition.setBufferedPosition(42001);
+        });
+    }
+
+    public void pause() {
+    }
+
+    public void resume() {
+    }
+
+    public void seekForward(long millis) {
+    }
+
+    public void seekBack(long millis) {
     }
 
     private final Player.Listener mExoListener = new Player.Listener() {
+
         @Override
         public void onIsLoadingChanged(boolean isLoading) {
         }
@@ -134,7 +181,16 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         }
 
         @Override
-        public void onPlayerError(PlaybackException error) {
+        public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, int reason) {
+            if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
+                int currentMediaIndex = mPlayer.getCurrentMediaItemIndex();
+                long currentPositionMs = mPlayer.getCurrentPosition();
+                Log.d(TAG, "onPositionDiscontinuity: currentMediaIndex =" + currentMediaIndex + ", currentPositionMs =" + currentPositionMs);
+            }
+        }
+
+        @Override
+        public void onPlayerError(@NonNull PlaybackException error) {
         }
     };
 
