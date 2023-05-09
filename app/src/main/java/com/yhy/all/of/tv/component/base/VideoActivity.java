@@ -1,6 +1,9 @@
 package com.yhy.all.of.tv.component.base;
 
+import android.os.Bundle;
 import android.view.KeyEvent;
+
+import androidx.annotation.Nullable;
 
 import com.yhy.player.widget.TvPlayer;
 
@@ -14,6 +17,14 @@ import com.yhy.player.widget.TvPlayer;
  * @since 1.0.0
  */
 public abstract class VideoActivity extends BaseActivity {
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // 退出提示回调
+        player().setExitFullToastyCallback(this::warning);
+    }
 
     @Override
     public void onBackPressed() {

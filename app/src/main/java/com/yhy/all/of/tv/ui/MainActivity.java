@@ -74,6 +74,7 @@ public class MainActivity extends BaseActivity {
     private final static String CURRENT_CHAN_NAME = "current_chan_name";
     private final static String FLAG_CHECKOUT_CHAN_EXT_NAME = "flag_checkout_chan_ext";
     private final static Integer FLAG_CHECKOUT_CHAN_EXT_VALUE = 1024;
+    private final static int STICKY_EXIT_MS = 3000;
 
     private LinearLayout topLayout;
     private TextView tvName;
@@ -93,13 +94,14 @@ public class MainActivity extends BaseActivity {
     private int sortFocused = 0;
     public View sortFocusView = null;
     private final Handler mHandler = new Handler();
-    private long mExitTime = 0;
 
     private byte topHide = 0;
 
     private List<Chan> mChanList;
     private Chan mCurrentChan;
     private VideoPagerAdapter pageAdapter;
+
+    private long mLastExitTime;
 
     @Override
     protected int layout() {
@@ -236,7 +238,6 @@ public class MainActivity extends BaseActivity {
     }
 
     private void loadTab(Chan.Tab tab) {
-
     }
 
     @Override
@@ -255,6 +256,17 @@ public class MainActivity extends BaseActivity {
             }
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        long now = System.currentTimeMillis();
+        if (now - mLastExitTime > STICKY_EXIT_MS) {
+            mLastExitTime = now;
+            warning("再按一次退出应用");
+            return;
+        }
+        super.onBackPressed();
     }
 
     private void showChanDialog() {
@@ -357,17 +369,17 @@ public class MainActivity extends BaseActivity {
         String apkName = apkUrl.substring(apkUrl.lastIndexOf("/") + 1);
 
         DownloadManager manager = new DownloadManager.Builder(this)
-            .apkName(apkName)
-            .apkUrl("https://ghproxy.com/" + apkUrl)
-            .apkDescription(!TextUtils.isEmpty(version.body) ? version.body : "检查到新版本")
-            .smallIcon(R.mipmap.ic_launcher)
-            .apkSize(FileUtils.formatSize(asset.size))
-            .showNotification(true)
-            .forcedUpgrade(true)
-            .jumpInstallPage(true)
-            .showNewerToast(true)
-            .showBgdToast(true)
-            .build();
+                .apkName(apkName)
+                .apkUrl("https://ghproxy.com/" + apkUrl)
+                .apkDescription(!TextUtils.isEmpty(version.body) ? version.body : "检查到新版本")
+                .smallIcon(R.mipmap.ic_launcher)
+                .apkSize(FileUtils.formatSize(asset.size))
+                .showNotification(true)
+                .forcedUpgrade(true)
+                .jumpInstallPage(true)
+                .showNewerToast(true)
+                .showBgdToast(true)
+                .build();
 
         manager.download();
     }
@@ -410,12 +422,12 @@ public class MainActivity extends BaseActivity {
         // Hide Top =======================================================
         if (hide && topHide == 0) {
             animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                    AutoSizeUtils.mm2px(this, 20.0f),
-                    AutoSizeUtils.mm2px(this, 0.0f)),
-                ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                    AutoSizeUtils.mm2px(this, 50.0f),
-                    AutoSizeUtils.mm2px(this, 1.0f)),
-                ObjectAnimator.ofFloat(this.topLayout, "alpha", 1.0f, 0.0f));
+                            AutoSizeUtils.mm2px(this, 20.0f),
+                            AutoSizeUtils.mm2px(this, 0.0f)),
+                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
+                            AutoSizeUtils.mm2px(this, 50.0f),
+                            AutoSizeUtils.mm2px(this, 1.0f)),
+                    ObjectAnimator.ofFloat(this.topLayout, "alpha", 1.0f, 0.0f));
             animatorSet.setDuration(250);
             animatorSet.start();
             tvName.setFocusable(false);
@@ -427,12 +439,12 @@ public class MainActivity extends BaseActivity {
         // Show Top =======================================================
         if (!hide && topHide == 1) {
             animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                    AutoSizeUtils.mm2px(this, 0.0f),
-                    AutoSizeUtils.mm2px(this, 20.0f)),
-                ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                    AutoSizeUtils.mm2px(this, 1.0f),
-                    AutoSizeUtils.mm2px(this, 50.0f)),
-                ObjectAnimator.ofFloat(this.topLayout, "alpha", 0.0f, 1.0f));
+                            AutoSizeUtils.mm2px(this, 0.0f),
+                            AutoSizeUtils.mm2px(this, 20.0f)),
+                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
+                            AutoSizeUtils.mm2px(this, 1.0f),
+                            AutoSizeUtils.mm2px(this, 50.0f)),
+                    ObjectAnimator.ofFloat(this.topLayout, "alpha", 0.0f, 1.0f));
             animatorSet.setDuration(250);
             animatorSet.start();
             tvName.setFocusable(true);

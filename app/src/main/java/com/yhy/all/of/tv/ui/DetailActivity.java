@@ -161,6 +161,14 @@ public class DetailActivity extends VideoActivity {
 
     @Override
     protected void initEvent() {
+        tvPlayer.setOnStartedListener(() -> {
+            LogUtils.iTag(TAG, "开始播放了");
+        });
+
+        tvPlayer.setOnPositionChangedListener((duration, bufferedPosition, currentPosition) -> {
+            // TODO 进度记录
+        });
+
         tvFullScreen.setOnClickListener(v -> {
             tvPlayer.enterFullScreen(this);
         });

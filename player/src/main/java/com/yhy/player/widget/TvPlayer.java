@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextClock;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,6 +57,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private final static int DELTA_SEEKING_MS = 15000;
     private final static int WHAT_HANDLER_MSG_SEEK_FORWARD = 1024;
     private final static int WHAT_HANDLER_MSG_SEEK_BACK = 2048;
+    private final static int STICKY_EXIT_FULL_MS = 3000;
 
     /**
      * 控制面板隐藏的延迟时间长度
@@ -94,7 +96,11 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
     private OnPositionChangedListener mOnPositionChangedListener;
 
+    private ExitFullToastyCallback mExitFullToastyCallback = text -> Toast.makeText(getContext(), text, Toast.LENGTH_SHORT).show();
+
     private boolean mIsSeeking;
+
+    private long mLastExitFullTime;
 
     public TvPlayer(@NonNull Context context) {
         this(context, null);
@@ -329,8 +335,18 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     }
 
     public boolean backFromFullScreen(AppCompatActivity activity) {
-        if (null == mOriginalParentContainer) {
+        if (!isInFullScreen()) {
             return false;
+        }
+
+        long now = System.currentTimeMillis();
+        if (now - mLastExitFullTime > STICKY_EXIT_FULL_MS) {
+            // 提示再按一次退出播放
+            if (null != mExitFullToastyCallback) {
+                mExitFullToastyCallback.onToasty("再按一次退出播放");
+            }
+            mLastExitFullTime = now;
+            return true;
         }
 
         ViewGroup parentView = (ViewGroup) getParent();
@@ -481,6 +497,10 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         mOnPositionChangedListener = listener;
     }
 
+    public void setExitFullToastyCallback(ExitFullToastyCallback callback) {
+        mExitFullToastyCallback = callback;
+    }
+
     @FunctionalInterface
     public interface OnStartedListener {
 
@@ -491,5 +511,11 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     public interface OnPositionChangedListener {
 
         void onChanged(long duration, long bufferedPosition, long currentPosition);
+    }
+
+    @FunctionalInterface
+    public interface ExitFullToastyCallback {
+
+        void onToasty(String text);
     }
 }
