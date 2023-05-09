@@ -12,6 +12,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextClock;
 import android.widget.TextView;
@@ -30,6 +31,10 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.yhy.player.R;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,6 +49,7 @@ import java.util.TimerTask;
  */
 public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private final static String TAG = "TvPlayer";
+    private final static SimpleDateFormat TIME_SDF = new SimpleDateFormat("HH:mm:ss", Locale.ROOT);
 
     /**
      * 控制面板隐藏的延迟时间长度
@@ -54,6 +60,9 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private TextClock tcNow;
     private ImageView ivPlayOrPause;
     private ProgressBar pbLoading;
+    private LinearLayout llDrag;
+    private TextView tvPosition;
+    private TextView tvDuration;
     private SilenceTimeBar stbDrag;
     private SilenceTimeBar stbPosition;
     private ExoPlayer mPlayer;
@@ -62,6 +71,8 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
      * 上一次操作时的时间戳
      */
     private long mLastOperateMillis;
+
+    private long mDuration;
 
     private Timer mTimer;
 
@@ -90,18 +101,21 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     }
 
     private void init(Context context, AttributeSet attrs) {
-        View rootView = LayoutInflater.from(context).inflate(R.layout.widget_tv_player, this);
-        spvExo = rootView.findViewById(R.id.spv_exo);
-        tvTitle = rootView.findViewById(R.id.tv_title);
-        tcNow = rootView.findViewById(R.id.tc_now);
-        ivPlayOrPause = rootView.findViewById(R.id.iv_play_or_pause);
-        pbLoading = rootView.findViewById(R.id.pb_loading);
-        stbDrag = rootView.findViewById(R.id.stb_drag);
-        stbPosition = rootView.findViewById(R.id.stb_position);
+        View view = LayoutInflater.from(context).inflate(R.layout.widget_tv_player, this);
+        spvExo = view.findViewById(R.id.spv_exo);
+        tvTitle = view.findViewById(R.id.tv_title);
+        tcNow = view.findViewById(R.id.tc_now);
+        ivPlayOrPause = view.findViewById(R.id.iv_play_or_pause);
+        pbLoading = view.findViewById(R.id.pb_loading);
+        llDrag = view.findViewById(R.id.ll_drag);
+        tvPosition = view.findViewById(R.id.tv_position);
+        tvDuration = view.findViewById(R.id.tv_duration);
+        stbDrag = view.findViewById(R.id.stb_drag);
+        stbPosition = view.findViewById(R.id.stb_position);
 
         mPlayer = new ExoPlayer.Builder(context)
-            .setSeekBackIncrementMs(5000)
-            .setSeekForwardIncrementMs(5000)
+            .setSeekBackIncrementMs(10000)
+            .setSeekForwardIncrementMs(10000)
             .build();
         mPlayer.setPlayWhenReady(true);
         mPlayer.setRepeatMode(ExoPlayer.REPEAT_MODE_OFF);
@@ -109,6 +123,9 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         spvExo.setUseController(false);
         spvExo.setShowBuffering(StyledPlayerView.SHOW_BUFFERING_NEVER);
         spvExo.setPlayer(mPlayer);
+
+        // 日期格式化模式设置为 UTC 0时区
+        TIME_SDF.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         initListener();
     }
@@ -172,7 +189,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             // 隐藏
             tvTitle.setVisibility(GONE);
             tcNow.setVisibility(GONE);
-            stbDrag.setVisibility(GONE);
+            llDrag.setVisibility(GONE);
             stbPosition.setVisibility(VISIBLE);
         } else {
             // 显示
@@ -180,17 +197,23 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
                 tvTitle.setVisibility(VISIBLE);
                 tcNow.setVisibility(VISIBLE);
             }
-            stbDrag.setVisibility(VISIBLE);
+            llDrag.setVisibility(VISIBLE);
             stbPosition.setVisibility(GONE);
         }
     }
 
     private void refreshPosition(long duration, long bufferedPosition, long currentPosition) {
-        stbDrag.setDuration(duration);
+        if (mDuration != duration) {
+            mDuration = duration;
+            stbDrag.setDuration(duration);
+            stbPosition.setDuration(duration);
+            tvDuration.setText(formatTime(duration));
+        }
+
         stbDrag.setBufferedPosition(bufferedPosition);
         stbDrag.setPosition(currentPosition);
+        tvPosition.setText(formatTime(currentPosition));
 
-        stbPosition.setDuration(duration);
         stbPosition.setBufferedPosition(bufferedPosition);
         stbPosition.setPosition(currentPosition);
     }
@@ -200,9 +223,15 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     }
 
     public void pause() {
+        ivPlayOrPause.setImageResource(R.mipmap.ic_play);
+        ivPlayOrPause.setVisibility(VISIBLE);
+        mPlayer.pause();
     }
 
     public void resume() {
+        ivPlayOrPause.setImageResource(R.mipmap.ic_pause);
+        ivPlayOrPause.setVisibility(GONE);
+        mPlayer.play();
     }
 
     public void seekForward() {
@@ -211,6 +240,10 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
     public void seekBack() {
         mPlayer.seekBack();
+    }
+
+    public boolean isPlaying() {
+        return mPlayer.isPlaying();
     }
 
     public void enterFullScreen(AppCompatActivity activity) {
@@ -245,6 +278,10 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         return true;
     }
 
+    private String formatTime(long millis) {
+        return TIME_SDF.format(new Date(millis));
+    }
+
     private void hideSystemUI(AppCompatActivity activity) {
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         activity.getWindow().getDecorView().setSystemUiVisibility(
@@ -272,13 +309,16 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
     private final Player.Listener mExoListener = new Player.Listener() {
 
+        private boolean mIsPlaying = false;
+
         @Override
         public void onIsLoadingChanged(boolean isLoading) {
-            pbLoading.setVisibility(isLoading ? VISIBLE : GONE);
+            pbLoading.setVisibility(isLoading && !mIsPlaying ? VISIBLE : GONE);
         }
 
         @Override
         public void onIsPlayingChanged(boolean isPlaying) {
+            mIsPlaying = isPlaying;
         }
 
         @Override
@@ -330,10 +370,10 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
         switch (event) {
             case ON_PAUSE -> {
-                mPlayer.pause();
+                pause();
             }
             case ON_RESUME -> {
-                mPlayer.play();
+                resume();
             }
             case ON_DESTROY -> {
                 mPlayer.stop();

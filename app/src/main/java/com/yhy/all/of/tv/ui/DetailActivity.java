@@ -159,17 +159,23 @@ public class DetailActivity extends VideoActivity {
     @Override
     protected void initEvent() {
         tvFullScreen.setOnClickListener(v -> {
-            // enterFullScreen();
             tvPlayer.enterFullScreen(this);
         });
 
         tvQuickSearch.setOnClickListener(v -> {
+            if (tvPlayer.isPlaying()) {
+                tvPlayer.pause();
+            } else {
+                tvPlayer.resume();
+            }
         });
 
         tvSort.setOnClickListener(v -> {
+            tvPlayer.seekForward();
         });
 
         tvCollect.setOnClickListener(v -> {
+            tvPlayer.seekBack();
         });
 
         mSeriesFlagAdapter.setOnItemClickListener((adapter, view, position) -> {

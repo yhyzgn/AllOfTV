@@ -72,6 +72,8 @@ import me.jessyan.autosize.utils.AutoSizeUtils;
 public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
     private final static String CURRENT_CHAN_NAME = "current_chan_name";
+    private final static String FLAG_CHECKOUT_CHAN_EXT_NAME = "flag_checkout_chan_ext";
+    private final static Integer FLAG_CHECKOUT_CHAN_EXT_VALUE = 1024;
 
     private LinearLayout topLayout;
     private TextView tvName;
@@ -306,6 +308,7 @@ public class MainActivity extends BaseActivity {
     private void restartPage() {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra(FLAG_CHECKOUT_CHAN_EXT_NAME, FLAG_CHECKOUT_CHAN_EXT_VALUE);
         startActivity(intent);
         finish();
     }
@@ -318,6 +321,16 @@ public class MainActivity extends BaseActivity {
     }
 
     private void checkNewVersion() {
+        Intent intent = getIntent();
+        if (null != intent) {
+            int flagCheckoutChanExt = intent.getIntExtra(FLAG_CHECKOUT_CHAN_EXT_NAME, 0);
+            if (flagCheckoutChanExt == FLAG_CHECKOUT_CHAN_EXT_VALUE) {
+                // 此时是在切换频道
+                return;
+            }
+        }
+
+        // 仅在真正的应用启动时进行版本检查
         GithubApi.instance.versionQuery(vi -> {
             if (null != vi && null != vi.assets && !vi.assets.isEmpty()) {
                 // 存在版本信息
