@@ -34,7 +34,7 @@
                 android:layout_weight="1"
                 android:clickable="true"
                 android:ellipsize="marquee"
-                android:focusable="true"
+                android:focusable="false"
                 android:focusableInTouchMode="false"
                 android:gravity="left|center_vertical"
                 android:nextFocusRight="@id/tvWifi"
@@ -57,7 +57,9 @@
                 android:background="@drawable/button_dialog_vod"
                 android:clickable="true"
                 android:focusable="true"
-                android:nextFocusLeft="@id/tvName"
+                android:focusableInTouchMode="true"
+                android:nextFocusLeft="@id/trvTab"
+                android:nextFocusDown="@id/trvTab"
                 android:padding="@dimen/vs_5"
                 android:src="@drawable/hm_wifi_no" />
 
@@ -72,6 +74,8 @@
                 android:background="@drawable/button_dialog_vod"
                 android:clickable="true"
                 android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:nextFocusDown="@id/trvTab"
                 android:padding="@dimen/vs_5"
                 android:src="@drawable/hm_search" />
 
@@ -86,6 +90,7 @@
                 android:background="@drawable/button_dialog_vod"
                 android:clickable="true"
                 android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:nextFocusDown="@id/trvTab"
                 android:padding="@dimen/vs_5"
                 android:src="@drawable/hm_settings" />

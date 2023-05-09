@@ -1,6 +1,9 @@
 package com.yhy.player.widget;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -50,6 +53,9 @@ import java.util.TimerTask;
 public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private final static String TAG = "TvPlayer";
     private final static SimpleDateFormat TIME_SDF = new SimpleDateFormat("HH:mm:ss", Locale.ROOT);
+    private final static int DELTA_SEEKING_MS = 15000;
+    private final static int WHAT_HANDLER_MSG_SEEK_FORWARD = 1024;
+    private final static int WHAT_HANDLER_MSG_SEEK_BACK = 2048;
 
     /**
      * 控制面板隐藏的延迟时间长度
@@ -74,6 +80,12 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
     private long mDuration;
 
+    private long mBufferedPosition;
+
+    private long mCurrentPosition;
+
+    private long mSeekingPosition;
+
     private Timer mTimer;
 
     private ViewGroup mOriginalParentContainer;
@@ -81,6 +93,8 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private OnStartedListener mOnStartedListener;
 
     private OnPositionChangedListener mOnPositionChangedListener;
+
+    private boolean mIsSeeking;
 
     public TvPlayer(@NonNull Context context) {
         this(context, null);
@@ -114,9 +128,9 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         stbPosition = view.findViewById(R.id.stb_position);
 
         mPlayer = new ExoPlayer.Builder(context)
-            .setSeekBackIncrementMs(10000)
-            .setSeekForwardIncrementMs(10000)
-            .build();
+                .setSeekBackIncrementMs(DELTA_SEEKING_MS)
+                .setSeekForwardIncrementMs(DELTA_SEEKING_MS)
+                .build();
         mPlayer.setPlayWhenReady(true);
         mPlayer.setRepeatMode(ExoPlayer.REPEAT_MODE_OFF);
 
@@ -140,9 +154,9 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         }
 
         MediaItem mi = new MediaItem.Builder()
-            .setTag(url)
-            .setUri(url)
-            .build();
+                .setTag(url)
+                .setUri(url)
+                .build();
 
         tvTitle.setText(title);
         mPlayer.setMediaItem(mi);
@@ -178,12 +192,13 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
         Log.i(TAG, "duration = " + duration + ", bufferedPosition = " + bufferedPosition + ", currentPosition = " + currentPosition);
         refreshPosition(duration, bufferedPosition, currentPosition);
-        if (null != mOnPositionChangedListener) {
-            mOnPositionChangedListener.onChanged(duration, bufferedPosition, currentPosition);
-        }
     }
 
     private void timeControlPanel() {
+        if (mIsSeeking) {
+            return;
+        }
+
         long now = System.currentTimeMillis();
         if (now - mLastOperateMillis >= MS_DELAY_CTRL_DISMISS) {
             // 隐藏
@@ -210,12 +225,30 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             tvDuration.setText(formatTime(duration));
         }
 
-        stbDrag.setBufferedPosition(bufferedPosition);
-        stbDrag.setPosition(currentPosition);
-        tvPosition.setText(formatTime(currentPosition));
+        mBufferedPosition = bufferedPosition;
+        stbDrag.setBufferedPosition(mBufferedPosition);
+        stbPosition.setBufferedPosition(mBufferedPosition);
 
-        stbPosition.setBufferedPosition(bufferedPosition);
-        stbPosition.setPosition(currentPosition);
+        if (!mIsSeeking && mCurrentPosition != currentPosition) {
+            mCurrentPosition = currentPosition;
+            dragPosition(mCurrentPosition, false);
+            if (null != mOnPositionChangedListener) {
+                mOnPositionChangedListener.onChanged(duration, mBufferedPosition, mCurrentPosition);
+            }
+        }
+    }
+
+    private void dragPosition(long position, boolean showDrag) {
+        if (showDrag) {
+            llDrag.setVisibility(VISIBLE);
+            stbPosition.setVisibility(GONE);
+        } else {
+            llDrag.setVisibility(GONE);
+            stbPosition.setVisibility(VISIBLE);
+        }
+        stbDrag.setPosition(position);
+        tvPosition.setText(formatTime(position));
+        stbPosition.setPosition(position);
     }
 
     public boolean isInFullScreen() {
@@ -234,12 +267,48 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         mPlayer.play();
     }
 
+    public void playOrPause() {
+        if (isPlaying()) {
+            pause();
+            return;
+        }
+        resume();
+    }
+
     public void seekForward() {
-        mPlayer.seekForward();
+        mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_FORWARD);
+        mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_BACK);
+        mIsSeeking = true;
+        // 每次增加 10 s
+        mSeekingPosition = (mSeekingPosition == 0 ? mCurrentPosition : mSeekingPosition) + DELTA_SEEKING_MS;
+        mSeekingPosition = Math.min(mSeekingPosition, mDuration);
+        dragPosition(mSeekingPosition, true);
+        mHandler.sendEmptyMessageDelayed(WHAT_HANDLER_MSG_SEEK_FORWARD, 1000);
     }
 
     public void seekBack() {
-        mPlayer.seekBack();
+        mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_FORWARD);
+        mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_BACK);
+        mIsSeeking = true;
+        // 每次增加 10 s
+        mSeekingPosition = (mSeekingPosition == 0 ? mCurrentPosition : mSeekingPosition) - DELTA_SEEKING_MS;
+        mSeekingPosition = Math.max(mSeekingPosition, 0);
+        dragPosition(mSeekingPosition, true);
+        mHandler.sendEmptyMessageDelayed(WHAT_HANDLER_MSG_SEEK_BACK, 1000);
+    }
+
+    public void stop() {
+        mPlayer.stop();
+    }
+
+    public void release() {
+        mPlayer.release();
+    }
+
+    public void destroy() {
+        stop();
+        release();
+        mPlayer.removeListener(mExoListener);
     }
 
     public boolean isPlaying() {
@@ -256,8 +325,6 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             mOriginalParentContainer.removeView(this);
             contentView.addView(this, params);
 
-            // 先默认啦
-            // hideSystemUI(activity);
         }, 200);
     }
 
@@ -272,8 +339,6 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mOriginalParentContainer.addView(this, params);
 
-        // 先默认啦
-        // showSystemUI(activity);
         mOriginalParentContainer = null;
         return true;
     }
@@ -285,27 +350,45 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private void hideSystemUI(AppCompatActivity activity) {
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         activity.getWindow().getDecorView().setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_IMMERSIVE
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                View.SYSTEM_UI_FLAG_IMMERSIVE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
         );
     }
 
     private void showSystemUI(AppCompatActivity activity) {
         activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         activity.getWindow().getDecorView().setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
     }
 
     private void internalOnStarted() {
         resolveTimer();
     }
+
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            switch (msg.what) {
+                case WHAT_HANDLER_MSG_SEEK_FORWARD, WHAT_HANDLER_MSG_SEEK_BACK -> {
+                    // 播放进度调整
+                    if (mSeekingPosition > 0) {
+                        mPlayer.seekTo(mSeekingPosition);
+                        mCurrentPosition = mSeekingPosition;
+                    }
+                    mIsSeeking = false;
+                    mSeekingPosition = 0;
+                }
+            }
+        }
+    };
 
     private final Player.Listener mExoListener = new Player.Listener() {
 
@@ -334,6 +417,15 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
                     if (null != mOnStartedListener) {
                         mOnStartedListener.onStarted();
                     }
+                }
+                case Player.STATE_BUFFERING -> {
+                    Log.d(TAG, "State-Buffering");
+                }
+                case Player.STATE_ENDED -> {
+                    Log.d(TAG, "State-Ended");
+                }
+                case Player.STATE_IDLE -> {
+                    Log.d(TAG, "State-Idle");
                 }
             }
         }
@@ -376,11 +468,17 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
                 resume();
             }
             case ON_DESTROY -> {
-                mPlayer.stop();
-                mPlayer.release();
-                mPlayer.removeListener(mExoListener);
+                destroy();
             }
         }
+    }
+
+    public void setOnStartedListener(OnStartedListener listener) {
+        mOnStartedListener = listener;
+    }
+
+    public void setOnPositionChangedListener(OnPositionChangedListener listener) {
+        mOnPositionChangedListener = listener;
     }
 
     @FunctionalInterface

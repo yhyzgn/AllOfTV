@@ -1,5 +1,6 @@
 package com.yhy.all.of.tv.ui;
 
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -13,7 +14,6 @@ import com.google.common.base.Joiner;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import com.owen.tvrecyclerview.widget.V7StaggeredGridLayoutManager;
-import com.tencent.smtt.utils.Md5Utils;
 import com.yhy.all.of.tv.R;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.chan.ChanRegister;
@@ -134,6 +134,9 @@ public class DetailActivity extends VideoActivity {
             Video vd = getCurrentPlayingVideo();
             tvPlayer.play(vd.title, url, 0);
 
+            tvPlayer.setVisibility(View.VISIBLE);
+            rlParsing.setVisibility(View.GONE);
+
             // 停止 WebView 加载
             getCurrentParser().stop(true);
         });
@@ -210,32 +213,14 @@ public class DetailActivity extends VideoActivity {
     }
 
     @Override
-    protected void onFullScreen() {
-        LogUtils.iTag(TAG, "全屏播放了");
-    }
-
-    @Override
-    protected boolean shouldAutoPlay() {
-        return true;
-    }
-
-    @Override
-    protected String videoTag() {
-        return Md5Utils.getMD5(getCurrentPlayingVideo().pageUrl);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (tvPlayer.backFromFullScreen(this)) {
-            return;
-        }
-        super.onBackPressed();
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         Evtor.instance.unregister(this);
+    }
+
+    @Override
+    protected TvPlayer player() {
+        return tvPlayer;
     }
 
     private void refreshVideoInfo() {
@@ -263,10 +248,10 @@ public class DetailActivity extends VideoActivity {
     }
 
     private void loadVideoAndPlay() {
-        // TODO 释放播放器
-        // tvPlayer.getCurrentPlayer().release();
-        // rlParsing.setVisibility(View.VISIBLE);
-        // tvPlayer.setVisibility(View.GONE);
+        // 停止播放器
+        tvPlayer.stop();
+        rlParsing.setVisibility(View.VISIBLE);
+        tvPlayer.setVisibility(View.GONE);
         getCurrentParser().load(this, mLiveData, getCurrentPlayingVideo().pageUrl);
     }
 
