@@ -36,7 +36,6 @@ jobs:
         run: |
           sed -i -r "s/code: [0-9]+/code: ${{ env.runNumber }}/g" config.gradle
           sed -i -r "s/name: 'v[0-9\\.]+'/name: '${{ env.tagName }}'/g" config.gradle
-          echo "apkName=全剧得_`echo ${{ env.tagName }}_${{ env.runNumber }}`.apk" >> $GITHUB_ENV
           cat config.gradle
 
       - name: set up JDK 17
@@ -60,23 +59,10 @@ jobs:
       - name: Create Github Release
         uses: ncipollo/release-action@v1
         with:
-          allowUpdates: true
-          draft: true
+          allowUpdates: false
+          draft: false
           makeLatest: true
-          name: ${{ env.tagName }}
+          name: `${{ env.tagName }}_${{ env.runNumber }}`
           body: ${{ steps.changelog.outputs.changes }}
           artifacts: app/build/outputs/apk/release/*.apk
           token: ${{ secrets.RELEASE_TOKEN }}
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@359bebbc29cbe6c87da6bc9ea3bc930432750108
-        with:
-          ruby-version: '3.1'
-
-      - name: install fir.im
-        run: sudo gem install fir-cli
-
-      - name: Upload to Fir.im
-        run: |
-          fir login ${{ secrets.FIR_TOKEN }}
-          fir publish app/build/outputs/apk/release/*.apk -c "${{ steps.changelog.outputs.changes }}" --force-pin-history --open --specify-app-display-name=全剧得

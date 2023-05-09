@@ -28,8 +28,8 @@ import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import com.yhy.all.of.tv.R;
-import com.yhy.all.of.tv.api.model.FirVersionInfo;
-import com.yhy.all.of.tv.api.of.fir.FirApi;
+import com.yhy.all.of.tv.api.model.VersionInfo;
+import com.yhy.all.of.tv.api.of.fir.GithubApi;
 import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.chan.ChanRegister;
@@ -55,6 +55,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
@@ -317,28 +318,37 @@ public class MainActivity extends BaseActivity {
     }
 
     private void checkNewVersion() {
-        FirApi.instance.versionQuery(vi -> {
-            if (null != vi) {
+        GithubApi.instance.versionQuery(vi -> {
+            if (null != vi && null != vi.assets && !vi.assets.isEmpty()) {
                 // 存在版本信息
                 LogUtils.iTag(TAG, JsonUtils.toJson(vi));
-                long versionCode = SysUtils.getVersionCode();
-                if (versionCode < vi.version) {
-                    // 发现新版本
-                    downloadApk(vi);
+                if (!TextUtils.isEmpty(vi.name) && vi.name.contains("_")) {
+                    int buildNumber = Integer.parseInt(vi.name.split("_")[1]);
+                    long versionCode = SysUtils.getVersionCode();
+                    if (versionCode < buildNumber) {
+                        // 发现新版本
+                        downloadApk(vi);
+                    }
                 }
             }
         });
     }
 
-    private void downloadApk(FirVersionInfo version) {
+    private void downloadApk(VersionInfo version) {
+        List<VersionInfo.AssetsBean> assets = version.assets.stream().filter(it -> it.browserDownloadUrl.endsWith(".apk")).collect(Collectors.toList());
+        if (assets.isEmpty()) {
+            return;
+        }
+        VersionInfo.AssetsBean asset = assets.get(0);
+        String apkUrl = asset.browserDownloadUrl;
+        String apkName = apkUrl.substring(apkUrl.lastIndexOf("/") + 1);
+
         DownloadManager manager = new DownloadManager.Builder(this)
-            .apkName(version.name + "_" + version.versionShort + ".apk")
-            .apkUrl(version.directInstallUrl)
-            .apkDescription(!TextUtils.isEmpty(version.changeLog) ? version.changeLog : "检查到新版本")
+            .apkName(apkName)
+            .apkUrl("https://ghproxy.com/" + apkUrl)
+            .apkDescription(!TextUtils.isEmpty(version.body) ? version.body : "检查到新版本")
             .smallIcon(R.mipmap.ic_launcher)
-            .apkSize(FileUtils.formatSize(version.binary.fSize))
-            //.apkVersionCode(version.version)
-            //.apkVersionName(version.versionShort)
+            .apkSize(FileUtils.formatSize(asset.size))
             .showNotification(true)
             .forcedUpgrade(true)
             .jumpInstallPage(true)

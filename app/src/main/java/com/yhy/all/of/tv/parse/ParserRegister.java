@@ -2,6 +2,7 @@ package com.yhy.all.of.tv.parse;
 
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.internal.Lists;
+import com.yhy.all.of.tv.parse.of.AiDouParser;
 import com.yhy.all.of.tv.parse.of.JsonPlayerParser;
 import com.yhy.all.of.tv.parse.of.M3U8TVParser;
 import com.yhy.all.of.tv.parse.of.NuoXunParser;
@@ -24,9 +25,10 @@ public class ParserRegister {
 
     private ParserRegister() {
         parserList = Lists.of(
-                new JsonPlayerParser(),
-                new NuoXunParser(),
-                new M3U8TVParser()
+            new JsonPlayerParser(),
+            new NuoXunParser(),
+            new AiDouParser(),
+            new M3U8TVParser()
         );
     }
 

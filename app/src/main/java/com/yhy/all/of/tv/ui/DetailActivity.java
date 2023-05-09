@@ -1,6 +1,5 @@
 package com.yhy.all.of.tv.ui;
 
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -132,11 +131,8 @@ public class DetailActivity extends VideoActivity {
 
         mLiveData = new MutableLiveData<>();
         mLiveData.observe(this, url -> {
-            // TODO 开始播放
-            //playWithBuilder(url);
-            //tvPlayer.startPlayLogic();
-
-            tvPlayer.play("asdf", url);
+            Video vd = getCurrentPlayingVideo();
+            tvPlayer.play(vd.title, url, 0);
 
             // 停止 WebView 加载
             getCurrentParser().stop(true);
@@ -163,7 +159,8 @@ public class DetailActivity extends VideoActivity {
     @Override
     protected void initEvent() {
         tvFullScreen.setOnClickListener(v -> {
-            //enterFullScreen();
+            // enterFullScreen();
+            tvPlayer.enterFullScreen(this);
         });
 
         tvQuickSearch.setOnClickListener(v -> {
@@ -206,22 +203,6 @@ public class DetailActivity extends VideoActivity {
     protected void setDefault() {
     }
 
-    //@Override
-    //protected GSYBaseVideoPlayer player() {
-    //    return tvPlayer;
-    //}
-    //
-    //@Override
-    //protected GSYVideoOptionBuilder optionBuilder(String url, long position) {
-    //    return new GSYVideoOptionBuilder()
-    //        .setUrl(url)
-    //        .setShowFullAnimation(true)
-    //        .setShowPauseCover(true)
-    //        .setSeekRatio(1.0f)
-    //        .setLockLand(true)
-    //        .setSeekOnStart(position);
-    //}
-
     @Override
     protected void onFullScreen() {
         LogUtils.iTag(TAG, "全屏播放了");
@@ -238,10 +219,11 @@ public class DetailActivity extends VideoActivity {
     }
 
     @Override
-    protected void onPlayStarted(String url, Object... objects) {
-        // 开始播放回调
-        //tvPlayer.setVisibility(View.VISIBLE);
-        //rlParsing.setVisibility(View.GONE);
+    public void onBackPressed() {
+        if (tvPlayer.backFromFullScreen(this)) {
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -276,9 +258,9 @@ public class DetailActivity extends VideoActivity {
 
     private void loadVideoAndPlay() {
         // TODO 释放播放器
-        //tvPlayer.getCurrentPlayer().release();
-        //rlParsing.setVisibility(View.VISIBLE);
-        //tvPlayer.setVisibility(View.GONE);
+        // tvPlayer.getCurrentPlayer().release();
+        // rlParsing.setVisibility(View.VISIBLE);
+        // tvPlayer.setVisibility(View.GONE);
         getCurrentParser().load(this, mLiveData, getCurrentPlayingVideo().pageUrl);
     }
 

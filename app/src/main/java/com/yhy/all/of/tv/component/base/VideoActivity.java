@@ -17,41 +17,9 @@ public abstract class VideoActivity extends BaseActivity /* implements VideoAllC
 
     private boolean seekLock = false;
 
-    //private void initVideo() {
-    //    GSYVideoManager.backFromWindowFull(this);
-    //    if (null != player().getFullscreenButton()) {
-    //        player().getFullscreenButton().setOnClickListener(v -> {
-    //            enterFullScreen();
-    //        });
-    //    }
-    //}
-    //
-    //public void enterFullScreen() {
-    //    // 不需要屏幕旋转，必须调该方法
-    //    player().setNeedOrientationUtils(false);
-    //    // 第一个true是否需要隐藏 actionBar，第二个true是否需要隐藏 statusBar
-    //    player().startWindowFullscreen(this, false, false);
-    //}
-
-    //protected void playWithBuilder(String url) {
-    //    initVideo();
-    //    long position = KV.instance.kv().getLong(videoTag(), 0);
-    //    GSYVideoOptionBuilder optionBuilder = optionBuilder(url, position);
-    //    if (null != optionBuilder) {
-    //        optionBuilder
-    //            .setPlayTag(videoTag())
-    //            .setVideoAllCallBack(this)
-    //            .setGSYVideoProgressListener(this)
-    //            .build(player());
-    //        if (shouldAutoPlay()) {
-    //            player().startPlayLogic();
-    //        }
-    //    }
-    //}
-
     @Override
     public void onBackPressed() {
-        //if (GSYVideoManager.backFromWindowFull(this)) {
+        // if (GSYVideoManager.backFromWindowFull(this)) {
         //    return;
         //}
         super.onBackPressed();
@@ -60,14 +28,14 @@ public abstract class VideoActivity extends BaseActivity /* implements VideoAllC
     @Override
     protected void onPause() {
         super.onPause();
-        //player().getCurrentPlayer().onVideoPause();
+        // player().getCurrentPlayer().onVideoPause();
         mIsPausing = true;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //player().getCurrentPlayer().onVideoResume(true);
+        // player().getCurrentPlayer().onVideoResume(true);
         mIsPausing = false;
     }
 
@@ -75,13 +43,13 @@ public abstract class VideoActivity extends BaseActivity /* implements VideoAllC
     protected void onDestroy() {
         super.onDestroy();
         if (mIsPlaying) {
-            //player().getCurrentPlayer().release();
+            // player().getCurrentPlayer().release();
         }
     }
 
-    //protected abstract GSYBaseVideoPlayer player();
+    // protected abstract GSYBaseVideoPlayer player();
     //
-    //protected abstract GSYVideoOptionBuilder optionBuilder(String url, long position);
+    // protected abstract GSYVideoOptionBuilder optionBuilder(String url, long position);
 
     protected abstract boolean shouldAutoPlay();
 
@@ -90,10 +58,7 @@ public abstract class VideoActivity extends BaseActivity /* implements VideoAllC
     protected void onFullScreen() {
     }
 
-    protected void onPlayStarted(String url, Object... objects) {
-    }
-
-    //private void seekBack() {
+    // private void seekBack() {
     //    seekLock = true;
     //    mCurrentPosition -= 10;
     //    long seek = Math.max(0, mCurrentPosition);
@@ -101,7 +66,7 @@ public abstract class VideoActivity extends BaseActivity /* implements VideoAllC
     //    seekLock = false;
     //}
     //
-    //private void seekForward() {
+    // private void seekForward() {
     //    seekLock = true;
     //    mCurrentPosition += 10;
     //    long total = player().getDuration();
@@ -110,7 +75,7 @@ public abstract class VideoActivity extends BaseActivity /* implements VideoAllC
     //    seekLock = false;
     //}
     //
-    //private void playOrPause() {
+    // private void playOrPause() {
     //    if (player().isInPlayingState()) {
     //        player().onVideoPause();
     //        return;
@@ -119,7 +84,7 @@ public abstract class VideoActivity extends BaseActivity /* implements VideoAllC
     //}
     //
     //@Override
-    //public boolean dispatchKeyEvent(KeyEvent event) {
+    // public boolean dispatchKeyEvent(KeyEvent event) {
     //    // 全屏状态下才处理这些事件
     //    if (player().isIfCurrentIsFullscreen() && event.getAction() == KeyEvent.ACTION_UP) {
     //        switch (event.getKeyCode()) {
@@ -141,7 +106,7 @@ public abstract class VideoActivity extends BaseActivity /* implements VideoAllC
     //}
     //
     //@Override
-    //public void onProgress(long progress, long secProgress, long currentPosition, long duration) {
+    // public void onProgress(long progress, long secProgress, long currentPosition, long duration) {
     //    if (!seekLock) {
     //        mCurrentPosition = currentPosition;
     //    }
@@ -155,97 +120,97 @@ public abstract class VideoActivity extends BaseActivity /* implements VideoAllC
     //}
     //
     //@Override
-    //public void onStartPrepared(String url, Object... objects) {
+    // public void onStartPrepared(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onPrepared(String url, Object... objects) {
+    // public void onPrepared(String url, Object... objects) {
     //    onPlayStarted(url, objects);
     //    mIsPlaying = true;
     //}
     //
     //@Override
-    //public void onClickStartIcon(String url, Object... objects) {
+    // public void onClickStartIcon(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickStartError(String url, Object... objects) {
+    // public void onClickStartError(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickStop(String url, Object... objects) {
+    // public void onClickStop(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickStopFullscreen(String url, Object... objects) {
+    // public void onClickStopFullscreen(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickResume(String url, Object... objects) {
+    // public void onClickResume(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickResumeFullscreen(String url, Object... objects) {
+    // public void onClickResumeFullscreen(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickSeekbar(String url, Object... objects) {
+    // public void onClickSeekbar(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickSeekbarFullscreen(String url, Object... objects) {
+    // public void onClickSeekbarFullscreen(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onAutoComplete(String url, Object... objects) {
+    // public void onAutoComplete(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onComplete(String url, Object... objects) {
+    // public void onComplete(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onEnterFullscreen(String url, Object... objects) {
+    // public void onEnterFullscreen(String url, Object... objects) {
     //    onFullScreen();
     //}
     //
     //@Override
-    //public void onQuitFullscreen(String url, Object... objects) {
+    // public void onQuitFullscreen(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onQuitSmallWidget(String url, Object... objects) {
+    // public void onQuitSmallWidget(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onEnterSmallWidget(String url, Object... objects) {
+    // public void onEnterSmallWidget(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onTouchScreenSeekVolume(String url, Object... objects) {
+    // public void onTouchScreenSeekVolume(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onTouchScreenSeekPosition(String url, Object... objects) {
+    // public void onTouchScreenSeekPosition(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onTouchScreenSeekLight(String url, Object... objects) {
+    // public void onTouchScreenSeekLight(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onPlayError(String url, Object... objects) {
+    // public void onPlayError(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickStartThumb(String url, Object... objects) {
+    // public void onClickStartThumb(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickBlank(String url, Object... objects) {
+    // public void onClickBlank(String url, Object... objects) {
     //}
     //
     //@Override
-    //public void onClickBlankFullscreen(String url, Object... objects) {
+    // public void onClickBlankFullscreen(String url, Object... objects) {
     //}
 }
