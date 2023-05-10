@@ -219,7 +219,8 @@ public class JsExtractWebView extends WebView {
 
         private void onParsedError(CharSequence error) {
             LogUtils.eTag(TAG, error);
-            mInnerLiveData.postValue(null);
+            // 这里可能只是部分 js 错误而已，故不做处理了
+            // mInnerLiveData.postValue(null);
         }
     }
 

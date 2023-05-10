@@ -1,5 +1,6 @@
 package com.yhy.player.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -134,9 +135,9 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         stbPosition = view.findViewById(R.id.stb_position);
 
         mPlayer = new ExoPlayer.Builder(context)
-                .setSeekBackIncrementMs(DELTA_SEEKING_MS)
-                .setSeekForwardIncrementMs(DELTA_SEEKING_MS)
-                .build();
+            .setSeekBackIncrementMs(DELTA_SEEKING_MS)
+            .setSeekForwardIncrementMs(DELTA_SEEKING_MS)
+            .build();
         mPlayer.setPlayWhenReady(true);
         mPlayer.setRepeatMode(ExoPlayer.REPEAT_MODE_OFF);
 
@@ -150,8 +151,12 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         initListener();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initListener() {
         mPlayer.addListener(mExoListener);
+
+        // 禁止播放器的点击穿透
+        spvExo.setOnTouchListener((v, event) -> true);
     }
 
     public void play(String title, String url, long seekToMs) {
@@ -160,9 +165,9 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         }
 
         MediaItem mi = new MediaItem.Builder()
-                .setTag(url)
-                .setUri(url)
-                .build();
+            .setTag(url)
+            .setUri(url)
+            .build();
 
         tvTitle.setText(title);
         mPlayer.setMediaItem(mi);
@@ -366,21 +371,21 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private void hideSystemUI(AppCompatActivity activity) {
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         activity.getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_IMMERSIVE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+            View.SYSTEM_UI_FLAG_IMMERSIVE
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
         );
     }
 
     private void showSystemUI(AppCompatActivity activity) {
         activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         activity.getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
     }
 
