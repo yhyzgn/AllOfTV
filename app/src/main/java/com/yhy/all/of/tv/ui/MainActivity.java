@@ -27,6 +27,7 @@ import com.azhon.appupdate.manager.DownloadManager;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
+import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.R;
 import com.yhy.all.of.tv.api.model.VersionInfo;
 import com.yhy.all.of.tv.api.of.fir.GithubApi;
@@ -333,6 +334,11 @@ public class MainActivity extends BaseActivity {
     }
 
     private void checkNewVersion() {
+        if (BuildConfig.DEBUG) {
+            // 开发模式下不检查了
+            return;
+        }
+
         Intent intent = getIntent();
         if (null != intent) {
             int flagCheckoutChanExt = intent.getIntExtra(FLAG_CHECKOUT_CHAN_EXT_NAME, 0);

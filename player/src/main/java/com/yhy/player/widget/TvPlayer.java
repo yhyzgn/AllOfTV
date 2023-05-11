@@ -1,19 +1,26 @@
 package com.yhy.player.widget;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.IntEvaluator;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Size;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,6 +42,7 @@ import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.yhy.player.R;
+import com.yhy.player.utils.CutoutUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -59,6 +67,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private final static int WHAT_HANDLER_MSG_SEEK_FORWARD = 1024;
     private final static int WHAT_HANDLER_MSG_SEEK_BACK = 2048;
     private final static int STICKY_EXIT_FULL_MS = 3000;
+    private final static int DURATION_FULL_ANIMATION = 600;
 
     /**
      * 控制面板隐藏的延迟时间长度
@@ -91,8 +100,6 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
     private Timer mTimer;
 
-    private ViewGroup mOriginalParentContainer;
-
     private OnStartedListener mOnStartedListener;
 
     private OnPositionChangedListener mOnPositionChangedListener;
@@ -102,6 +109,21 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private boolean mIsSeeking;
 
     private long mLastExitFullTime;
+
+    private ViewGroup mOriginalParentContainer;
+
+    private int mOriginalX;
+
+    private int mOriginalY;
+
+    private int mOriginalWidth;
+
+    private int mOriginalHeight;
+
+    private int mScreenWidth;
+
+    private int mScreenHeight;
+
 
     public TvPlayer(@NonNull Context context) {
         this(context, null);
@@ -327,16 +349,39 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     }
 
     public void enterFullScreen(AppCompatActivity activity) {
+        if (isInFullScreen()) {
+            return;
+        }
+
         postDelayed(() -> {
-            mOriginalParentContainer = (ViewGroup) getParent();
+            // 记录播放器在屏幕中的坐标和大小信息
+            int[] location = new int[2];
+            getLocationOnScreen(location);
+            mOriginalX = location[0];
+            mOriginalY = location[1];
+            mOriginalWidth = getWidth();
+            mOriginalHeight = getHeight();
+            Log.i(TAG, "Location.x = " + mOriginalX + ", Location.y = " + mOriginalY + ", OriginalWidth = " + mOriginalWidth + ", OriginalHeight = " + mOriginalHeight + ", ScreenWidth = " + mScreenWidth + ", ScreenHeight = " + mScreenHeight);
 
+            // 操作 view
             ViewGroup contentView = activity.findViewById(Window.ID_ANDROID_CONTENT);
-            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
+            LayoutParams params = new LayoutParams(mOriginalWidth, mOriginalHeight);
+            params.leftMargin = mOriginalX;
+            params.topMargin = mOriginalY;
+            mOriginalParentContainer = (ViewGroup) getParent();
             mOriginalParentContainer.removeView(this);
             contentView.addView(this, params);
 
-        }, 200);
+            // 最后再执行动画
+            ObjectAnimator scaleAnimationWidth = ObjectAnimator.ofObject(this, "width", new IntEvaluator(), mOriginalWidth, mScreenWidth);
+            ObjectAnimator scaleAnimationHeight = ObjectAnimator.ofObject(this, "height", new IntEvaluator(), mOriginalHeight, mScreenHeight);
+            ObjectAnimator translateAnimationX = ObjectAnimator.ofObject(this, "marginLeft", new IntEvaluator(), mOriginalX, 0);
+            ObjectAnimator translateAnimationY = ObjectAnimator.ofObject(this, "marginTop", new IntEvaluator(), mOriginalY, 0);
+            AnimatorSet as = new AnimatorSet();
+            as.playTogether(scaleAnimationWidth, scaleAnimationHeight, translateAnimationX, translateAnimationY);
+            as.setDuration(DURATION_FULL_ANIMATION);
+            as.start();
+        }, 20);
     }
 
     public boolean backFromFullScreen(AppCompatActivity activity) {
@@ -354,39 +399,69 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             return true;
         }
 
-        ViewGroup parentView = (ViewGroup) getParent();
-        parentView.removeView(this);
-
-        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        mOriginalParentContainer.addView(this, params);
-
-        mOriginalParentContainer = null;
+        // 先执行动画
+        ObjectAnimator scaleAnimationWidth = ObjectAnimator.ofObject(this, "width", new IntEvaluator(), mScreenWidth, mOriginalWidth);
+        ObjectAnimator scaleAnimationHeight = ObjectAnimator.ofObject(this, "height", new IntEvaluator(), mScreenHeight, mOriginalHeight);
+        ObjectAnimator translateAnimationX = ObjectAnimator.ofObject(this, "marginLeft", new IntEvaluator(), 0, mOriginalX);
+        ObjectAnimator translateAnimationY = ObjectAnimator.ofObject(this, "marginTop", new IntEvaluator(), 0, mOriginalY);
+        AnimatorSet as = new AnimatorSet();
+        as.playTogether(scaleAnimationWidth, scaleAnimationHeight, translateAnimationX, translateAnimationY);
+        as.setDuration(DURATION_FULL_ANIMATION);
+        as.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // 动画结束后再操作 view
+                ViewGroup parentView = (ViewGroup) getParent();
+                parentView.removeView(TvPlayer.this);
+                ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                mOriginalParentContainer.addView(TvPlayer.this, params);
+                mOriginalParentContainer = null;
+            }
+        });
+        as.start();
         return true;
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+
+        // 获取屏幕宽高
+        DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+        mScreenWidth = dm.widthPixels;
+        mScreenHeight = dm.heightPixels;
+        // 如果有刘海屏，需要加上刘海屏的宽高
+        Size cutoutSize = CutoutUtils.size(getContext());
+        mScreenWidth += cutoutSize.getWidth();
+        mScreenHeight += cutoutSize.getHeight();
+    }
+
+    public void setWidth(int width) {
+        ViewGroup.LayoutParams params = getLayoutParams();
+        params.width = width;
+        setLayoutParams(params);
+    }
+
+    public void setHeight(int height) {
+        ViewGroup.LayoutParams params = getLayoutParams();
+        params.height = height;
+        setLayoutParams(params);
+    }
+
+    public void setMarginLeft(int marginLeft) {
+        ViewGroup.MarginLayoutParams params = (MarginLayoutParams) getLayoutParams();
+        params.leftMargin = marginLeft;
+        setLayoutParams(params);
+    }
+
+    public void setMarginTop(int marginTop) {
+        ViewGroup.MarginLayoutParams params = (MarginLayoutParams) getLayoutParams();
+        params.topMargin = marginTop;
+        setLayoutParams(params);
     }
 
     private String formatTime(long millis) {
         return TIME_SDF.format(new Date(millis));
-    }
-
-    private void hideSystemUI(AppCompatActivity activity) {
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        activity.getWindow().getDecorView().setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_IMMERSIVE
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-        );
-    }
-
-    private void showSystemUI(AppCompatActivity activity) {
-        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        activity.getWindow().getDecorView().setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        );
     }
 
     private void internalOnStarted() {
@@ -478,6 +553,47 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         mLastOperateMillis = System.currentTimeMillis();
         timeControlPanel();
     }
+
+    /**
+     * dp转px
+     *
+     * @param dpVal dp值
+     * @return px值
+     */
+    private int dp2px(float dpVal) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpVal, getContext().getResources().getDisplayMetrics());
+    }
+
+    /**
+     * sp转px
+     *
+     * @param spVal sp值
+     * @return px值
+     */
+    private int sp2px(float spVal) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, spVal, getContext().getResources().getDisplayMetrics());
+    }
+
+    /**
+     * px转dp
+     *
+     * @param pxVal px值
+     * @return dp值
+     */
+    private float px2dp(float pxVal) {
+        return (pxVal / getContext().getResources().getDisplayMetrics().density);
+    }
+
+    /**
+     * px转sp
+     *
+     * @param pxVal px值
+     * @return sp值
+     */
+    private float px2sp(float pxVal) {
+        return (pxVal / getContext().getResources().getDisplayMetrics().scaledDensity);
+    }
+
 
     @Override
     public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {

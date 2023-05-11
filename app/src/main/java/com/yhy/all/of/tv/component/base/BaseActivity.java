@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.annotation.IdRes;
@@ -25,6 +26,7 @@ import com.yhy.all.of.tv.App;
 import com.yhy.all.of.tv.R;
 import com.yhy.all.of.tv.component.callback.EmptyCallback;
 import com.yhy.all.of.tv.component.callback.LoadingCallback;
+import com.yhy.player.utils.CutoutUtils;
 
 import es.dmoral.toasty.Toasty;
 import me.jessyan.autosize.AutoSizeCompat;
@@ -49,6 +51,14 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        hideSystemUI(true);
+        vidHideSysBar();
+        hideSysBar();
+        // 设置刘海
+        CutoutUtils.adaptCutoutAboveAndroidP(this, true);
+
         try {
             if (screenRatio < 0) {
                 DisplayMetrics dm = new DisplayMetrics();
@@ -62,7 +72,6 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         }
 
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         mApp = (App) getApplication();
 
@@ -153,6 +162,8 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     @Override
     protected void onResume() {
         super.onResume();
+        vidHideSysBar();
+        hideSysBar();
         hideSystemUI(true);
     }
 

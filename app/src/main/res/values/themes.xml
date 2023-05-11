@@ -6,7 +6,6 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@drawable/bg_gradient_home</item>
-
     </style>
 
     <style name="FocusStyle">
@@ -33,7 +32,6 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="windowNoTitle">true</item>
         <item name="android:keepScreenOn">true</item>
-        <!-- <item name="android:windowBackground">@android:color/transparent</item> -->
         <item name="android:windowBackground">@drawable/bg_gradient_home</item>
     </style>
 
@@ -48,6 +46,7 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowFullscreen">true</item>
     </style>
+
     <style name="CustomDialogStyleDim" parent="@android:style/Theme.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
