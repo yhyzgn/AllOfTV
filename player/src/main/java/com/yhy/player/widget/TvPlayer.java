@@ -21,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.animation.BounceInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -379,6 +380,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             ObjectAnimator translateAnimationY = ObjectAnimator.ofObject(this, "marginTop", new IntEvaluator(), mOriginalY, 0);
             AnimatorSet as = new AnimatorSet();
             as.playTogether(scaleAnimationWidth, scaleAnimationHeight, translateAnimationX, translateAnimationY);
+            as.setInterpolator(new BounceInterpolator());
             as.setDuration(DURATION_FULL_ANIMATION);
             as.start();
         }, 20);
@@ -406,6 +408,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         ObjectAnimator translateAnimationY = ObjectAnimator.ofObject(this, "marginTop", new IntEvaluator(), 0, mOriginalY);
         AnimatorSet as = new AnimatorSet();
         as.playTogether(scaleAnimationWidth, scaleAnimationHeight, translateAnimationX, translateAnimationY);
+        as.setInterpolator(new BounceInterpolator());
         as.setDuration(DURATION_FULL_ANIMATION);
         as.addListener(new AnimatorListenerAdapter() {
             @Override
