@@ -2,6 +2,8 @@ package com.yhy.all.of.tv.cache;
 
 import android.app.Application;
 
+import com.yhy.all.of.tv.utils.LogUtils;
+
 import io.fastkv.FastKV;
 
 /**
@@ -13,6 +15,7 @@ import io.fastkv.FastKV;
  */
 public class KV {
     public static final KV instance = new KV();
+    private static final String TAG = "KV";
 
     private FastKV kv;
 
@@ -25,5 +28,18 @@ public class KV {
 
     public FastKV kv() {
         return kv;
+    }
+
+    public void storePosition(String tag, long position) {
+        LogUtils.dTag(TAG, "storePosition: " + tag + ", position = " + position);
+        kv.putLong(tag, position);
+    }
+
+    public long getPosition(String tag) {
+        return kv.getLong(tag, 0);
+    }
+
+    public void remove(String key) {
+        kv.remove(key);
     }
 }

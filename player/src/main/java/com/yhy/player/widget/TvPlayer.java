@@ -86,6 +86,10 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private SilenceTimeBar stbPosition;
     private ExoPlayer mPlayer;
 
+    private String mUrl;
+
+    private String mTag;
+
     /**
      * 上一次操作时的时间戳
      */
@@ -182,14 +186,17 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         spvExo.setOnTouchListener((v, event) -> true);
     }
 
-    public void play(String title, String url, long seekToMs) {
+    public void play(String title, String url, String tag, long seekToMs) {
         if (mPlayer.isPlaying()) {
             mPlayer.stop();
         }
 
+        mUrl = url;
+        mTag = tag;
+
         MediaItem mi = new MediaItem.Builder()
-            .setTag(url)
-            .setUri(url)
+            .setTag(mTag)
+            .setUri(mUrl)
             .build();
 
         tvTitle.setText(title);
@@ -267,7 +274,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             mCurrentPosition = currentPosition;
             dragPosition(mCurrentPosition, false);
             if (null != mOnPositionChangedListener) {
-                mOnPositionChangedListener.onChanged(duration, mBufferedPosition, mCurrentPosition);
+                mOnPositionChangedListener.onChanged(mUrl, mTag, duration, mBufferedPosition, mCurrentPosition);
             }
         }
     }
@@ -495,7 +502,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
         @Override
         public void onIsLoadingChanged(boolean isLoading) {
-            pbLoading.setVisibility(isLoading && !mIsPlaying ? VISIBLE : GONE);
+            pbLoading.setVisibility(isLoading && !mIsPlaying && mBufferedPosition == mCurrentPosition ? VISIBLE : GONE);
         }
 
         @Override
@@ -634,7 +641,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     @FunctionalInterface
     public interface OnPositionChangedListener {
 
-        void onChanged(long duration, long bufferedPosition, long currentPosition);
+        void onChanged(String url, String tag, long duration, long bufferedPosition, long currentPosition);
     }
 
     @FunctionalInterface

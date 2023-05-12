@@ -12,12 +12,12 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.lzy.okgo.request.GetRequest;
-import com.tencent.smtt.utils.Md5Utils;
 import com.yhy.all.of.tv.api.model.IQiYiVideo;
 import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
 import com.yhy.all.of.tv.utils.LogUtils;
+import com.yhy.all.of.tv.utils.Md5Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,7 +25,6 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -184,12 +183,12 @@ public class IQiYiApi {
     }
 
     private List<String> genPairList(Map<String, Object> body) {
-        return body.entrySet().stream().sorted(Comparator.comparing(o -> o.getKey())).map(it -> it.getKey() + "=" + it.getValue()).collect(Collectors.toList());
+        return body.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(it -> it.getKey() + "=" + it.getValue()).collect(Collectors.toList());
     }
 
     private String genSign(List<String> pairList) {
         pairList.add("secret_key=howcuteitis");
         String value = Joiner.on("&").join(pairList);
-        return Md5Utils.getMD5(value).toUpperCase();
+        return Md5Utils.gen(value).toUpperCase();
     }
 }

@@ -33,6 +33,7 @@
                     android:textColor="@color/white"
                     tools:text="这里是标题"
                     android:maxLines="1"
+                    android:visibility="gone"
                     android:ellipsize="end"
                     android:textSize="18sp"
                     android:layout_weight="1" />
@@ -48,6 +49,7 @@
                     android:layout_marginStart="8dp"
                     android:format12Hour="HH:mm:ss"
                     android:format24Hour="HH:mm:ss"
+                    android:visibility="gone"
                     android:theme="@style/ClockTimerTheme" />
         </LinearLayout>
 

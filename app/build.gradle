@@ -37,7 +37,10 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [moduleName: project.name]
+                arguments = [
+                        "module.name"          : project.name,
+                        "router.incremental"   : "true"
+                ]
             }
         }
 
@@ -124,11 +127,11 @@ dependencies {
     implementation 'com.github.GrenderG:Toasty:1.5.2'
     implementation 'io.github.billywei01:fastkv:1.1.4'
     implementation 'com.github.yhyzgn:Evtor:2.0.1'
-    implementation 'com.github.yhyzgn.EasyRouter:router:2.0.1'
+    implementation 'com.github.yhyzgn.EasyRouter:router:2.0.6'
 
     implementation project(':player')
 
-    annotationProcessor 'com.github.yhyzgn.EasyRouter:router-compiler:2.0.1'
+    annotationProcessor 'com.github.yhyzgn.EasyRouter:router-compiler:2.0.6'
 
     androidTestImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
     androidTestImplementation 'androidx.test:core:1.5.0'

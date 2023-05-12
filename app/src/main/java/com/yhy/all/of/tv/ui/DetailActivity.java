@@ -15,6 +15,7 @@ import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import com.owen.tvrecyclerview.widget.V7StaggeredGridLayoutManager;
 import com.yhy.all.of.tv.R;
+import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.chan.ChanRegister;
 import com.yhy.all.of.tv.component.adapter.PlayListVodAdapter;
@@ -24,6 +25,7 @@ import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.parse.ParserRegister;
 import com.yhy.all.of.tv.utils.LogUtils;
+import com.yhy.all.of.tv.utils.Md5Utils;
 import com.yhy.all.of.tv.widget.web.ParserWebView;
 import com.yhy.evtor.Evtor;
 import com.yhy.evtor.annotation.Subscribe;
@@ -132,7 +134,11 @@ public class DetailActivity extends VideoActivity {
         mLiveData = new MutableLiveData<>();
         mLiveData.observe(this, url -> {
             Video vd = getCurrentPlayingVideo();
-            tvPlayer.play(vd.title, url, 0);
+
+            // 获取播放进度并播放
+            // 用原始 url 来生成 tag，不能使用解析过的，因为每次解析可能都会变
+            String tag = Md5Utils.gen(vd.pageUrl);
+            tvPlayer.play(vd.title, url, tag, KV.instance.getPosition(tag));
 
             tvPlayer.setVisibility(View.VISIBLE);
             rlParsing.setVisibility(View.GONE);
@@ -165,8 +171,12 @@ public class DetailActivity extends VideoActivity {
             LogUtils.iTag(TAG, "开始播放了");
         });
 
-        tvPlayer.setOnPositionChangedListener((duration, bufferedPosition, currentPosition) -> {
-            // TODO 进度记录
+        tvPlayer.setOnPositionChangedListener((url, tag, duration, bufferedPosition, currentPosition) -> {
+            if (currentPosition == duration) {
+                KV.instance.remove(tag);
+                return;
+            }
+            KV.instance.storePosition(tag, currentPosition);
         });
 
         tvFullScreen.setOnClickListener(v -> {
