@@ -1,11 +1,20 @@
 package com.yhy.all.of.tv.ui;
 
+import android.animation.AnimatorSet;
+import android.animation.IntEvaluator;
+import android.animation.ObjectAnimator;
+import android.util.Log;
+import android.util.Size;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -26,6 +35,7 @@ import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.parse.ParserRegister;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.utils.Md5Utils;
+import com.yhy.all.of.tv.utils.ViewUtils;
 import com.yhy.all.of.tv.widget.web.ParserWebView;
 import com.yhy.evtor.Evtor;
 import com.yhy.evtor.annotation.Subscribe;
@@ -49,6 +59,8 @@ import java.util.Objects;
 @Router(url = "/activity/detail")
 public class DetailActivity extends VideoActivity {
     private static final String TAG = "DetailActivity";
+    private final static int STICKY_EXIT_FULL_MS = 3000;
+    private final static int DURATION_FULL_ANIMATION = 600;
     @Autowired("chanName")
     public String mChanName;
     @Autowired("rootVideo")
@@ -56,7 +68,9 @@ public class DetailActivity extends VideoActivity {
 
     private MutableLiveData<String> mLiveData;
 
-    private LinearLayout llRoot;
+    private FrameLayout flPlayerAnchor;
+    private FrameLayout flPlayerContainer;
+
     private RelativeLayout rlParsing;
     private TextView tvParsingLog;
     private TvPlayer tvPlayer;
@@ -85,6 +99,20 @@ public class DetailActivity extends VideoActivity {
 
     private ParserWebView mLastParserWebView;
 
+    private int mOriginalX;
+
+    private int mOriginalY;
+
+    private int mOriginalWidth;
+
+    private int mOriginalHeight;
+
+    private int mScreenWidth;
+
+    private int mScreenHeight;
+
+    private long mLastExitFullTime;
+
     @Override
     protected int layout() {
         return R.layout.activity_detail;
@@ -92,7 +120,9 @@ public class DetailActivity extends VideoActivity {
 
     @Override
     protected void initView() {
-        llRoot = $(R.id.llRoot);
+        flPlayerAnchor = $(R.id.flPlayerAnchor);
+        flPlayerContainer = $(R.id.flPlayerContainer);
+
         rlParsing = $(R.id.rlParsing);
         tvParsingLog = $(R.id.tvParsingLog);
         tvPlayer = $(R.id.tvPlayer);
@@ -120,7 +150,7 @@ public class DetailActivity extends VideoActivity {
         trvPlayListVod.setHasFixedSize(true);
         trvPlayListVod.setLayoutManager(new V7StaggeredGridLayoutManager(12, StaggeredGridLayoutManager.VERTICAL));
 
-        setLoadSir(llRoot);
+        setLoadSir($(R.id.vRoot));
     }
 
     @Override
@@ -167,6 +197,31 @@ public class DetailActivity extends VideoActivity {
 
     @Override
     protected void initEvent() {
+        flPlayerAnchor.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int[] location = new int[2];
+                flPlayerAnchor.getLocationOnScreen(location);
+                mOriginalX = location[0];
+                mOriginalY = location[1];
+                mOriginalWidth = flPlayerAnchor.getWidth();
+                mOriginalHeight = flPlayerAnchor.getHeight();
+
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(mOriginalWidth, mOriginalHeight);
+                lp.topMargin = mOriginalX;
+                lp.leftMargin = mOriginalY;
+                flPlayerContainer.setLayoutParams(lp);
+                flPlayerContainer.setVisibility(View.VISIBLE);
+
+                Size size = ViewUtils.getScreenSize(DetailActivity.this);
+                mScreenWidth = size.getWidth();
+                mScreenHeight = size.getHeight();
+
+                // 移除
+                flPlayerAnchor.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+
         tvPlayer.setOnStartedListener(() -> {
             LogUtils.iTag(TAG, "开始播放了");
         });
@@ -239,6 +294,78 @@ public class DetailActivity extends VideoActivity {
     @Override
     protected TvPlayer player() {
         return tvPlayer;
+    }
+
+    public void enterFullScreen(AppCompatActivity activity) {
+        if (tvPlayer.isInFullScreen()) {
+            return;
+        }
+
+        Log.i(TAG, "Location.x = " + mOriginalX + ", Location.y = " + mOriginalY + ", OriginalWidth = " + mOriginalWidth + ", OriginalHeight = " + mOriginalHeight + ", ScreenWidth = " + mScreenWidth + ", ScreenHeight = " + mScreenHeight);
+
+        // 执行动画
+        ObjectAnimator scaleAnimationWidth = ObjectAnimator.ofObject(this, "width", new IntEvaluator(), mOriginalWidth, mScreenWidth);
+        ObjectAnimator scaleAnimationHeight = ObjectAnimator.ofObject(this, "height", new IntEvaluator(), mOriginalHeight, mScreenHeight);
+        ObjectAnimator translateAnimationX = ObjectAnimator.ofObject(this, "marginLeft", new IntEvaluator(), mOriginalX, 0);
+        ObjectAnimator translateAnimationY = ObjectAnimator.ofObject(this, "marginTop", new IntEvaluator(), mOriginalY, 0);
+        AnimatorSet as = new AnimatorSet();
+        as.playTogether(scaleAnimationWidth, scaleAnimationHeight, translateAnimationX, translateAnimationY);
+        as.setInterpolator(new FastOutSlowInInterpolator());
+        as.setDuration(DURATION_FULL_ANIMATION);
+        as.start();
+
+        tvPlayer.setInFullScreen(true);
+    }
+
+    public boolean backFromFullScreen(AppCompatActivity activity) {
+        if (!tvPlayer.isInFullScreen()) {
+            return false;
+        }
+
+        long now = System.currentTimeMillis();
+        if (now - mLastExitFullTime > STICKY_EXIT_FULL_MS) {
+            // 提示再按一次退出播放
+            warning("再按一次退出播放");
+            mLastExitFullTime = now;
+            return true;
+        }
+
+        // 先执行动画
+        ObjectAnimator scaleAnimationWidth = ObjectAnimator.ofObject(this, "width", new IntEvaluator(), mScreenWidth, mOriginalWidth);
+        ObjectAnimator scaleAnimationHeight = ObjectAnimator.ofObject(this, "height", new IntEvaluator(), mScreenHeight, mOriginalHeight);
+        ObjectAnimator translateAnimationX = ObjectAnimator.ofObject(this, "marginLeft", new IntEvaluator(), 0, mOriginalX);
+        ObjectAnimator translateAnimationY = ObjectAnimator.ofObject(this, "marginTop", new IntEvaluator(), 0, mOriginalY);
+        AnimatorSet as = new AnimatorSet();
+        as.playTogether(scaleAnimationWidth, scaleAnimationHeight, translateAnimationX, translateAnimationY);
+        as.setInterpolator(new FastOutSlowInInterpolator());
+        as.setDuration(DURATION_FULL_ANIMATION);
+        as.start();
+        tvPlayer.setInFullScreen(false);
+        return true;
+    }
+
+    public void setWidth(int width) {
+        ViewGroup.LayoutParams params = flPlayerContainer.getLayoutParams();
+        params.width = width;
+        flPlayerContainer.setLayoutParams(params);
+    }
+
+    public void setHeight(int height) {
+        ViewGroup.LayoutParams params = flPlayerContainer.getLayoutParams();
+        params.height = height;
+        flPlayerContainer.setLayoutParams(params);
+    }
+
+    public void setMarginLeft(int marginLeft) {
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) flPlayerContainer.getLayoutParams();
+        params.leftMargin = marginLeft;
+        flPlayerContainer.setLayoutParams(params);
+    }
+
+    public void setMarginTop(int marginTop) {
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) flPlayerContainer.getLayoutParams();
+        params.topMargin = marginTop;
+        flPlayerContainer.setLayoutParams(params);
     }
 
     private void refreshVideoInfo() {

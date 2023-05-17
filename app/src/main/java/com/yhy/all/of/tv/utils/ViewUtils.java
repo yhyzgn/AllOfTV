@@ -6,9 +6,15 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.util.DisplayMetrics;
+import android.util.Size;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.yhy.player.utils.CutoutUtils;
 
 import java.io.ByteArrayOutputStream;
 
@@ -64,7 +70,7 @@ public abstract class ViewUtils {
      */
     public static int dp2px(float dpVal) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpVal, context
-                .getResources().getDisplayMetrics());
+            .getResources().getDisplayMetrics());
     }
 
     /**
@@ -75,7 +81,7 @@ public abstract class ViewUtils {
      */
     public static int sp2px(float spVal) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, spVal, context
-                .getResources().getDisplayMetrics());
+            .getResources().getDisplayMetrics());
     }
 
     /**
@@ -97,6 +103,23 @@ public abstract class ViewUtils {
      */
     public static float px2sp(float pxVal) {
         return (pxVal / context.getResources().getDisplayMetrics().scaledDensity);
+    }
+
+    /**
+     * 获取屏幕大小
+     *
+     * @return 屏幕大小
+     */
+    public static Size getScreenSize(AppCompatActivity activity) {
+        // 获取屏幕宽高
+        DisplayMetrics dm = context.getResources().getDisplayMetrics();
+        int width = dm.widthPixels;
+        int height = dm.heightPixels;
+        // 如果有刘海屏，需要加上刘海屏的宽高
+        Size cutoutSize = CutoutUtils.size(activity);
+        width += cutoutSize.getWidth();
+        height += cutoutSize.getHeight();
+        return new Size(width, height);
     }
 
     /**

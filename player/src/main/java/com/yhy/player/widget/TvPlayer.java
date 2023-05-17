@@ -117,6 +117,8 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
     private ViewGroup mOriginalParentContainer;
 
+    private boolean mIsInFullScreen;
+
     private int mOriginalX;
 
     private int mOriginalY;
@@ -293,7 +295,11 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     }
 
     public boolean isInFullScreen() {
-        return null != mOriginalParentContainer;
+        return mIsInFullScreen;
+    }
+
+    public void setInFullScreen(boolean isInFullScreen) {
+        mIsInFullScreen = isInFullScreen;
     }
 
     public void pause() {
@@ -390,6 +396,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             as.setInterpolator(new FastOutSlowInInterpolator());
             as.setDuration(DURATION_FULL_ANIMATION);
             as.start();
+            mIsInFullScreen = true;
         }, 20);
     }
 
@@ -429,6 +436,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             }
         });
         as.start();
+        mIsInFullScreen = false;
         return true;
     }
 
