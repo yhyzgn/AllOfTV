@@ -50,17 +50,14 @@ public class SelectDialog<T> extends BaseDialog {
     }
 
     public void setAdapter(SelectDialogAdapter.SelectDialogInterface<T> sourceBeanSelectDialogInterface, DiffUtil.ItemCallback<T> sourceBeanItemCallback, List<T> data, int select) {
-        SelectDialogAdapter<T> adapter = new SelectDialogAdapter(sourceBeanSelectDialogInterface, sourceBeanItemCallback, muteCheck);
+        SelectDialogAdapter<T> adapter = new SelectDialogAdapter<>(sourceBeanSelectDialogInterface, sourceBeanItemCallback, muteCheck);
         adapter.setData(data, select);
         TvRecyclerView tvRecyclerView = ((TvRecyclerView) findViewById(R.id.list));
         tvRecyclerView.setAdapter(adapter);
         tvRecyclerView.setSelectedPosition(select);
-        tvRecyclerView.post(new Runnable() {
-            @Override
-            public void run() {
-                tvRecyclerView.scrollToPosition(select);
-                tvRecyclerView.setSelectionWithSmooth(select);
-            }
+        tvRecyclerView.post(() -> {
+            tvRecyclerView.scrollToPosition(select);
+            tvRecyclerView.setSelectionWithSmooth(select);
         });
     }
 }

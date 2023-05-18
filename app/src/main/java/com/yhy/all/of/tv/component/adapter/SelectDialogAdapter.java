@@ -22,7 +22,7 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
 
     private boolean muteCheck = false;
 
-    class SelectViewHolder extends RecyclerView.ViewHolder {
+    static class SelectViewHolder extends RecyclerView.ViewHolder {
 
         public SelectViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
@@ -34,7 +34,6 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
 
         String getDisplay(T t);
     }
-
 
     public static DiffUtil.ItemCallback<String> stringDiff = new DiffUtil.ItemCallback<>() {
 
@@ -49,18 +48,17 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
         }
     };
 
-
     private ArrayList<T> data = new ArrayList<>();
 
     private int select = 0;
 
-    private SelectDialogInterface dialogInterface = null;
+    private SelectDialogInterface<T> dialogInterface = null;
 
-    public SelectDialogAdapter(SelectDialogInterface dialogInterface, DiffUtil.ItemCallback diffCallback) {
+    public SelectDialogAdapter(SelectDialogInterface<T> dialogInterface, DiffUtil.ItemCallback<T> diffCallback) {
         this(dialogInterface, diffCallback, false);
     }
 
-    public SelectDialogAdapter(SelectDialogInterface dialogInterface, DiffUtil.ItemCallback diffCallback, boolean muteCheck) {
+    public SelectDialogAdapter(SelectDialogInterface<T> dialogInterface, DiffUtil.ItemCallback<T> diffCallback, boolean muteCheck) {
         super(diffCallback);
         this.dialogInterface = dialogInterface;
         this.muteCheck = muteCheck;
@@ -78,7 +76,7 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
         return data.size();
     }
 
-
+    @NonNull
     @Override
     public SelectViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         return new SelectViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_dialog_select, parent, false));
@@ -88,19 +86,18 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
     public void onBindViewHolder(@NonNull SelectDialogAdapter.SelectViewHolder holder, @SuppressLint("RecyclerView") int position) {
         T value = data.get(position);
         String name = dialogInterface.getDisplay(value);
-        if (!muteCheck && position == select)
+        if (!muteCheck && position == select) {
             name = "√ " + name;
+        }
         ((TextView) holder.itemView.findViewById(R.id.tvName)).setText(name);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!muteCheck && position == select)
-                    return;
-                notifyItemChanged(select);
-                select = position;
-                notifyItemChanged(select);
-                dialogInterface.click(value, position);
+        holder.itemView.setOnClickListener(v -> {
+            if (!muteCheck && position == select) {
+                return;
             }
+            notifyItemChanged(select);
+            select = position;
+            notifyItemChanged(select);
+            dialogInterface.click(value, position);
         });
     }
 }

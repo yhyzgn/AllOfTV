@@ -3,25 +3,25 @@
     <item android:state_focused="true" android:state_pressed="true">
         <shape>
             <corners android:radius="@dimen/vs_5" />
-            <solid android:color="?attr/color_theme_dark_70" />
+            <solid android:color="@color/colorPrimaryDark" />
         </shape>
     </item>
     <item android:state_focused="false" android:state_pressed="true">
         <shape>
             <corners android:radius="@dimen/vs_5" />
-            <solid android:color="?attr/color_theme_dark_70" />
+            <solid android:color="@color/color_FFB800" />
         </shape>
     </item>
     <item android:state_focused="true">
         <shape>
             <corners android:radius="@dimen/vs_5" />
-            <solid android:color="?attr/color_theme_dark_70" />
+            <solid android:color="@color/colorPrimary" />
         </shape>
     </item>
     <item android:state_focused="false" android:state_pressed="false">
         <shape>
             <corners android:radius="@dimen/vs_5" />
-            <solid android:color="@color/color_000000_60" />
+            <solid android:color="@color/color_32364E_80" />
         </shape>
     </item>
 </selector>

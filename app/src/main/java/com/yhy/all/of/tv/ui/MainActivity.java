@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.viewpager.widget.ViewPager;
 
+import com.azhon.appupdate.listener.OnDownloadListenerAdapter;
 import com.azhon.appupdate.manager.DownloadManager;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
@@ -49,10 +50,12 @@ import com.yhy.all.of.tv.widget.FixedSpeedScroller;
 import com.yhy.all.of.tv.widget.NoScrollViewPager;
 import com.yhy.all.of.tv.widget.ViewObj;
 import com.yhy.all.of.tv.widget.dialog.SelectDialog;
+import com.yhy.all.of.tv.widget.dialog.UpdateDialog;
 import com.yhy.router.annotation.Router;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -358,14 +361,36 @@ public class MainActivity extends BaseActivity {
                     long versionCode = SysUtils.getVersionCode();
                     if (versionCode < buildNumber) {
                         // 发现新版本
-                        downloadApk(vi);
+                        UpdateDialog ud = new UpdateDialog(this)
+                            .setName(vi.name)
+                            .setTime(vi.publishedAt)
+                            .setLog(vi.body);
+                        ud.setOnUpdatedListener(() -> {
+                                downloadApk(vi, new OnDownloadListenerAdapter() {
+                                    @Override
+                                    public void start() {
+                                        ud.startDownloading();
+                                    }
+
+                                    @Override
+                                    public void downloading(int max, int progress) {
+                                        ud.setProgress(max, progress);
+                                    }
+
+                                    @Override
+                                    public void done(@NonNull File apk) {
+                                        ud.dismiss();
+                                    }
+                                });
+                            })
+                            .show();
                     }
                 }
             }
         });
     }
 
-    private void downloadApk(VersionInfo version) {
+    private void downloadApk(VersionInfo version, OnDownloadListenerAdapter downloadListenerAdapter) {
         List<VersionInfo.AssetsBean> assets = version.assets.stream().filter(it -> it.browserDownloadUrl.endsWith(".apk")).collect(Collectors.toList());
         if (assets.isEmpty()) {
             return;
@@ -375,17 +400,18 @@ public class MainActivity extends BaseActivity {
         String apkName = apkUrl.substring(apkUrl.lastIndexOf("/") + 1);
 
         DownloadManager manager = new DownloadManager.Builder(this)
-                .apkName(apkName)
-                .apkUrl("https://ghproxy.com/" + apkUrl)
-                .apkDescription(!TextUtils.isEmpty(version.body) ? version.body : "检查到新版本")
-                .smallIcon(R.mipmap.ic_launcher)
-                .apkSize(FileUtils.formatSize(asset.size))
-                .showNotification(true)
-                .forcedUpgrade(true)
-                .jumpInstallPage(true)
-                .showNewerToast(true)
-                .showBgdToast(true)
-                .build();
+            .apkName(apkName)
+            .apkUrl("https://ghproxy.com/" + apkUrl)
+            .apkDescription(!TextUtils.isEmpty(version.body) ? version.body : "检查到新版本")
+            .smallIcon(R.mipmap.ic_launcher)
+            .apkSize(FileUtils.formatSize(asset.size))
+            .showNotification(true)
+            .forcedUpgrade(true)
+            .jumpInstallPage(true)
+            .showNewerToast(false)
+            .showBgdToast(false)
+            .onDownloadListener(downloadListenerAdapter)
+            .build();
 
         manager.download();
     }
@@ -428,12 +454,12 @@ public class MainActivity extends BaseActivity {
         // Hide Top =======================================================
         if (hide && topHide == 0) {
             animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                            AutoSizeUtils.mm2px(this, 20.0f),
-                            AutoSizeUtils.mm2px(this, 0.0f)),
-                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                            AutoSizeUtils.mm2px(this, 50.0f),
-                            AutoSizeUtils.mm2px(this, 1.0f)),
-                    ObjectAnimator.ofFloat(this.topLayout, "alpha", 1.0f, 0.0f));
+                    AutoSizeUtils.mm2px(this, 20.0f),
+                    AutoSizeUtils.mm2px(this, 0.0f)),
+                ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
+                    AutoSizeUtils.mm2px(this, 50.0f),
+                    AutoSizeUtils.mm2px(this, 1.0f)),
+                ObjectAnimator.ofFloat(this.topLayout, "alpha", 1.0f, 0.0f));
             animatorSet.setDuration(250);
             animatorSet.start();
             tvName.setFocusable(false);
@@ -445,12 +471,12 @@ public class MainActivity extends BaseActivity {
         // Show Top =======================================================
         if (!hide && topHide == 1) {
             animatorSet.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                            AutoSizeUtils.mm2px(this, 0.0f),
-                            AutoSizeUtils.mm2px(this, 20.0f)),
-                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                            AutoSizeUtils.mm2px(this, 1.0f),
-                            AutoSizeUtils.mm2px(this, 50.0f)),
-                    ObjectAnimator.ofFloat(this.topLayout, "alpha", 0.0f, 1.0f));
+                    AutoSizeUtils.mm2px(this, 0.0f),
+                    AutoSizeUtils.mm2px(this, 20.0f)),
+                ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
+                    AutoSizeUtils.mm2px(this, 1.0f),
+                    AutoSizeUtils.mm2px(this, 50.0f)),
+                ObjectAnimator.ofFloat(this.topLayout, "alpha", 0.0f, 1.0f));
             animatorSet.setDuration(250);
             animatorSet.start();
             tvName.setFocusable(true);

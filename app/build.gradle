@@ -128,6 +128,9 @@ dependencies {
     implementation 'io.github.billywei01:fastkv:1.1.4'
     implementation 'com.github.yhyzgn:Evtor:2.0.1'
     implementation 'com.github.yhyzgn.EasyRouter:router:2.0.6'
+    implementation 'com.youbenzi:MDTool:1.2.4'
+    implementation 'com.github.binarywang:java-emoji-converter:1.0.2'
+    implementation 'com.daimajia.numberprogressbar:library:1.4'
 
     implementation project(':player')
 

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+            android:layout_width="@dimen/vs_960"
+            android:minWidth="@dimen/vs_960"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_centerInParent="true"
+            android:layout_margin="@dimen/vs_30"
+            android:paddingVertical="@dimen/vs_20"
+            android:paddingHorizontal="@dimen/vs_30"
+            android:background="@drawable/shape_dialog_bg_main">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_32364E"
+                android:textSize="@dimen/ts_26"
+                android:textStyle="bold"
+                android:shadowColor="@color/color_3D3D3D_50"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="5"
+                android:singleLine="true"
+                android:text="发现新版本" />
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/vs_20">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/ts_18"
+                    android:textStyle="bold"
+                    android:textColor="@color/color_32364E"
+                    android:text="版本名称：" />
+
+            <TextView
+                    android:id="@+id/tvName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/ts_18"
+                    android:textColor="@color/color_32364E"
+                    tools:text="v1.0.0" />
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/vs_6">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/ts_18"
+                    android:textStyle="bold"
+                    android:textColor="@color/color_32364E"
+                    android:text="发布时间：" />
+
+            <TextView
+                    android:id="@+id/tvTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/ts_18"
+                    android:textColor="@color/color_32364E"
+                    tools:text="2023-05-20 12:12:12" />
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/vs_6">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/ts_18"
+                    android:textStyle="bold"
+                    android:textColor="@color/color_32364E"
+                    android:text="更新日志：" />
+
+            <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scrollbarStyle="outsideOverlay"
+                    android:scrollbarThumbVertical="@color/colorAccent"
+                    android:scrollbarSize="@dimen/vs_4"
+                    android:paddingTop="@dimen/vs_8"
+                    android:scrollbars="vertical">
+
+                <TextView
+                        android:id="@+id/tvLog"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/color_32364E"
+                        tools:text="更新日志1\n更新日志2" />
+            </ScrollView>
+        </LinearLayout>
+
+        <com.azhon.appupdate.view.NumberProgressBar
+                android:id="@+id/npbDownload"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="@dimen/vs_8"
+                app:progress_reached_color="@color/colorPrimary"
+                app:progress_text_size="@dimen/ts_18"
+                app:progress_text_color="@color/colorPrimary"
+                android:visibility="gone" />
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/vs_20">
+
+            <Button
+                    android:id="@+id/btnConfirm"
+                    android:layout_width="@dimen/vs_70"
+                    android:layout_height="@dimen/vs_50"
+                    android:textSize="@dimen/ts_18"
+                    android:textColor="@color/white"
+                    android:text="确定"
+                    android:background="@drawable/button_dialog_main"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:focusableInTouchMode="true" />
+
+            <Button
+                    android:id="@+id/btnCancel"
+                    android:layout_width="@dimen/vs_70"
+                    android:layout_height="@dimen/vs_50"
+                    android:layout_marginStart="@dimen/vs_40"
+                    android:textSize="@dimen/ts_18"
+                    android:textColor="@color/white"
+                    android:background="@drawable/button_dialog_main"
+                    android:text="取消"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:focusableInTouchMode="true" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
