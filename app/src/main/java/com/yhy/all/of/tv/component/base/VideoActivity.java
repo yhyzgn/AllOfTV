@@ -26,13 +26,13 @@ public abstract class VideoActivity extends BaseActivity {
         player().setExitFullToastyCallback(this::warning);
     }
 
-    @Override
-    public void onBackPressed() {
-        if (player().backFromFullScreen(this)) {
-            return;
-        }
-        super.onBackPressed();
-    }
+    // @Override
+    // public void onBackPressed() {
+    //     if (player().backFromFullScreen(this)) {
+    //         return;
+    //     }
+    //     super.onBackPressed();
+    // }
 
     @Override
     protected void onPause() {

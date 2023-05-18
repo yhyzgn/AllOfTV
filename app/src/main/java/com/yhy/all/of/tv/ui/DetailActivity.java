@@ -13,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -60,7 +59,7 @@ import java.util.Objects;
 public class DetailActivity extends VideoActivity {
     private static final String TAG = "DetailActivity";
     private final static int STICKY_EXIT_FULL_MS = 3000;
-    private final static int DURATION_FULL_ANIMATION = 600;
+    private final static int DURATION_FULL_ANIMATION = 300;
     @Autowired("chanName")
     public String mChanName;
     @Autowired("rootVideo")
@@ -235,7 +234,7 @@ public class DetailActivity extends VideoActivity {
         });
 
         tvFullScreen.setOnClickListener(v -> {
-            tvPlayer.enterFullScreen(this);
+            enterFullScreen();
         });
 
         tvQuickSearch.setOnClickListener(v -> {
@@ -296,7 +295,15 @@ public class DetailActivity extends VideoActivity {
         return tvPlayer;
     }
 
-    public void enterFullScreen(AppCompatActivity activity) {
+    @Override
+    public void onBackPressed() {
+        if (backFromFullScreen()) {
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    public void enterFullScreen() {
         if (tvPlayer.isInFullScreen()) {
             return;
         }
@@ -317,7 +324,7 @@ public class DetailActivity extends VideoActivity {
         tvPlayer.setInFullScreen(true);
     }
 
-    public boolean backFromFullScreen(AppCompatActivity activity) {
+    public boolean backFromFullScreen() {
         if (!tvPlayer.isInFullScreen()) {
             return false;
         }
