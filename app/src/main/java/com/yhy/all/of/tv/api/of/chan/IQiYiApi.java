@@ -129,7 +129,8 @@ public class IQiYiApi {
                 String result = response.body();
                 try {
                     JSONObject jo = new JSONObject(result);
-                    JSONArray ja = jo.getJSONObject("data").getJSONObject("template").getJSONObject("pure_data").getJSONArray("selector_bk");
+                    JSONObject joData = jo.getJSONObject("data");
+                    JSONArray ja = joData.getJSONObject("template").getJSONObject("pure_data").getJSONArray("selector_bk");
                     jo = ja.getJSONObject(0).getJSONObject("videos");
 
                     List<String> pageKeys = gson.fromJson(jo.getJSONArray("page_keys").toString(), new TypeToken<>() {
@@ -137,6 +138,9 @@ public class IQiYiApi {
 
                     Map<String, List<IQiYiVideo>> featurePaged = gson.fromJson(jo.getJSONObject("feature_paged").toString(), new TypeToken<>() {
                     });
+
+                    // 总集数
+                    root.episodesTotal = joData.getJSONObject("base_data").optInt("total_episode", 1);
 
                     root.episodes = pageKeys.stream()
                         .map(featurePaged::get)

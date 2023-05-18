@@ -268,7 +268,7 @@ public class DetailActivity extends VideoActivity {
             mCurrentParserIndex = position;
 
             // 缓存一下解析器
-            KV.instance.storeParser(mRootTag, getCurrentParser());
+            KV.instance.storeParser(mRootTag, mParserList.get(mCurrentParserIndex));
 
             adapter.notifyItemChanged(lastIndex);
             adapter.notifyItemChanged(mCurrentParserIndex);
@@ -407,7 +407,7 @@ public class DetailActivity extends VideoActivity {
                 mRootVideo = video;
 
                 // 电影或者剧集已经更新完啦
-                if (mRootVideo.type == VideoType.FILM || mRootVideo.episodesTotal == mRootVideo.episodes.size()) {
+                if (mRootVideo.type == VideoType.FILM || mRootVideo.episodesTotal <= mRootVideo.episodes.size()) {
                     // 缓存之
                     KV.instance.storeVideo(mRootTag, mRootVideo);
                 }

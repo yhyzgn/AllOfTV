@@ -155,7 +155,7 @@ public class TencentApi {
                     root.description = joCoverInfo.getString("description");
 
                     // 总集数
-                    String episodeAll = joCoverInfo.getString("episode_all");
+                    String episodeAll = joCoverInfo.optString("episode_all", "1");
                     if (TextUtils.isEmpty(episodeAll)) {
                         episodeAll = "1";
                     }

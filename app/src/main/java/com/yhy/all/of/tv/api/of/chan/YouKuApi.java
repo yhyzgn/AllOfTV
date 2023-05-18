@@ -134,11 +134,16 @@ public class YouKuApi {
             if (!TextUtils.isEmpty(data)) {
                 try {
                     JSONObject jo = new JSONObject(data);
-                    jo = jo.getJSONObject("data").getJSONObject("model").getJSONObject("detail").getJSONObject("data");
+                    JSONObject joData = jo.getJSONObject("data");
+
+                    jo = joData.getJSONObject("model").getJSONObject("detail").getJSONObject("data");
                     JSONArray jaNodes = jo.getJSONArray("nodes").getJSONObject(0).getJSONArray("nodes");
 
                     // 简介
                     root.description = jaNodes.getJSONObject(0).getJSONArray("nodes").getJSONObject(0).getJSONObject("data").getString("desc");
+
+                    // 总集数
+                    root.episodesTotal = joData.getJSONObject("data").getJSONObject("data").getJSONObject("extra").optInt("episodeTotal", 1);
 
                     // 播放列表
                     JSONArray ja = jaNodes.getJSONObject(2).getJSONArray("nodes");
