@@ -31,7 +31,7 @@ import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.R;
 import com.yhy.all.of.tv.api.model.VersionInfo;
-import com.yhy.all.of.tv.api.of.fir.GithubApi;
+import com.yhy.all.of.tv.api.of.github.GithubApi;
 import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.chan.ChanRegister;

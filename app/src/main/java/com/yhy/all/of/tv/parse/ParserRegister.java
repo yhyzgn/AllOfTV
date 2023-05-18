@@ -32,6 +32,15 @@ public class ParserRegister {
         );
     }
 
+    public int indexOfSupported(Parser parser, String chanName) {
+        for (int i = 0; i < parserList.size(); i++) {
+            if (Objects.equals(parser.name(), parserList.get(i).name())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public List<Parser> allOfParserList() {
         return parserList;
     }
@@ -42,5 +51,9 @@ public class ParserRegister {
 
     public List<Parser> supportedParserList(String chanName) {
         return parserList.stream().filter(it -> it.supportedChanList().stream().anyMatch(c -> Objects.equals(chanName, c.name()))).collect(Collectors.toList());
+    }
+
+    public Parser findSupported(String parserName, String chanName) {
+        return supportedParserList(chanName).stream().filter(it -> Objects.equals(it.name(), parserName)).findFirst().orElse(parserList.get(0));
     }
 }

@@ -1,4 +1,4 @@
-package com.yhy.all.of.tv.api.of.fir;
+package com.yhy.all.of.tv.api.of.github;
 
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.model.Response;

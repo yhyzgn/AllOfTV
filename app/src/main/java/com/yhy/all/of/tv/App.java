@@ -24,6 +24,7 @@ import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.component.callback.EmptyCallback;
 import com.yhy.all.of.tv.component.callback.LoadingCallback;
 import com.yhy.all.of.tv.component.transform.RoundTransformation;
+import com.yhy.all.of.tv.model.ems.VideoType;
 import com.yhy.all.of.tv.rand.IpRand;
 import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.FileUtils;
@@ -121,6 +122,10 @@ public class App extends MultiDexApplication {
 
     private void initUtils() {
         // 工具类
+        JsonUtils.init(builder -> {
+            builder.registerTypeAdapter(VideoType.class, new VideoType.TypeAdapter());
+        });
+        
         ToastUtils.init(this);
         ViewUtils.init(this);
         SysUtils.init(this);

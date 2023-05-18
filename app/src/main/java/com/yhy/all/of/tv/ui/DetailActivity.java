@@ -30,6 +30,7 @@ import com.yhy.all.of.tv.component.adapter.PlayListVodAdapter;
 import com.yhy.all.of.tv.component.adapter.SeriesFlagAdapter;
 import com.yhy.all.of.tv.component.base.VideoActivity;
 import com.yhy.all.of.tv.model.Video;
+import com.yhy.all.of.tv.model.ems.VideoType;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.parse.ParserRegister;
 import com.yhy.all.of.tv.utils.LogUtils;
@@ -64,6 +65,7 @@ public class DetailActivity extends VideoActivity {
     public String mChanName;
     @Autowired("rootVideo")
     public Video mRootVideo;
+    private String mRootTag;
 
     private MutableLiveData<String> mLiveData;
 
@@ -158,16 +160,21 @@ public class DetailActivity extends VideoActivity {
         EasyRouter.getInstance().inject(this);
         Evtor.instance.register(this);
 
+        mRootTag = Md5Utils.gen(mRootVideo.pageUrl);
+
+        // 初始化一下
+        getCurrentParser();
+
         refreshVideoInfo();
 
         mLiveData = new MutableLiveData<>();
         mLiveData.observe(this, url -> {
             Video vd = getCurrentPlayingVideo();
+            // 用原始 url 来生成 tag，不能使用解析过的，因为每次解析可能都会变
+            String vdTag = Md5Utils.gen(vd.pageUrl);
 
             // 获取播放进度并播放
-            // 用原始 url 来生成 tag，不能使用解析过的，因为每次解析可能都会变
-            String tag = Md5Utils.gen(vd.pageUrl);
-            tvPlayer.play(vd.title, url, tag, KV.instance.getPosition(tag));
+            tvPlayer.play(vd.title, url, vdTag, KV.instance.getPosition(vdTag));
 
             tvPlayer.setVisibility(View.VISIBLE);
             rlParsing.setVisibility(View.GONE);
@@ -227,7 +234,7 @@ public class DetailActivity extends VideoActivity {
 
         tvPlayer.setOnPositionChangedListener((url, tag, duration, bufferedPosition, currentPosition) -> {
             if (currentPosition == duration) {
-                KV.instance.remove(tag);
+                KV.instance.removePosition(tag);
                 return;
             }
             KV.instance.storePosition(tag, currentPosition);
@@ -259,6 +266,10 @@ public class DetailActivity extends VideoActivity {
             }
             int lastIndex = mCurrentParserIndex;
             mCurrentParserIndex = position;
+
+            // 缓存一下解析器
+            KV.instance.storeParser(mRootTag, getCurrentParser());
+
             adapter.notifyItemChanged(lastIndex);
             adapter.notifyItemChanged(mCurrentParserIndex);
 
@@ -270,8 +281,13 @@ public class DetailActivity extends VideoActivity {
             if (position == mCurrentPlayingIndex) {
                 return;
             }
+
             int lastIndex = mCurrentPlayingIndex;
             mCurrentPlayingIndex = position;
+
+            // 缓存下当前播放的集数
+            KV.instance.storeEpisode(mRootTag, mCurrentPlayingIndex);
+
             adapter.notifyItemChanged(lastIndex);
             adapter.notifyItemChanged(mCurrentPlayingIndex);
 
@@ -389,6 +405,16 @@ public class DetailActivity extends VideoActivity {
             if (null != video && null != video.episodes) {
                 LogUtils.iTag(TAG, "播放列表加载成功", video);
                 mRootVideo = video;
+
+                // 电影或者剧集已经更新完啦
+                if (mRootVideo.type == VideoType.FILM || mRootVideo.episodesTotal == mRootVideo.episodes.size()) {
+                    // 缓存之
+                    KV.instance.storeVideo(mRootTag, mRootVideo);
+                }
+
+                // 从缓存中获取当前播放到的集数
+                mCurrentPlayingIndex = KV.instance.getEpisode(mRootTag);
+
                 refreshVideoInfo();
 
                 mPlayListVodAdapter.setNewInstance(video.episodes);
@@ -396,7 +422,7 @@ public class DetailActivity extends VideoActivity {
                 loadVideoAndPlay();
             }
         });
-        getCurrentChan().loadPlayList(this, mRootVideo, playListLiveData);
+        getCurrentChan().loadPlayListWithCache(this, mRootVideo, playListLiveData);
     }
 
     private void loadVideoAndPlay() {
@@ -412,7 +438,9 @@ public class DetailActivity extends VideoActivity {
     }
 
     private Parser getCurrentParser() {
-        return mParserList.get(mCurrentParserIndex);
+        Parser parser = KV.instance.getParser(mRootTag, mChanName);
+        mCurrentParserIndex = ParserRegister.instance.indexOfSupported(parser, mChanName);
+        return parser;
     }
 
     private Chan getCurrentChan() {

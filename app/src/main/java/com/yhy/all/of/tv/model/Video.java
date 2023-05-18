@@ -1,5 +1,7 @@
 package com.yhy.all.of.tv.model;
 
+import androidx.annotation.NonNull;
+
 import com.yhy.all.of.tv.model.ems.VideoType;
 
 import java.io.Serializable;
@@ -31,11 +33,14 @@ public class Video implements Serializable {
     public int day;
     public String updateStatus;
 
+    public int episodesTotal;
+
     /**
      * 剧集
      */
     public List<Video> episodes;
 
+    @NonNull
     @Override
     public String toString() {
         return "Video{" +
@@ -53,6 +58,7 @@ public class Video implements Serializable {
             ", year=" + year +
             ", month=" + month +
             ", day=" + day +
+            ", updateStatus=" + updateStatus +
             ", episodes=" + episodes +
             '}';
     }

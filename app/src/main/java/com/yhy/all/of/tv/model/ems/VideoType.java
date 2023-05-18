@@ -1,5 +1,17 @@
 package com.yhy.all.of.tv.model.ems;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * 视频类型
  * <p>
@@ -32,5 +44,22 @@ public enum VideoType {
     VideoType(Integer code, String name) {
         this.code = code;
         this.name = name;
+    }
+
+    public static VideoType parse(Integer code) {
+        return Arrays.stream(VideoType.values()).filter(it -> Objects.equals(code, it.code)).findFirst().orElse(UNKNOWN);
+    }
+
+    public static class TypeAdapter implements JsonSerializer<VideoType>, JsonDeserializer<VideoType> {
+
+        @Override
+        public VideoType deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+            return parse(json.getAsInt());
+        }
+
+        @Override
+        public JsonElement serialize(VideoType src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive(src.code);
+        }
     }
 }

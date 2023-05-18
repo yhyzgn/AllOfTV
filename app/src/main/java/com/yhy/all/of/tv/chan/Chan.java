@@ -5,8 +5,10 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
+import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.utils.Md5Utils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -27,6 +29,16 @@ public interface Chan {
     List<Tab> tabList();
 
     void loadPlayList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData);
+
+    default void loadPlayListWithCache(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
+        // 先查缓存
+        Video video = KV.instance.getVideo(Md5Utils.gen(root.pageUrl));
+        if (null != video) {
+            liveData.postValue(video);
+            return;
+        }
+        loadPlayList(activity, root, liveData);
+    }
 
     class Tab implements Serializable {
         public final Chan chan;

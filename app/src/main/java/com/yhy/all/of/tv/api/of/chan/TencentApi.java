@@ -12,7 +12,6 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.yhy.all.of.tv.api.model.TencentVideo;
-import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
@@ -130,13 +129,7 @@ public class TencentApi {
      * @param liveData 加载回调
      */
     public void playList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
-        if (root.type == VideoType.FILM) {
-            // 电影的话，把自己加到播放列表就行了
-            root.episodes = Lists.of(gson.fromJson(gson.toJson(root), Video.class));
-            liveData.postValue(root);
-            return;
-        }
-
+        // 电影和剧集都通过 html 加载
         getHtmlPage(activity, root, liveData);
     }
 
@@ -160,6 +153,13 @@ public class TencentApi {
 
                     // 简介信息
                     root.description = joCoverInfo.getString("description");
+
+                    // 总集数
+                    String episodeAll = joCoverInfo.getString("episode_all");
+                    if (TextUtils.isEmpty(episodeAll)) {
+                        episodeAll = "1";
+                    }
+                    root.episodesTotal = Integer.parseInt(episodeAll);
 
                     // 播放列表
                     jo = jo.getJSONObject("episodeMain");

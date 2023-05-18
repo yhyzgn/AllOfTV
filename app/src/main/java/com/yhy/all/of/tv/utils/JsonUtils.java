@@ -1,6 +1,7 @@
 package com.yhy.all.of.tv.utils;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -17,10 +18,14 @@ import java.lang.reflect.Type;
  * @since 1.0.0
  */
 public abstract class JsonUtils {
-    private final static Gson GSON = create();
+    private static Gson GSON;
 
-    private static Gson create() {
-        return new Gson();
+    public static void init(Callback callback) {
+        GsonBuilder builder = new GsonBuilder();
+        if (null != callback) {
+            callback.callback(builder);
+        }
+        GSON = builder.create();
     }
 
     public static <T> T fromJson(String json, Class<T> type) throws JsonIOException, JsonSyntaxException {
@@ -53,5 +58,10 @@ public abstract class JsonUtils {
 
     public static String toJson(Object src, Type typeOfSrc) {
         return GSON.toJson(src, typeOfSrc);
+    }
+
+    public interface Callback {
+
+        void callback(GsonBuilder builder);
     }
 }
