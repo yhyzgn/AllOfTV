@@ -58,7 +58,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.function.Consumer;
 
 /**
  * TV 播放器
@@ -654,13 +653,13 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         mExitFullToastyCallback = callback;
     }
 
-    public void headContentType(Consumer<Boolean> isHlsCallback) {
+    public void headContentType(OnContentTypeCallback callback) {
         OkGo.<String>head(mUrl).execute(new StringCallback() {
             @Override
             public void onSuccess(Response<String> response) {
                 String contentType = response.headers().get("Content-Type");
-                if (!TextUtils.isEmpty(contentType)) {
-                    isHlsCallback.accept(!contentType.startsWith("video"));
+                if (null != callback && !TextUtils.isEmpty(contentType)) {
+                    callback.callback(!contentType.startsWith("video"));
                 }
             }
         });
@@ -682,5 +681,11 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     public interface ExitFullToastyCallback {
 
         void onToasty(String text);
+    }
+
+    @FunctionalInterface
+    private interface OnContentTypeCallback {
+
+        void callback(boolean isHls);
     }
 }
