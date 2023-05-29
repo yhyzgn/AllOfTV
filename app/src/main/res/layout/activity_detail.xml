@@ -21,7 +21,8 @@
                     android:id="@+id/flPlayerAnchor"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="3" />
+                    android:layout_weight="3"
+                    android:focusable="false" />
 
             <LinearLayout
                     android:layout_width="0dp"
@@ -229,7 +230,7 @@
                     android:id="@+id/trvParser"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/vs_45"
-                    android:layout_marginTop="@dimen/vs_10"
+                    android:layout_marginTop="@dimen/vs_15"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     app:tv_horizontalSpacingWithMargins="@dimen/vs_10"
@@ -239,7 +240,7 @@
                     android:id="@+id/trvPlayListVod"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="@dimen/vs_10"
+                    android:layout_marginTop="@dimen/vs_15"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     app:tv_horizontalSpacingWithMargins="@dimen/vs_10"
@@ -252,7 +253,8 @@
             android:id="@+id/flPlayerContainer"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:visibility="gone">
+            android:visibility="gone"
+            android:focusable="false">
 
         <com.yhy.player.widget.TvPlayer
                 android:id="@+id/tvPlayer"

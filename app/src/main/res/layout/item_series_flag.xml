@@ -3,7 +3,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="@dimen/vs_10"
-        android:background="@drawable/shape_source_flag_focus"
+        android:background="@drawable/button_detail_all"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center"
