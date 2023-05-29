@@ -169,6 +169,10 @@ public class DetailActivity extends VideoActivity {
 
         mLiveData = new MutableLiveData<>();
         mLiveData.observe(this, url -> {
+            // 停止 WebView 加载
+            getCurrentParser().stop(true);
+            LogUtils.iTag(TAG, "提取到播放地址", url);
+
             Video vd = getCurrentPlayingVideo();
             // 用原始 url 来生成 tag，不能使用解析过的，因为每次解析可能都会变
             String vdTag = Md5Utils.gen(vd.pageUrl);
@@ -178,9 +182,6 @@ public class DetailActivity extends VideoActivity {
 
             tvPlayer.setVisibility(View.VISIBLE);
             rlParsing.setVisibility(View.GONE);
-
-            // 停止 WebView 加载
-            getCurrentParser().stop(true);
         });
 
         mParserList = ParserRegister.instance.supportedParserList(mChanName);

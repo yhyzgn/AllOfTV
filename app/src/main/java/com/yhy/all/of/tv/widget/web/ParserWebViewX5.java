@@ -2,36 +2,33 @@ package com.yhy.all.of.tv.widget.web;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.net.http.SslError;
 import android.os.Build;
-import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ConsoleMessage;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
+import android.webkit.JsPromptResult;
+import android.webkit.JsResult;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
-import com.tencent.smtt.export.external.interfaces.ConsoleMessage;
-import com.tencent.smtt.export.external.interfaces.JsPromptResult;
-import com.tencent.smtt.export.external.interfaces.JsResult;
-import com.tencent.smtt.export.external.interfaces.SslError;
-import com.tencent.smtt.export.external.interfaces.SslErrorHandler;
-import com.tencent.smtt.export.external.interfaces.WebResourceError;
-import com.tencent.smtt.export.external.interfaces.WebResourceRequest;
-import com.tencent.smtt.export.external.interfaces.WebResourceResponse;
-import com.tencent.smtt.sdk.CookieManager;
-import com.tencent.smtt.sdk.CookieSyncManager;
-import com.tencent.smtt.sdk.WebChromeClient;
-import com.tencent.smtt.sdk.WebSettings;
-import com.tencent.smtt.sdk.WebView;
-import com.tencent.smtt.sdk.WebViewClient;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.evtor.Evtor;
-
-import java.util.Map;
 
 /**
  * Created on 2023-02-08 11:35
@@ -56,11 +53,6 @@ public class ParserWebViewX5 extends WebView implements ParserWebView {
 
     public ParserWebViewX5(Context context, AttributeSet attributeSet, int i) {
         super(context, attributeSet, i);
-        init(context);
-    }
-
-    public ParserWebViewX5(Context context, AttributeSet attributeSet, int i, Map<String, Object> map, boolean b) {
-        super(context, attributeSet, i, map, b);
         init(context);
     }
 
@@ -95,8 +87,7 @@ public class ParserWebViewX5 extends WebView implements ParserWebView {
         settings.setBuiltInZoomControls(true);
         settings.setSupportZoom(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-            settings.setMixedContentMode(0);
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
         // 自动播放媒体
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -211,11 +202,6 @@ public class ParserWebViewX5 extends WebView implements ParserWebView {
         }
 
         @Override
-        public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest webResourceRequest, Bundle bundle) {
-            return shouldInterceptRequest(webView, webResourceRequest);
-        }
-
-        @Override
         public void onLoadResource(WebView webView, String url) {
             parsingLog(url);
             judgeExtracted(url);
@@ -258,7 +244,7 @@ public class ParserWebViewX5 extends WebView implements ParserWebView {
 
         private void onParsedError(CharSequence error) {
             LogUtils.eTag(TAG, error);
-            Evtor.instance.subscribe("parsingError").emit(error.toString());
+            // Evtor.instance.subscribe("parsingError").emit(error.toString());
         }
     }
 }

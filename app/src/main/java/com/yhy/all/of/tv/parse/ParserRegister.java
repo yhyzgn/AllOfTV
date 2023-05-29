@@ -2,10 +2,14 @@ package com.yhy.all.of.tv.parse;
 
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.internal.Lists;
-import com.yhy.all.of.tv.parse.of.AiDouParser;
+import com.yhy.all.of.tv.parse.of.CKParser;
+import com.yhy.all.of.tv.parse.of.Hold8Parser;
 import com.yhy.all.of.tv.parse.of.JsonPlayerParser;
 import com.yhy.all.of.tv.parse.of.M3U8TVParser;
 import com.yhy.all.of.tv.parse.of.NuoXunParser;
+import com.yhy.all.of.tv.parse.of.OKParser;
+import com.yhy.all.of.tv.parse.of.PanGuParser;
+import com.yhy.all.of.tv.parse.of.Yun17Parser;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,8 +30,12 @@ public class ParserRegister {
     private ParserRegister() {
         parserList = Lists.of(
             new JsonPlayerParser(),
+            new CKParser(),
             new NuoXunParser(),
-            new AiDouParser(),
+            new Hold8Parser(),
+            new PanGuParser(),
+            new Yun17Parser(),
+            new OKParser(),
             new M3U8TVParser()
         );
     }

@@ -121,7 +121,7 @@ public class IQiYiApi {
         String sign = genSign(pairList);
         body.put("sign", sign);
 
-        GetRequest<String> req = OkGo.<String>get("https://mesh.if.iqiyi.com/tvg/pcw/base_info");
+        GetRequest<String> req = OkGo.get("https://mesh.if.iqiyi.com/tvg/pcw/base_info");
         body.forEach((k, v) -> req.params(k, v.toString()));
         req.execute(new StringCallback() {
             @Override

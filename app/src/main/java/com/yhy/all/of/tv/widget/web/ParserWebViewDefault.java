@@ -257,7 +257,7 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
 
         private void onParsedError(CharSequence error) {
             LogUtils.eTag(TAG, error);
-            Evtor.instance.subscribe("parsingError").emit(error.toString());
+            // Evtor.instance.subscribe("parsingError").emit(error.toString());
         }
     }
 }

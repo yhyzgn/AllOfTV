@@ -10,6 +10,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -41,7 +42,13 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.lzy.okgo.OkGo;
+import com.lzy.okgo.callback.StringCallback;
+import com.lzy.okgo.model.Response;
 import com.yhy.player.R;
 import com.yhy.player.utils.CutoutUtils;
 
@@ -51,6 +58,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.Consumer;
 
 /**
  * TV 播放器
@@ -200,12 +208,18 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             .setTag(mTag)
             .setUri(mUrl)
             .build();
-
-        tvTitle.setText(title);
-        mPlayer.setMediaItem(mi);
-
-        mPlayer.prepare();
-        mPlayer.seekTo(seekToMs);
+        headContentType(isHls -> post(() -> {
+            if (isHls) {
+                DataSource.Factory dataSourceFactory = new DefaultHttpDataSource.Factory();
+                HlsMediaSource hlsMediaSource = new HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mi);
+                mPlayer.setMediaSource(hlsMediaSource, false);
+            } else {
+                mPlayer.setMediaItem(mi);
+            }
+            tvTitle.setText(title);
+            mPlayer.prepare();
+            mPlayer.seekTo(seekToMs);
+        }));
     }
 
     private void resolveTimer() {
@@ -638,6 +652,18 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
     public void setExitFullToastyCallback(ExitFullToastyCallback callback) {
         mExitFullToastyCallback = callback;
+    }
+
+    public void headContentType(Consumer<Boolean> isHlsCallback) {
+        OkGo.<String>head(mUrl).execute(new StringCallback() {
+            @Override
+            public void onSuccess(Response<String> response) {
+                String contentType = response.headers().get("Content-Type");
+                if (!TextUtils.isEmpty(contentType)) {
+                    isHlsCallback.accept(!contentType.startsWith("video"));
+                }
+            }
+        });
     }
 
     @FunctionalInterface

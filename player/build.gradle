@@ -30,6 +30,8 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.annotation:annotation:1.6.0'
     implementation "androidx.multidex:multidex:2.0.1"
-
+    api 'com.github.jeasonlzy.okhttp-OkGo:okgo:v3.0.4'
+    api 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
+    api 'com.squareup.okio:okio:3.3.0'
     api 'com.google.android.exoplayer:exoplayer:2.18.6'
 }
