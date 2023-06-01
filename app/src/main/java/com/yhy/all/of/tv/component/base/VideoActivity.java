@@ -7,6 +7,9 @@ import androidx.annotation.Nullable;
 
 import com.yhy.player.widget.TvPlayer;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * 视频播放器页面基类
  * <p>
@@ -17,6 +20,7 @@ import com.yhy.player.widget.TvPlayer;
  * @since 1.0.0
  */
 public abstract class VideoActivity extends BaseActivity {
+    private Timer mLongPressTimer;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -25,14 +29,6 @@ public abstract class VideoActivity extends BaseActivity {
         // 退出提示回调
         player().setExitFullToastyCallback(this::warning);
     }
-
-    // @Override
-    // public void onBackPressed() {
-    //     if (player().backFromFullScreen(this)) {
-    //         return;
-    //     }
-    //     super.onBackPressed();
-    // }
 
     @Override
     protected void onPause() {
@@ -55,9 +51,43 @@ public abstract class VideoActivity extends BaseActivity {
     protected abstract TvPlayer player();
 
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
         // 全屏状态下才处理这些事件
-        if (player().isInFullScreen() && event.getAction() == KeyEvent.ACTION_UP) {
+        if (player().isInFullScreen()) {
+            if (null != mLongPressTimer) {
+                mLongPressTimer.cancel();
+            }
+            mLongPressTimer = new Timer();
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                switch (event.getKeyCode()) {
+                    case KeyEvent.KEYCODE_DPAD_LEFT -> {
+                        mLongPressTimer.scheduleAtFixedRate(new TimerTask() {
+                            @Override
+                            public void run() {
+                                player().seekBack();
+                            }
+                        }, 0, 100);
+                        return true;
+                    }
+                    case KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                        mLongPressTimer.scheduleAtFixedRate(new TimerTask() {
+                            @Override
+                            public void run() {
+                                player().seekForward();
+                            }
+                        }, 0, 100);
+                        return true;
+                    }
+                }
+            }
+        }
+        return super.onKeyLongPress(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // 全屏状态下才处理这些事件
+        if (player().isInFullScreen()) {
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_DPAD_LEFT -> {
                     player().seekBack();
@@ -73,6 +103,23 @@ public abstract class VideoActivity extends BaseActivity {
                 }
             }
         }
-        return super.dispatchKeyEvent(event);
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        // 全屏状态下才处理这些事件
+        if (player().isInFullScreen()) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (null != mLongPressTimer) {
+                        mLongPressTimer.cancel();
+                        mLongPressTimer = null;
+                        return true;
+                    }
+                }
+            }
+        }
+        return super.onKeyUp(keyCode, event);
     }
 }
