@@ -64,7 +64,7 @@ public abstract class VideoActivity extends BaseActivity {
                         mLongPressTimer.scheduleAtFixedRate(new TimerTask() {
                             @Override
                             public void run() {
-                                player().seekBack();
+                                runOnUiThread(() -> player().seekBack());
                             }
                         }, 0, 100);
                         return true;
@@ -73,7 +73,7 @@ public abstract class VideoActivity extends BaseActivity {
                         mLongPressTimer.scheduleAtFixedRate(new TimerTask() {
                             @Override
                             public void run() {
-                                player().seekForward();
+                                runOnUiThread(() -> player().seekForward());
                             }
                         }, 0, 100);
                         return true;
