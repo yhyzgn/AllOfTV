@@ -90,15 +90,13 @@ public abstract class VideoActivity extends BaseActivity {
         if (player().isInFullScreen()) {
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    event.startTracking();
                     player().seekBack();
                     return true;
                 }
                 case KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    event.startTracking();
                     player().seekForward();
-                    return true;
-                }
-                case KeyEvent.KEYCODE_DPAD_CENTER -> {
-                    player().playOrPause();
                     return true;
                 }
             }
@@ -117,6 +115,10 @@ public abstract class VideoActivity extends BaseActivity {
                         mLongPressTimer = null;
                         return true;
                     }
+                }
+                case KeyEvent.KEYCODE_DPAD_CENTER -> {
+                    player().playOrPause();
+                    return true;
                 }
             }
         }
