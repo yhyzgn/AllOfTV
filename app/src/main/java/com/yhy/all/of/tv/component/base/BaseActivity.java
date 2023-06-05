@@ -107,6 +107,10 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         Toasty.success(this, text).show();
     }
 
+    public void info(String text) {
+        Toasty.info(this, text).show();
+    }
+
     public void warning(String text) {
         Toasty.warning(this, text).show();
     }

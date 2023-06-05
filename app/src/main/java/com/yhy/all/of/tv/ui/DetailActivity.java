@@ -401,9 +401,13 @@ public class DetailActivity extends VideoActivity {
     }
 
     private void loadPlayList() {
+        info("正在获取剧集信息...");
+
         MutableLiveData<Video> playListLiveData = new MutableLiveData<>();
         playListLiveData.observe(this, video -> {
-            if (null != video && null != video.episodes) {
+            if (null != video && null != video.episodes && !video.episodes.isEmpty()) {
+                success("剧集获取成功");
+
                 LogUtils.iTag(TAG, "播放列表加载成功", video);
                 mRootVideo = video;
 
@@ -421,6 +425,8 @@ public class DetailActivity extends VideoActivity {
                 mPlayListVodAdapter.setNewInstance(video.episodes);
                 // 开始播放
                 loadVideoAndPlay();
+            } else {
+                error("剧集信息获取失败");
             }
         });
         getCurrentChan().loadPlayListWithCache(this, mRootVideo, playListLiveData);
