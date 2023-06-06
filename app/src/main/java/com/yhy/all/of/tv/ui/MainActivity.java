@@ -57,8 +57,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import me.jessyan.autosize.utils.AutoSizeUtils;
@@ -361,9 +365,23 @@ public class MainActivity extends BaseActivity {
                     long versionCode = SysUtils.getVersionCode();
                     if (versionCode < buildNumber) {
                         // 发现新版本
+                        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                        // 设置时区UTC
+                        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        // 格式化，转当地时区时间
+                        Date date = null;
+                        try {
+                            date = df.parse(vi.publishedAt);
+                        } catch (ParseException e) {
+                            LogUtils.eTag(TAG, e);
+                        }
+                        df.applyPattern("yyyy-MM-dd HH:mm:ss");
+                        // 默认时区
+                        df.setTimeZone(TimeZone.getDefault());
+
                         UpdateDialog ud = new UpdateDialog(this)
                             .setName(vi.name)
-                            .setTime(vi.publishedAt)
+                            .setTime(null != date ? df.format(date) : vi.publishedAt)
                             .setLog(vi.body);
                         ud.setOnUpdatedListener(() -> {
                                 downloadApk(vi, new OnDownloadListenerAdapter() {
