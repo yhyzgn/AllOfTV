@@ -25,6 +25,8 @@ import android.webkit.WebViewClient;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
+import com.tencent.bugly.crashreport.CrashReport;
+import com.tencent.bugly.crashreport.crash.h5.H5JavaScriptInterface;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.utils.LogUtils;
@@ -37,7 +39,7 @@ import com.yhy.evtor.Evtor;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class ParserWebViewX5 extends WebView implements ParserWebView {
+public class ParserWebViewX5 extends WebView implements ParserWebView, CrashReport.a {
     private AppCompatActivity mActivity;
     private String mUrl;
 
@@ -98,6 +100,12 @@ public class ParserWebViewX5 extends WebView implements ParserWebView {
         settings.setUserAgentString("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36");
 
         setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                CrashReport.setJavascriptMonitor((CrashReport.a) ParserWebViewX5.this, true);
+                super.onProgressChanged(view, newProgress);
+            }
+
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
                 return false;
@@ -171,6 +179,32 @@ public class ParserWebViewX5 extends WebView implements ParserWebView {
         if (Build.VERSION.SDK_INT >= 21) {
             instance.setAcceptThirdPartyCookies(this, true);
         }
+    }
+
+    @Override
+    public String a() {
+        return getUrl();
+    }
+
+    @Override
+    public void b() {
+        WebSettings webSettings = getSettings();
+        webSettings.setJavaScriptEnabled(true);
+    }
+
+    @Override
+    public void a(String s) {
+        loadUrl(s);
+    }
+
+    @Override
+    public void a(H5JavaScriptInterface h5JavaScriptInterface, String s) {
+        addJavascriptInterface(h5JavaScriptInterface, s);
+    }
+
+    @Override
+    public CharSequence c() {
+        return getContentDescription();
     }
 
     private static class SysWebClient extends WebViewClient {

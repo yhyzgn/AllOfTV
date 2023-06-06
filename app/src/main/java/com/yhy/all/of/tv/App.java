@@ -17,6 +17,7 @@ import com.lzy.okgo.interceptor.HttpLoggingInterceptor;
 import com.lzy.okgo.model.HttpHeaders;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
+import com.tencent.bugly.crashreport.CrashReport;
 import com.tencent.smtt.export.external.TbsCoreSettings;
 import com.tencent.smtt.sdk.QbSdk;
 import com.yhy.all.of.tv.api.RandHeaderInterceptor;
@@ -39,7 +40,9 @@ import com.yhy.router.common.JsonConverter;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -83,6 +86,40 @@ public class App extends MultiDexApplication {
         initOkGo();
         initX5WebView();
         initPlayer();
+        initBugly();
+    }
+
+    private void initBugly() {
+        Context ctx = getApplicationContext();
+        // 获取当前包名
+        String packageName = ctx.getPackageName();
+        // 获取当前进程名
+        String processName = SysUtils.getProcessName();
+
+        CrashReport.UserStrategy strategy = new CrashReport.UserStrategy(ctx);
+        strategy.setEnableCatchAnrTrace(true);
+        strategy.setEnableRecordAnrMainStack(true);
+        strategy.setCloseErrorCallback(true);
+        strategy.setUploadProcess(processName == null || processName.equals(packageName));
+        strategy.setCrashHandleCallback(new CrashReport.CrashHandleCallback() {
+            public Map<String, String> onCrashHandleStart(int crashType, String errorType, String errorMessage, String errorStack) {
+                LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+                map.put("Key", "Value");
+                return map;
+            }
+
+            @Override
+            public byte[] onCrashHandleStart2GetExtraDatas(int crashType, String errorType, String errorMessage, String errorStack) {
+                try {
+                    return "Extra data.".getBytes(StandardCharsets.UTF_8);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        });
+
+        CrashReport.initCrashReport(ctx, "c79070d0a3", BuildConfig.DEBUG, strategy);
+        CrashReport.setIsDevelopmentDevice(ctx, BuildConfig.DEBUG);
     }
 
     private void initLoadSir() {
@@ -125,7 +162,7 @@ public class App extends MultiDexApplication {
         JsonUtils.init(builder -> {
             builder.registerTypeAdapter(VideoType.class, new VideoType.TypeAdapter());
         });
-        
+
         ToastUtils.init(this);
         ViewUtils.init(this);
         SysUtils.init(this);

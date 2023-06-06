@@ -26,6 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
+import com.tencent.bugly.crashreport.CrashReport;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.utils.LogUtils;
 
@@ -106,6 +107,12 @@ public class JsExtractWebView extends WebView {
         addJavascriptInterface(this, "extractor");
 
         setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                CrashReport.setJavascriptMonitor(JsExtractWebView.this, true);
+                super.onProgressChanged(view, newProgress);
+            }
+
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
                 return false;
