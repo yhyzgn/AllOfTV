@@ -4,6 +4,7 @@ import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.parse.of.CKParser;
 import com.yhy.all.of.tv.parse.of.Hold8Parser;
+import com.yhy.all.of.tv.parse.of.JYParser;
 import com.yhy.all.of.tv.parse.of.JsonPlayerParser;
 import com.yhy.all.of.tv.parse.of.M3U8TVParser;
 import com.yhy.all.of.tv.parse.of.NuoXunParser;
@@ -36,6 +37,7 @@ public class ParserRegister {
             new PanGuParser(),
             new Yun17Parser(),
             new OKParser(),
+            new JYParser(),
             new M3U8TVParser()
         );
     }
