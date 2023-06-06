@@ -95,11 +95,14 @@ public class App extends MultiDexApplication {
         String packageName = ctx.getPackageName();
         // 获取当前进程名
         String processName = SysUtils.getProcessName();
+        String deviceId = SysUtils.getDeviceId();
 
         CrashReport.UserStrategy strategy = new CrashReport.UserStrategy(ctx);
         strategy.setEnableCatchAnrTrace(true);
         strategy.setEnableRecordAnrMainStack(true);
         strategy.setCloseErrorCallback(true);
+        strategy.setDeviceID(deviceId);
+        strategy.setDeviceModel(SysUtils.getSystemModel());
         strategy.setUploadProcess(processName == null || processName.equals(packageName));
         strategy.setCrashHandleCallback(new CrashReport.CrashHandleCallback() {
             public Map<String, String> onCrashHandleStart(int crashType, String errorType, String errorMessage, String errorStack) {
@@ -120,6 +123,7 @@ public class App extends MultiDexApplication {
 
         CrashReport.initCrashReport(ctx, "c79070d0a3", BuildConfig.DEBUG, strategy);
         CrashReport.setIsDevelopmentDevice(ctx, BuildConfig.DEBUG);
+        CrashReport.setUserId(ctx, deviceId);
     }
 
     private void initLoadSir() {

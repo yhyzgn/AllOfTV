@@ -280,7 +280,7 @@ public class MainActivity extends BaseActivity {
     private void showChanDialog() {
         SelectDialog<Chan> dialog = new SelectDialog<>(this);
         // Multi Column Selection
-        int spanCount = (int) Math.floor(mChanList.size() / 10);
+        int spanCount = (int) Math.floor(mChanList.size() / 10.0f);
         if (spanCount <= 1) spanCount = 1;
         if (spanCount >= 3) spanCount = 3;
 
