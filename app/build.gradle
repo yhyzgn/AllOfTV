@@ -38,8 +38,8 @@ android {
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = [
-                        "module.name"          : project.name,
-                        "router.incremental"   : "true"
+                        "module.name"       : project.name,
+                        "router.incremental": "true"
                 ]
             }
         }

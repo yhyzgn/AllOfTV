@@ -1,6 +1,5 @@
 package com.yhy.all.of.tv.utils;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -21,11 +20,8 @@ import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Process;
-import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-
-import androidx.core.app.ActivityCompat;
 
 import java.util.Iterator;
 import java.util.List;
@@ -91,33 +87,6 @@ public abstract class SysUtils {
             e.printStackTrace();
         }
         return 0;
-    }
-
-    /**
-     * 获取设备号
-     *
-     * @return 设备号
-     */
-    @SuppressLint({"HardwareIds"})
-    public static String getDeviceId() {
-        String deviceId = "";
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            deviceId = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            deviceId = Build.getSerial();
-        } else if (ActivityCompat.checkSelfPermission(ctx, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
-            TelephonyManager tm = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
-            if (tm.getDeviceId() != null) {
-                deviceId = tm.getDeviceId();
-            } else {
-                deviceId = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
-            }
-        }
-        // 未找到
-        if (TextUtils.isEmpty(deviceId)) {
-            deviceId = "Unknown";
-        }
-        return EncryptUtils.encryptMD5ToString(deviceId).toLowerCase(Locale.getDefault());
     }
 
     /**

@@ -44,6 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -86,7 +87,16 @@ public class App extends MultiDexApplication {
         initOkGo();
         initX5WebView();
         initPlayer();
+        initDevice();
         initBugly();
+    }
+
+    private void initDevice() {
+        // 设置 deviceId
+        String deviceId = KV.instance.getDeviceId();
+        if (TextUtils.isEmpty(deviceId)) {
+            KV.instance.storeDeviceId(UUID.randomUUID().toString());
+        }
     }
 
     private void initBugly() {
@@ -95,7 +105,7 @@ public class App extends MultiDexApplication {
         String packageName = ctx.getPackageName();
         // 获取当前进程名
         String processName = SysUtils.getProcessName();
-        String deviceId = SysUtils.getDeviceId();
+        String deviceId = KV.instance.getDeviceId();
 
         CrashReport.UserStrategy strategy = new CrashReport.UserStrategy(ctx);
         strategy.setEnableCatchAnrTrace(true);

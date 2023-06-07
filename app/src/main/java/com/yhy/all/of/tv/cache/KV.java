@@ -83,4 +83,12 @@ public class KV {
     public void removeParser(String tag) {
         kv.remove("parser:" + tag);
     }
+
+    public void storeDeviceId(String deviceId) {
+        kv.putString("device-id", deviceId);
+    }
+
+    public String getDeviceId() {
+        return kv.getString("device-id");
+    }
 }
