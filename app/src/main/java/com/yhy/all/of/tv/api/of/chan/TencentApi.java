@@ -99,7 +99,7 @@ public class TencentApi {
                             vd.channel = "腾讯";
                             vd.type = type;
                             if (!TextUtils.isEmpty(it.params.publishDate)) {
-                                LocalDate date = LocalDate.parse(it.params.publishDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                                LocalDate date = LocalDate.parse(it.params.publishDate, DateTimeFormatter.ofPattern("yyyy-M-d"));
                                 vd.year = date.getYear();
                             }
                             vd.updateStatus = it.params.timeLong;
