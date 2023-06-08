@@ -44,6 +44,7 @@ import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
+import com.google.android.exoplayer2.ui.TimeBar;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.lzy.okgo.OkGo;
@@ -71,7 +72,7 @@ import java.util.TimerTask;
 public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private final static String TAG = "TvPlayer";
     private final static SimpleDateFormat TIME_SDF = new SimpleDateFormat("HH:mm:ss", Locale.ROOT);
-    private final static int DELTA_SEEKING_MS = 15000;
+    private final static int DELTA_SEEKING_MS = 5000;
     private final static int WHAT_HANDLER_MSG_SEEK_FORWARD = 1024;
     private final static int WHAT_HANDLER_MSG_SEEK_BACK = 2048;
     private final static int STICKY_EXIT_FULL_MS = 3000;
@@ -119,6 +120,8 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private ExitFullToastyCallback mExitFullToastyCallback = text -> Toast.makeText(getContext(), text, Toast.LENGTH_SHORT).show();
 
     private boolean mIsSeeking;
+
+    private boolean mIsDragging;
 
     private long mLastExitFullTime;
 
@@ -190,6 +193,8 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     @SuppressLint("ClickableViewAccessibility")
     private void initListener() {
         mPlayer.addListener(mExoListener);
+
+        stbDrag.addListener(mScrubListener);
 
         // 禁止播放器的点击穿透
         spvExo.setOnTouchListener((v, event) -> true);
@@ -302,9 +307,15 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
             llDrag.setVisibility(GONE);
             stbPosition.setVisibility(VISIBLE);
         }
-        stbDrag.setPosition(position);
-        tvPosition.setText(formatTime(position));
+        if (!mIsDragging) {
+            stbDrag.setPosition(position);
+            fillPositionText(position);
+        }
         stbPosition.setPosition(position);
+    }
+
+    private void fillPositionText(long position) {
+        tvPosition.setText(formatTime(position));
     }
 
     public boolean isInFullScreen() {
@@ -339,7 +350,6 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_FORWARD);
         mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_BACK);
         mIsSeeking = true;
-        // 每次增加 10 s
         mSeekingPosition = (mSeekingPosition == 0 ? mCurrentPosition : mSeekingPosition) + DELTA_SEEKING_MS;
         mSeekingPosition = Math.min(mSeekingPosition, mDuration);
         dragPosition(mSeekingPosition, true);
@@ -350,9 +360,17 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
         mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_FORWARD);
         mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_BACK);
         mIsSeeking = true;
-        // 每次增加 10 s
         mSeekingPosition = (mSeekingPosition == 0 ? mCurrentPosition : mSeekingPosition) - DELTA_SEEKING_MS;
         mSeekingPosition = Math.max(mSeekingPosition, 0);
+        dragPosition(mSeekingPosition, true);
+        mHandler.sendEmptyMessageDelayed(WHAT_HANDLER_MSG_SEEK_BACK, 1000);
+    }
+
+    public void seekTo(long position) {
+        mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_FORWARD);
+        mHandler.removeMessages(WHAT_HANDLER_MSG_SEEK_BACK);
+        mIsSeeking = true;
+        mSeekingPosition = Math.max(Math.min(position, mDuration), 0);
         dragPosition(mSeekingPosition, true);
         mHandler.sendEmptyMessageDelayed(WHAT_HANDLER_MSG_SEEK_BACK, 1000);
     }
@@ -513,6 +531,32 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
                     mIsSeeking = false;
                     mSeekingPosition = 0;
                 }
+            }
+        }
+    };
+
+    private final TimeBar.OnScrubListener mScrubListener = new TimeBar.OnScrubListener() {
+        @Override
+        public void onScrubStart(TimeBar timeBar, long position) {
+            Log.d(TAG, "onScrubStart, position = " + position);
+            mIsDragging = true;
+        }
+
+        @Override
+        public void onScrubMove(TimeBar timeBar, long position) {
+            Log.d(TAG, "onScrubMove, position = " + position);
+            // 设置进度预览显示
+            fillPositionText(position);
+        }
+
+        @Override
+        public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
+            Log.d(TAG, "onScrubStop, position = " + position + ", canceled = " + canceled);
+            mIsDragging = false;
+
+            // 手动拖动设置播放进度，进针对 App 端
+            if (!canceled) {
+                seekTo(position);
             }
         }
     };
