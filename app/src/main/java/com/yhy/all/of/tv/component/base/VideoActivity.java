@@ -126,9 +126,9 @@ public abstract class VideoActivity extends BaseActivity {
                         mIsLongPressed = false;
                     } else {
                         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                            player().seekForward();
-                        } else {
                             player().seekBack();
+                        } else {
+                            player().seekForward();
                         }
                         return true;
                     }

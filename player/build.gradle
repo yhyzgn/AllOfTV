@@ -33,5 +33,5 @@ dependencies {
     api 'com.github.jeasonlzy.okhttp-OkGo:okgo:v3.0.4'
     api 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
     api 'com.squareup.okio:okio:3.3.0'
-    api 'com.google.android.exoplayer:exoplayer:2.18.6'
+    api 'com.google.android.exoplayer:exoplayer:2.18.7'
 }
