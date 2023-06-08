@@ -1,8 +1,12 @@
 package com.yhy.all.of.tv.component.base;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.KeyEvent;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.yhy.player.widget.TvPlayer;
@@ -20,7 +24,20 @@ import java.util.TimerTask;
  * @since 1.0.0
  */
 public abstract class VideoActivity extends BaseActivity {
+    private static final int WHAT_LONG_PRESS = 2048;
+    private static final long THRESHOLD_LONG_PRESS = 1500L;
+    private boolean mIsLongPressed;
     private Timer mLongPressTimer;
+    private final Handler mLongPressHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            if (msg.what != WHAT_LONG_PRESS) {
+                return;
+            }
+            mIsLongPressed = true;
+            handleLongPress(msg.arg1);
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,69 +67,69 @@ public abstract class VideoActivity extends BaseActivity {
 
     protected abstract TvPlayer player();
 
-    @Override
-    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+    private void handleLongPress(int keyCode) {
         // 全屏状态下才处理这些事件
         if (player().isInFullScreen()) {
             if (null != mLongPressTimer) {
                 mLongPressTimer.cancel();
             }
             mLongPressTimer = new Timer();
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                switch (event.getKeyCode()) {
-                    case KeyEvent.KEYCODE_DPAD_LEFT -> {
-                        mLongPressTimer.scheduleAtFixedRate(new TimerTask() {
-                            @Override
-                            public void run() {
-                                runOnUiThread(() -> player().seekBack());
-                            }
-                        }, 0, 100);
-                        return true;
-                    }
-                    case KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                        mLongPressTimer.scheduleAtFixedRate(new TimerTask() {
-                            @Override
-                            public void run() {
-                                runOnUiThread(() -> player().seekForward());
-                            }
-                        }, 0, 100);
-                        return true;
-                    }
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    mLongPressTimer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(() -> player().seekBack());
+                        }
+                    }, 0, 100);
+                }
+                case KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    mLongPressTimer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(() -> player().seekForward());
+                        }
+                    }, 0, 100);
                 }
             }
         }
-        return super.onKeyLongPress(keyCode, event);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // 全屏状态下才处理这些事件
         if (player().isInFullScreen()) {
-            switch (event.getKeyCode()) {
-                case KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    event.startTracking();
-                    player().seekBack();
-                    return true;
-                }
-                case KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    event.startTracking();
-                    player().seekForward();
-                    return true;
-                }
-            }
+            // 延时发送长按消息
+            Message msg = new Message();
+            msg.what = WHAT_LONG_PRESS;
+            msg.arg1 = keyCode;
+            mLongPressHandler.sendMessageDelayed(msg, THRESHOLD_LONG_PRESS);
         }
         return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        // 长按时间清除消息
+        mLongPressHandler.removeMessages(WHAT_LONG_PRESS);
+
         // 全屏状态下才处理这些事件
         if (player().isInFullScreen()) {
-            switch (event.getKeyCode()) {
+            switch (keyCode) {
                 case KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    if (null != mLongPressTimer) {
-                        mLongPressTimer.cancel();
-                        mLongPressTimer = null;
+                    if (mIsLongPressed) {
+                        if (null != mLongPressTimer) {
+                            mLongPressTimer.cancel();
+                            mLongPressTimer = null;
+                            return true;
+                        }
+                        mIsLongPressed = false;
+                    } else {
+                        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                            player().seekForward();
+                        } else {
+                            player().seekBack();
+                        }
                         return true;
                     }
                 }
