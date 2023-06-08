@@ -43,11 +43,6 @@ android {
                 ]
             }
         }
-
-        ndk {
-            // 设置支持的 so 库架构
-            abiFilters "arm64-v8a", "armeabi-v7a", "x86"
-        }
     }
 
 
@@ -60,16 +55,32 @@ android {
             applicationIdSuffix '.debug'
             resValue "string", "app_name", "@string/app_name_debug"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            ndk {
+                // 设置支持的 so 库架构
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86"
+            }
         }
 
         // 发行版
         release {
             minifyEnabled false
+            shrinkResources false
             debuggable false
             signingConfig signingConfigs.release
             resValue "string", "app_name", "@string/app_name_release"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            ndk {
+                // 设置支持的 so 库架构
+                abiFilters "armeabi-v7a", "arm64-v8a"
+            }
         }
+    }
+
+    // 在 Android 构建流程中 AAPT 会使用内置的压缩算法来优化 res/drawable/ 目录下的 PNG 图片，但也可能会导致本来已经优化过的图片体积变大
+    aaptOptions {
+        cruncherEnabled false
     }
 
     packagingOptions {
