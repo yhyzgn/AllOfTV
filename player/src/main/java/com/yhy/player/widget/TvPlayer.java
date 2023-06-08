@@ -72,6 +72,7 @@ import java.util.TimerTask;
 public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private final static String TAG = "TvPlayer";
     private final static SimpleDateFormat TIME_SDF = new SimpleDateFormat("HH:mm:ss", Locale.ROOT);
+    private final static long DOUBLE_CLICK_INTERVAL = 300;
     private final static int DELTA_SEEKING_MS = 5000;
     private final static int WHAT_HANDLER_MSG_SEEK_FORWARD = 1024;
     private final static int WHAT_HANDLER_MSG_SEEK_BACK = 2048;
@@ -103,6 +104,8 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
      */
     private long mLastOperateMillis;
 
+    private long mLastClickMillis;
+
     private long mDuration;
 
     private long mBufferedPosition;
@@ -110,6 +113,8 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     private long mCurrentPosition;
 
     private long mSeekingPosition;
+
+    private boolean mStarted;
 
     private Timer mTimer;
 
@@ -196,8 +201,21 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
         stbDrag.addListener(mScrubListener);
 
-        // 禁止播放器的点击穿透
-        spvExo.setOnTouchListener((v, event) -> true);
+        spvExo.setOnTouchListener((v, event) -> {
+            // 双击事件
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                long nowMs = System.currentTimeMillis();
+                // 连续双击，并且已经开始播放
+                if (nowMs - mLastClickMillis < DOUBLE_CLICK_INTERVAL && mStarted) {
+                    // 播放和暂停状态切换
+                    playOrPause();
+                }
+                mLastClickMillis = nowMs;
+            }
+
+            // 禁止播放器的点击穿透
+            return true;
+        });
     }
 
     public void play(String title, String url, String tag, long seekToMs) {
@@ -381,6 +399,9 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
 
     public void release() {
         mPlayer.release();
+        if (null != mScrubListener) {
+            stbDrag.removeListener(mScrubListener);
+        }
     }
 
     public void destroy() {
@@ -514,6 +535,7 @@ public class TvPlayer extends FrameLayout implements LifecycleEventObserver {
     }
 
     private void internalOnStarted() {
+        mStarted = true;
         resolveTimer();
     }
 
