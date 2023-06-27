@@ -15,6 +15,7 @@ import com.yhy.all.of.tv.api.model.TencentVideo;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.utils.DateUtils;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.widget.web.JsExtractWebView;
 
@@ -99,7 +100,7 @@ public class TencentApi {
                             vd.channel = "腾讯";
                             vd.type = type;
                             if (!TextUtils.isEmpty(it.params.publishDate)) {
-                                LocalDate date = LocalDate.parse(it.params.publishDate, DateTimeFormatter.ofPattern("yyyy-M-d"));
+                                LocalDate date = LocalDate.parse(it.params.publishDate, DateTimeFormatter.ofPattern(DateUtils.autoPattern(it.params.publishDate)));
                                 vd.year = date.getYear();
                             }
                             vd.updateStatus = it.params.timeLong;
