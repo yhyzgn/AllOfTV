@@ -96,49 +96,49 @@ public abstract class VideoActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean dispatchKeyEvent(KeyEvent event) {
         // 全屏状态下才处理这些事件
         if (player().isInFullScreen()) {
-            // 延时发送长按消息
-            Message msg = new Message();
-            msg.what = WHAT_LONG_PRESS;
-            msg.arg1 = keyCode;
-            mLongPressHandler.sendMessageDelayed(msg, THRESHOLD_LONG_PRESS);
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        // 长按时间清除消息
-        mLongPressHandler.removeMessages(WHAT_LONG_PRESS);
-
-        // 全屏状态下才处理这些事件
-        if (player().isInFullScreen()) {
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    if (mIsLongPressed) {
-                        if (null != mLongPressTimer) {
-                            mLongPressTimer.cancel();
-                            mLongPressTimer = null;
+            switch (event.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT || event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        // 延时发送长按消息
+                        Message msg = new Message();
+                        msg.what = WHAT_LONG_PRESS;
+                        msg.arg1 = event.getKeyCode();
+                        mLongPressHandler.sendMessageDelayed(msg, THRESHOLD_LONG_PRESS);
+                    }
+                    break;
+                case KeyEvent.ACTION_UP:
+                    // 长按时间清除消息
+                    mLongPressHandler.removeMessages(WHAT_LONG_PRESS);
+                    // 可能是长按事件
+                    switch (event.getKeyCode()) {
+                        case KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                            if (mIsLongPressed) {
+                                if (null != mLongPressTimer) {
+                                    mLongPressTimer.cancel();
+                                    mLongPressTimer = null;
+                                    return true;
+                                }
+                                mIsLongPressed = false;
+                            } else {
+                                if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+                                    player().seekBack();
+                                } else {
+                                    player().seekForward();
+                                }
+                                return true;
+                            }
+                        }
+                        case KeyEvent.KEYCODE_DPAD_CENTER -> {
+                            player().playOrPause();
                             return true;
                         }
-                        mIsLongPressed = false;
-                    } else {
-                        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                            player().seekBack();
-                        } else {
-                            player().seekForward();
-                        }
-                        return true;
                     }
-                }
-                case KeyEvent.KEYCODE_DPAD_CENTER -> {
-                    player().playOrPause();
-                    return true;
-                }
+                    break;
             }
         }
-        return super.onKeyUp(keyCode, event);
+        return super.dispatchKeyEvent(event);
     }
 }
