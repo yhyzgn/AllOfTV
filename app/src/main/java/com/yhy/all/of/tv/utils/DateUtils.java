@@ -1,5 +1,7 @@
 package com.yhy.all.of.tv.utils;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 
 /**
@@ -11,7 +13,7 @@ import java.util.regex.Pattern;
  * @version 1.0.0
  * @since 1.0.0
  */
-public interface DateUtils {
+public class DateUtils {
 
     /**
      * 自动识别格式
@@ -19,7 +21,7 @@ public interface DateUtils {
      * @param text 原文
      * @return 格式
      */
-    static String autoPattern(String text) {
+    public static String autoPattern(String text) {
         boolean year = false;
         Pattern pattern = Pattern.compile("^[-\\+]?\\d*$");
         if (pattern.matcher(text.substring(0, 4)).matches()) {
@@ -73,5 +75,10 @@ public interface DateUtils {
             }
         }
         return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(DateUtils.autoPattern("2012/2/24"));
+        System.out.println(LocalDate.parse("2012/2/24", DateTimeFormatter.ofPattern(DateUtils.autoPattern("2012/2/24"))));
     }
 }
