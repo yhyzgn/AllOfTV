@@ -51,6 +51,7 @@ import java.util.logging.Level;
 
 import io.fastkv.FastKV;
 import io.fastkv.FastKVConfig;
+import me.jessyan.autosize.AutoSize;
 import me.jessyan.autosize.AutoSizeConfig;
 import me.jessyan.autosize.unit.Subunits;
 import me.jessyan.autosize.utils.AutoSizeUtils;
@@ -144,6 +145,7 @@ public class App extends MultiDexApplication {
     }
 
     private void initLoadAutoSize() {
+        AutoSize.checkAndInit(this);
         AutoSizeConfig.getInstance().setCustomFragment(true).getUnitsManager()
             .setSupportDP(false)
             .setSupportSP(false)

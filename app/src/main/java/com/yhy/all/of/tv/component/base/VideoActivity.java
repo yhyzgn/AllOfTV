@@ -1,13 +1,11 @@
 package com.yhy.all.of.tv.component.base;
 
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.yhy.player.widget.TvPlayer;
 
@@ -40,9 +38,7 @@ public abstract class VideoActivity extends BaseActivity {
     };
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    protected void afterLayout() {
         // 退出提示回调
         player().setExitFullToastyCallback(this::warning);
     }
@@ -56,7 +52,9 @@ public abstract class VideoActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        player().resume();
+        if (null != player()) {
+            player().resume();
+        }
     }
 
     @Override

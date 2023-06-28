@@ -36,6 +36,7 @@
             android:allowNativeHeapPointerTagging="false"
             android:networkSecurityConfig="@xml/network_security_config"
             android:theme="@style/Theme.AllOfTV"
+            android:hardwareAccelerated="true"
             android:usesCleartextTraffic="true">
 
         <activity
@@ -57,7 +58,13 @@
         <activity
                 android:name=".ui.DetailActivity"
                 android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
-                android:screenOrientation="sensorLandscape" />
+                android:screenOrientation="sensorLandscape"
+                android:process=":web" />
+
+        <service
+                android:name=".component.WebService"
+                android:label="web"
+                android:process=":web" />
 
         <service
                 android:name="com.tencent.smtt.export.external.DexClassLoaderProviderService"

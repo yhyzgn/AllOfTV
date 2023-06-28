@@ -37,7 +37,7 @@ public abstract class AbstractParser implements Parser {
             }
         }
 
-        mWv = mApp.isX5Already() ? new ParserWebViewX5(mActivity) : new ParserWebViewDefault(mActivity);
+        mWv = mApp.isX5Already() ? new ParserWebViewX5(mActivity.getApplicationContext()) : new ParserWebViewDefault(mActivity.getApplicationContext());
         mWv.attach(mActivity, this, url() + url, liveData);
         // 记录一下本次的 WebView
         if (null != detailActivity) {

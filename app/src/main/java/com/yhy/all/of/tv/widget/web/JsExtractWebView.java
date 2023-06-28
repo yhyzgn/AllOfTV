@@ -7,19 +7,7 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.ConsoleMessage;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
-import android.webkit.JsPromptResult;
-import android.webkit.JsResult;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,8 +15,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.tencent.bugly.crashreport.CrashReport;
+import com.tencent.bugly.crashreport.crash.h5.H5JavaScriptInterface;
+import com.tencent.smtt.export.external.interfaces.ConsoleMessage;
+import com.tencent.smtt.export.external.interfaces.JsPromptResult;
+import com.tencent.smtt.export.external.interfaces.JsResult;
+import com.tencent.smtt.export.external.interfaces.WebResourceError;
+import com.tencent.smtt.export.external.interfaces.WebResourceRequest;
+import com.tencent.smtt.export.external.interfaces.WebResourceResponse;
+import com.tencent.smtt.sdk.CookieManager;
+import com.tencent.smtt.sdk.CookieSyncManager;
+import com.tencent.smtt.sdk.WebChromeClient;
+import com.tencent.smtt.sdk.WebSettings;
+import com.tencent.smtt.sdk.WebView;
+import com.tencent.smtt.sdk.WebViewClient;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.utils.LogUtils;
+import com.yhy.all.of.tv.utils.ViewUtils;
 
 /**
  * JS 提取器 WebView
@@ -39,7 +41,7 @@ import com.yhy.all.of.tv.utils.LogUtils;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class JsExtractWebView extends WebView {
+public class JsExtractWebView extends WebView implements CrashReport.a {
     private static final String TAG = "JsExtractWebView";
     private AppCompatActivity mActivity;
     private String mUrl;
@@ -54,15 +56,13 @@ public class JsExtractWebView extends WebView {
     }
 
     public JsExtractWebView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs, defStyleAttr, 0);
-    }
-
-    public JsExtractWebView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
+        super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
 
     private void init(Context context, AttributeSet attrs) {
+        ViewUtils.setDrawDuringWindowsAnimating(this);
+
         setFocusable(false);
         setFocusableInTouchMode(false);
         clearFocus();
@@ -93,7 +93,7 @@ public class JsExtractWebView extends WebView {
         settings.setBuiltInZoomControls(true);
         settings.setSupportZoom(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            settings.setMixedContentMode(0);
         }
         // 自动播放媒体
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -134,6 +134,7 @@ public class JsExtractWebView extends WebView {
             }
         });
         setBackgroundColor(Color.TRANSPARENT);
+        setLayerType(View.LAYER_TYPE_HARDWARE, null);
         enabledCookie();
     }
 
@@ -162,7 +163,7 @@ public class JsExtractWebView extends WebView {
             mActivity.runOnUiThread(() -> {
                 clearCache(true);
                 stopLoading();
-                loadUrl("about:blank");
+                loadUrl(null);
                 if (destroy) {
                     removeAllViews();
                     destroy();
@@ -187,6 +188,32 @@ public class JsExtractWebView extends WebView {
         }
     }
 
+    @Override
+    public String a() {
+        return getUrl();
+    }
+
+    @Override
+    public void b() {
+        WebSettings webSettings = getSettings();
+        webSettings.setJavaScriptEnabled(true);
+    }
+
+    @Override
+    public void a(String s) {
+        loadUrl(s);
+    }
+
+    @Override
+    public void a(H5JavaScriptInterface h5JavaScriptInterface, String s) {
+        addJavascriptInterface(h5JavaScriptInterface, s);
+    }
+
+    @Override
+    public CharSequence c() {
+        return getContentDescription();
+    }
+
     private static class SysWebClient extends WebViewClient {
         private static final String TAG = "ParserWebViewDefault.SysWebClient";
 
@@ -198,6 +225,15 @@ public class JsExtractWebView extends WebView {
             mWv = wv;
             mInnerLiveData = liveData;
             mJsCode = jsCode;
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+            if (url.endsWith("favicon.ico") || url.contains(".baidu.")) {
+                webView.loadUrl(null);
+                return true;
+            }
+            return super.shouldOverrideUrlLoading(webView, url);
         }
 
         @Override

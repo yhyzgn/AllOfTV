@@ -37,12 +37,18 @@ public class SplashActivity extends BaseActivity {
         setLoadSir(clRoot);
         showLoading();
 
-        // 进入主页
         clRoot.postDelayed(() -> {
+            // 启动 web 进程
             EasyRouter.getInstance()
-                    .with(this)
-                    .to("/activity/main")
-                    .go(FinishRouterCallback.get(this));
+                .with(this)
+                .to("/service/web")
+                .go();
+
+            // 进入主页
+            EasyRouter.getInstance()
+                .with(this)
+                .to("/activity/main")
+                .go(FinishRouterCallback.get(this));
         }, 300);
     }
 

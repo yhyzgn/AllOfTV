@@ -17,6 +17,7 @@ import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 import androidx.core.content.PermissionChecker;
 
 import com.kingja.loadsir.callback.Callback;
@@ -76,16 +77,24 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         mApp = (App) getApplication();
 
         beforeLayout();
-        setContentView(layout());
 
-        initView();
-        initData();
-        initEvent();
-        setDefault();
-        setScreenOn();
+        new AsyncLayoutInflater(this).inflate(layout(), null, (view, resId, parent) -> {
+            setContentView(view);
+
+            initView();
+            initData();
+            initEvent();
+            setDefault();
+            setScreenOn();
+
+            afterLayout();
+        });
     }
 
     protected void beforeLayout() {
+    }
+
+    protected void afterLayout() {
     }
 
     @LayoutRes

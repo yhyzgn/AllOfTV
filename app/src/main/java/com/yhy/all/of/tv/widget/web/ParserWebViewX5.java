@@ -2,34 +2,35 @@ package com.yhy.all.of.tv.widget.web;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.net.http.SslError;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.ConsoleMessage;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
-import android.webkit.JsPromptResult;
-import android.webkit.JsResult;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.tencent.bugly.crashreport.CrashReport;
 import com.tencent.bugly.crashreport.crash.h5.H5JavaScriptInterface;
+import com.tencent.smtt.export.external.interfaces.ConsoleMessage;
+import com.tencent.smtt.export.external.interfaces.JsPromptResult;
+import com.tencent.smtt.export.external.interfaces.JsResult;
+import com.tencent.smtt.export.external.interfaces.SslError;
+import com.tencent.smtt.export.external.interfaces.SslErrorHandler;
+import com.tencent.smtt.export.external.interfaces.WebResourceError;
+import com.tencent.smtt.export.external.interfaces.WebResourceRequest;
+import com.tencent.smtt.export.external.interfaces.WebResourceResponse;
+import com.tencent.smtt.sdk.CookieManager;
+import com.tencent.smtt.sdk.CookieSyncManager;
+import com.tencent.smtt.sdk.WebChromeClient;
+import com.tencent.smtt.sdk.WebSettings;
+import com.tencent.smtt.sdk.WebView;
+import com.tencent.smtt.sdk.WebViewClient;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.utils.LogUtils;
+import com.yhy.all.of.tv.utils.ViewUtils;
 import com.yhy.evtor.Evtor;
 
 /**
@@ -59,6 +60,8 @@ public class ParserWebViewX5 extends WebView implements ParserWebView, CrashRepo
     }
 
     private void init(Context context) {
+        ViewUtils.setDrawDuringWindowsAnimating(this);
+
         setFocusable(false);
         setFocusableInTouchMode(false);
         clearFocus();
@@ -89,7 +92,8 @@ public class ParserWebViewX5 extends WebView implements ParserWebView, CrashRepo
         settings.setBuiltInZoomControls(true);
         settings.setSupportZoom(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            // settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            settings.setMixedContentMode(0);
         }
         // 自动播放媒体
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -127,6 +131,7 @@ public class ParserWebViewX5 extends WebView implements ParserWebView, CrashRepo
             }
         });
         setBackgroundColor(Color.TRANSPARENT);
+        setLayerType(View.LAYER_TYPE_HARDWARE, null);
         enabledCookie();
     }
 
@@ -156,7 +161,7 @@ public class ParserWebViewX5 extends WebView implements ParserWebView, CrashRepo
             mActivity.runOnUiThread(() -> {
                 clearCache(true);
                 stopLoading();
-                loadUrl("about:blank");
+                loadUrl(null);
                 if (destroy) {
                     removeAllViews();
                     destroy();
@@ -221,6 +226,15 @@ public class ParserWebViewX5 extends WebView implements ParserWebView, CrashRepo
         @Override
         public void onReceivedSslError(WebView webView, SslErrorHandler sslErrorHandler, SslError sslError) {
             sslErrorHandler.proceed();
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+            if (url.endsWith("favicon.ico") || url.contains(".baidu.")) {
+                webView.loadUrl(null);
+                return true;
+            }
+            return super.shouldOverrideUrlLoading(webView, url);
         }
 
         @Override

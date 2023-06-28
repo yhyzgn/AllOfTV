@@ -138,7 +138,7 @@ public class TencentApi {
         String pageUrl = "https://v.qq.com/x/cover/" + root.id + ".html";
 
         MutableLiveData<String> tempLiveData = new MutableLiveData<>();
-        JsExtractWebView wv = new JsExtractWebView(activity).attach(activity, pageUrl, tempLiveData, "window.__PINIA__");
+        JsExtractWebView wv = new JsExtractWebView(activity.getApplicationContext()).attach(activity, pageUrl, tempLiveData, "window.__PINIA__");
         tempLiveData.observe(activity, pinia -> {
             LogUtils.i("pinia", pinia);
             if (TextUtils.isEmpty(pinia) || Objects.equals("undefined", pinia)) {

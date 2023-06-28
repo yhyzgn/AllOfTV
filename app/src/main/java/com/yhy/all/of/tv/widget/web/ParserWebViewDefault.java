@@ -33,6 +33,7 @@ import com.tencent.bugly.crashreport.CrashReport;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.utils.LogUtils;
+import com.yhy.all.of.tv.utils.ViewUtils;
 import com.yhy.evtor.Evtor;
 
 /**
@@ -66,6 +67,8 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
     }
 
     private void init(Context context, AttributeSet attrs) {
+        ViewUtils.setDrawDuringWindowsAnimating(this);
+
         setFocusable(false);
         setFocusableInTouchMode(false);
         clearFocus();
@@ -134,6 +137,7 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
             }
         });
         setBackgroundColor(Color.TRANSPARENT);
+        setLayerType(View.LAYER_TYPE_HARDWARE, null);
         enabledCookie();
     }
 
@@ -163,7 +167,7 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
             mActivity.runOnUiThread(() -> {
                 clearCache(true);
                 stopLoading();
-                loadUrl("about:blank");
+                loadUrl(null);
                 if (destroy) {
                     removeAllViews();
                     destroy();
@@ -204,6 +208,15 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
         @Override
         public void onReceivedSslError(WebView webView, SslErrorHandler sslErrorHandler, SslError sslError) {
             sslErrorHandler.proceed();
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+            if (url.endsWith("favicon.ico") || url.contains(".baidu.")) {
+                webView.loadUrl(null);
+                return true;
+            }
+            return super.shouldOverrideUrlLoading(webView, url);
         }
 
         @Nullable
