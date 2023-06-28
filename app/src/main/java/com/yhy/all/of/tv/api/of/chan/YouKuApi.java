@@ -18,6 +18,7 @@ import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.widget.web.JsExtractWebView;
+import com.yhy.all.of.tv.widget.web.sonic.Sonic;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -129,6 +130,8 @@ public class YouKuApi {
 
         MutableLiveData<String> tempLiveData = new MutableLiveData<>();
         JsExtractWebView wv = new JsExtractWebView(activity).attach(activity, pageUrl, tempLiveData, "window.__INITIAL_DATA__");
+        Sonic sonic = new Sonic(activity, wv);
+
         tempLiveData.observe(activity, data -> {
             LogUtils.i("data", data);
             if (!TextUtils.isEmpty(data)) {
@@ -168,8 +171,15 @@ public class YouKuApi {
             } else {
                 liveData.postValue(null);
             }
+            sonic.destroy();
             wv.stop(true);
         });
+
+        if (sonic.load(pageUrl)) {
+            // sonic 已加载，无需 wv 再加载
+            return;
+        }
+
         wv.start();
     }
 }

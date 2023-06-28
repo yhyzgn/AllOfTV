@@ -1,4 +1,4 @@
-package com.yhy.all.of.tv.widget.web;
+package com.yhy.all.of.tv.widget.web.internal;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -12,7 +12,7 @@ import com.yhy.all.of.tv.parse.Parser;
  * @version 1.0.0
  * @since 1.0.0
  */
-public interface ParserWebView {
+public interface ParserWebView extends SonicWebView {
 
     void attach(AppCompatActivity activity, Parser parser, String url, MutableLiveData<String> liveData);
 

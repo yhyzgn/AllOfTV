@@ -135,6 +135,7 @@ dependencies {
     implementation 'com.squareup.okio:okio:3.3.0'
     implementation 'io.github.azhon:appupdate:4.2.8'
     implementation 'com.tencent.tbs:tbssdk:44286'
+    implementation 'com.tencent.sonic:sdk:3.1.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.github.GrenderG:Toasty:1.5.2'
     implementation 'io.github.billywei01:fastkv:1.1.4'

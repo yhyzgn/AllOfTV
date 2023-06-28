@@ -36,7 +36,7 @@ import com.yhy.all.of.tv.parse.ParserRegister;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.utils.Md5Utils;
 import com.yhy.all.of.tv.utils.ViewUtils;
-import com.yhy.all.of.tv.widget.web.ParserWebView;
+import com.yhy.all.of.tv.widget.web.internal.ParserWebView;
 import com.yhy.evtor.Evtor;
 import com.yhy.evtor.annotation.Subscribe;
 import com.yhy.player.widget.TvPlayer;

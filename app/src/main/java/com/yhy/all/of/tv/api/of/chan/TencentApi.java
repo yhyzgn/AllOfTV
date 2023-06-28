@@ -18,6 +18,7 @@ import com.yhy.all.of.tv.model.ems.VideoType;
 import com.yhy.all.of.tv.utils.DateUtils;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.widget.web.JsExtractWebView;
+import com.yhy.all.of.tv.widget.web.sonic.Sonic;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -139,6 +140,8 @@ public class TencentApi {
 
         MutableLiveData<String> tempLiveData = new MutableLiveData<>();
         JsExtractWebView wv = new JsExtractWebView(activity.getApplicationContext()).attach(activity, pageUrl, tempLiveData, "window.__PINIA__");
+        Sonic sonic = new Sonic(activity, wv);
+
         tempLiveData.observe(activity, pinia -> {
             LogUtils.i("pinia", pinia);
             if (TextUtils.isEmpty(pinia) || Objects.equals("undefined", pinia)) {
@@ -187,8 +190,15 @@ public class TencentApi {
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
+            sonic.destroy();
             wv.stop(true);
         });
+
+        if (sonic.load(pageUrl)) {
+            // sonic 已加载，无需 wv 再加载
+            return;
+        }
+
         wv.start();
     }
 }

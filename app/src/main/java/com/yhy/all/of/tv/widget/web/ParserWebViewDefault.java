@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.http.SslError;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
@@ -34,7 +35,10 @@ import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.utils.ViewUtils;
+import com.yhy.all.of.tv.widget.web.internal.ParserWebView;
 import com.yhy.evtor.Evtor;
+
+import java.util.HashMap;
 
 /**
  * 视频解析提取器
@@ -113,6 +117,7 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 CrashReport.setJavascriptMonitor(ParserWebViewDefault.this, true);
+                view.getSettings().setBlockNetworkImage(false);
                 super.onProgressChanged(view, newProgress);
             }
 
@@ -191,6 +196,21 @@ public class ParserWebViewDefault extends WebView implements ParserWebView {
         if (Build.VERSION.SDK_INT >= 21) {
             instance.setAcceptThirdPartyCookies(this, true);
         }
+    }
+
+    @Override
+    public void loadUrl(String url, Bundle extraData) {
+        loadUrl(url);
+    }
+
+    @Override
+    public void loadDataWithBaseUrl(String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
+        loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+    }
+
+    @Override
+    public void loadDataWithBaseUrlAndHeader(String baseUrl, String data, String mimeType, String encoding, String historyUrl, HashMap<String, String> headers) {
+        loadDataWithBaseUrl(baseUrl, data, mimeType, encoding, historyUrl);
     }
 
     private static class SysWebClient extends WebViewClient {

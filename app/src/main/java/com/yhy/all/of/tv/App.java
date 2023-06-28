@@ -20,6 +20,8 @@ import com.squareup.picasso.RequestCreator;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.tencent.smtt.export.external.TbsCoreSettings;
 import com.tencent.smtt.sdk.QbSdk;
+import com.tencent.sonic.sdk.SonicConfig;
+import com.tencent.sonic.sdk.SonicEngine;
 import com.yhy.all.of.tv.api.RandHeaderInterceptor;
 import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.component.callback.EmptyCallback;
@@ -35,6 +37,7 @@ import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.utils.SysUtils;
 import com.yhy.all.of.tv.utils.ToastUtils;
 import com.yhy.all.of.tv.utils.ViewUtils;
+import com.yhy.all.of.tv.widget.web.sonic.SonicRuntimeImpl;
 import com.yhy.router.EasyRouter;
 import com.yhy.router.common.JsonConverter;
 
@@ -87,6 +90,7 @@ public class App extends MultiDexApplication {
         initRouter();
         initOkGo();
         initX5WebView();
+        initSonic();
         initPlayer();
         initDevice();
         initBugly();
@@ -285,6 +289,12 @@ public class App extends MultiDexApplication {
                 x5Already = isX5;
             }
         });
+    }
+
+    private void initSonic() {
+        if (!SonicEngine.isGetInstanceAllowed()) {
+            SonicEngine.createInstance(new SonicRuntimeImpl(this), new SonicConfig.Builder().build());
+        }
     }
 
     private void initPlayer() {

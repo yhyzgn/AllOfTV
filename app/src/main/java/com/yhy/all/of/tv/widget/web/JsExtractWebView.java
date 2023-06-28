@@ -3,6 +3,7 @@ package com.yhy.all.of.tv.widget.web;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
@@ -31,6 +32,9 @@ import com.tencent.smtt.sdk.WebViewClient;
 import com.yhy.all.of.tv.BuildConfig;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.utils.ViewUtils;
+import com.yhy.all.of.tv.widget.web.internal.SonicWebView;
+
+import java.util.HashMap;
 
 /**
  * JS 提取器 WebView
@@ -41,7 +45,7 @@ import com.yhy.all.of.tv.utils.ViewUtils;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class JsExtractWebView extends WebView implements CrashReport.a {
+public class JsExtractWebView extends WebView implements SonicWebView, CrashReport.a {
     private static final String TAG = "JsExtractWebView";
     private AppCompatActivity mActivity;
     private String mUrl;
@@ -110,6 +114,7 @@ public class JsExtractWebView extends WebView implements CrashReport.a {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 CrashReport.setJavascriptMonitor(JsExtractWebView.this, true);
+                view.getSettings().setBlockNetworkImage(false);
                 super.onProgressChanged(view, newProgress);
             }
 
@@ -212,6 +217,21 @@ public class JsExtractWebView extends WebView implements CrashReport.a {
     @Override
     public CharSequence c() {
         return getContentDescription();
+    }
+
+    @Override
+    public void loadUrl(String url, Bundle extraData) {
+        loadUrl(url);
+    }
+
+    @Override
+    public void loadDataWithBaseUrl(String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
+        loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+    }
+
+    @Override
+    public void loadDataWithBaseUrlAndHeader(String baseUrl, String data, String mimeType, String encoding, String historyUrl, HashMap<String, String> headers) {
+        loadDataWithBaseUrl(baseUrl, data, mimeType, encoding, historyUrl);
     }
 
     private static class SysWebClient extends WebViewClient {
