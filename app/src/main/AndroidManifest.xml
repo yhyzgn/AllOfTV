@@ -62,7 +62,7 @@
                 android:process=":web" />
 
         <service
-                android:name=".component.WebService"
+                android:name=".component.service.WebService"
                 android:label="web"
                 android:process=":web" />
 

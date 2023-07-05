@@ -1,4 +1,4 @@
-package com.yhy.all.of.tv.component;
+package com.yhy.all.of.tv.component.service;
 
 import android.app.Service;
 import android.content.Intent;

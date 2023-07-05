@@ -108,16 +108,15 @@ public abstract class VideoActivity extends BaseActivity {
                     }
                     break;
                 case KeyEvent.ACTION_UP:
+                    // 可能是长按事件
                     // 长按时间清除消息
                     mLongPressHandler.removeMessages(WHAT_LONG_PRESS);
-                    // 可能是长按事件
                     switch (event.getKeyCode()) {
                         case KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
                             if (mIsLongPressed) {
                                 if (null != mLongPressTimer) {
                                     mLongPressTimer.cancel();
                                     mLongPressTimer = null;
-                                    return true;
                                 }
                                 mIsLongPressed = false;
                             } else {
@@ -126,8 +125,8 @@ public abstract class VideoActivity extends BaseActivity {
                                 } else {
                                     player().seekForward();
                                 }
-                                return true;
                             }
+                            return true;
                         }
                         case KeyEvent.KEYCODE_DPAD_CENTER -> {
                             player().playOrPause();
