@@ -14,7 +14,7 @@ import com.lzy.okgo.model.Response;
 import com.yhy.all.of.tv.api.model.TencentVideo;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
-import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.model.ems.TabType;
 import com.yhy.all.of.tv.rand.IpRand;
 import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.DateUtils;
@@ -49,7 +49,7 @@ public class TencentApi {
         gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     }
 
-    public void page(MutableLiveData<List<Video>> liveData, int page, VideoType type, int mode) throws Exception {
+    public void page(MutableLiveData<List<Video>> liveData, int page, TabType type, int mode) throws Exception {
         String pg = (Math.max(1, page) - 1) + "";
         Map<String, Object> body = Maps.of(
             "page_bypass_params", Maps.of(
@@ -71,7 +71,7 @@ public class TencentApi {
             "page_params", Maps.of(
                 "page_id", "channel_list_second_page",
                 "page_type", "operation",
-                "channel_id", type == VideoType.FILM ? "100173" : type == VideoType.EPISODE ? "100113" : "100105",
+                "channel_id", type == TabType.FILM ? "100173" : type == TabType.EPISODE ? "100113" : "100105",
                 "filter_params", "itype=-1&iarea=-1&characteristic=-1&year=-1&charge=-1&sort=75",
                 "page", pg
             ));

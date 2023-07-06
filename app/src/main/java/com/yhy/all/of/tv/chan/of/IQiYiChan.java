@@ -7,7 +7,7 @@ import com.yhy.all.of.tv.api.of.chan.IQiYiApi;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.model.Video;
-import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.model.ems.TabType;
 
 import java.util.List;
 
@@ -29,8 +29,8 @@ public class IQiYiChan implements Chan {
     @Override
     public List<Tab> tabList() {
         return Lists.of(
-            Tab.create(this, VideoType.FILM, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), VideoType.FILM, 11)),
-            Tab.create(this, VideoType.EPISODE, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), VideoType.EPISODE, 11))
+            Tab.create(this, TabType.FILM, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), TabType.FILM, 11)),
+            Tab.create(this, TabType.EPISODE, (liveData, params) -> IQiYiApi.instance.page(liveData, params.getInt("page"), TabType.EPISODE, 11))
         );
     }
 

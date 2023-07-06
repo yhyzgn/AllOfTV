@@ -15,7 +15,7 @@ import com.lzy.okgo.request.GetRequest;
 import com.yhy.all.of.tv.api.model.IQiYiVideo;
 import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.model.Video;
-import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.model.ems.TabType;
 import com.yhy.all.of.tv.rand.IpRand;
 import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.LogUtils;
@@ -51,13 +51,13 @@ public class IQiYiApi {
         gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     }
 
-    public void page(MutableLiveData<List<Video>> liveData, int page, VideoType type, int mode) throws Exception {
+    public void page(MutableLiveData<List<Video>> liveData, int page, TabType type, int mode) throws Exception {
         OkGo.<String>get("https://mesh.if.iqiyi.com/portal/videolib/pcw/data")
             .headers("User-Agent", UserAgentRand.get())
             .headers("X-Forwarded-For", IpRand.get())
             .params("ret_num", 30)
             .params("page_id", Math.max(1, page))
-            .params("channel_id", type == VideoType.FILM ? 1 : 2)
+            .params("channel_id", type == TabType.FILM ? 1 : 2)
             .params("mode", mode)
             .execute(new StringCallback() {
                 @Override
@@ -112,7 +112,7 @@ public class IQiYiApi {
      * @param liveData 加载回调
      */
     public void playList(Video root, MutableLiveData<Video> liveData) {
-        if (root.type == VideoType.FILM) {
+        if (root.type == TabType.FILM) {
             // 电影的话，把自己加到播放列表就行了
             root.episodes = Lists.of(gson.fromJson(gson.toJson(root), Video.class));
             liveData.postValue(root);

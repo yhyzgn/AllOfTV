@@ -21,16 +21,18 @@ import java.util.Objects;
  * @version 1.0.0
  * @since 1.0.0
  */
-public enum VideoType {
+public enum TabType {
+    HOME(100, "首页"),
+
     /**
      * 电影
      */
-    FILM(100, "电影"),
+    FILM(200, "电影"),
 
     /**
      * 剧集
      */
-    EPISODE(200, "电视剧"),
+    EPISODE(300, "电视剧"),
 
     /**
      * 未知，不指定类型
@@ -41,24 +43,24 @@ public enum VideoType {
     public final Integer code;
     public final String name;
 
-    VideoType(Integer code, String name) {
+    TabType(Integer code, String name) {
         this.code = code;
         this.name = name;
     }
 
-    public static VideoType parse(Integer code) {
-        return Arrays.stream(VideoType.values()).filter(it -> Objects.equals(code, it.code)).findFirst().orElse(UNKNOWN);
+    public static TabType parse(Integer code) {
+        return Arrays.stream(TabType.values()).filter(it -> Objects.equals(code, it.code)).findFirst().orElse(UNKNOWN);
     }
 
-    public static class TypeAdapter implements JsonSerializer<VideoType>, JsonDeserializer<VideoType> {
+    public static class TypeAdapter implements JsonSerializer<TabType>, JsonDeserializer<TabType> {
 
         @Override
-        public VideoType deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+        public TabType deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
             return parse(json.getAsInt());
         }
 
         @Override
-        public JsonElement serialize(VideoType src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(TabType src, Type typeOfSrc, JsonSerializationContext context) {
             return new JsonPrimitive(src.code);
         }
     }

@@ -30,7 +30,7 @@ import com.yhy.all.of.tv.component.adapter.PlayListVodAdapter;
 import com.yhy.all.of.tv.component.adapter.SeriesFlagAdapter;
 import com.yhy.all.of.tv.component.base.VideoActivity;
 import com.yhy.all.of.tv.model.Video;
-import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.model.ems.TabType;
 import com.yhy.all.of.tv.parse.Parser;
 import com.yhy.all.of.tv.parse.ParserRegister;
 import com.yhy.all.of.tv.utils.LogUtils;
@@ -412,7 +412,7 @@ public class DetailActivity extends VideoActivity {
                 mRootVideo = video;
 
                 // 电影或者剧集已经更新完啦
-                if (mRootVideo.type == VideoType.FILM || mRootVideo.episodesTotal <= mRootVideo.episodes.size()) {
+                if (mRootVideo.type == TabType.FILM || mRootVideo.episodesTotal <= mRootVideo.episodes.size()) {
                     // 缓存之
                     KV.instance.storeVideo(mRootTag, mRootVideo);
                 }

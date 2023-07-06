@@ -2,7 +2,7 @@ package com.yhy.all.of.tv.model;
 
 import androidx.annotation.NonNull;
 
-import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.model.ems.TabType;
 
 import java.io.Serializable;
 import java.util.List;
@@ -24,7 +24,7 @@ public class Video implements Serializable {
     public String imgCover;
     public String pageUrl;
     public String channel;
-    public VideoType type;
+    public TabType type;
     public List<String> tags;
     public List<String> directors;
     public List<String> actors;

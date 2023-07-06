@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.yhy.all.of.tv.cache.KV;
 import com.yhy.all.of.tv.model.Video;
-import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.model.ems.TabType;
 import com.yhy.all.of.tv.utils.Md5Utils;
 
 import java.io.Serializable;
@@ -42,16 +42,16 @@ public interface Chan {
 
     class Tab implements Serializable {
         public final Chan chan;
-        public final VideoType type;
+        public final TabType type;
         public final TabLoader loader;
 
-        public Tab(Chan chan, VideoType type, TabLoader loader) {
+        public Tab(Chan chan, TabType type, TabLoader loader) {
             this.chan = chan;
             this.type = type;
             this.loader = loader;
         }
 
-        public static Tab create(Chan chan, VideoType type, TabLoader loader) {
+        public static Tab create(Chan chan, TabType type, TabLoader loader) {
             return new Tab(chan, type, loader);
         }
     }

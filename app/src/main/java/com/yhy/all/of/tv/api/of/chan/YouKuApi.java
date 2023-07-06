@@ -15,7 +15,7 @@ import com.yhy.all.of.tv.api.model.YouKuEpisode;
 import com.yhy.all.of.tv.api.model.YouKuVideo;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
-import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.model.ems.TabType;
 import com.yhy.all.of.tv.rand.IpRand;
 import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.LogUtils;
@@ -49,8 +49,8 @@ public class YouKuApi {
         gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     }
 
-    public void page(MutableLiveData<List<Video>> liveData, int page, VideoType type, int mode) throws Exception {
-        String typeStr = type == VideoType.FILM ? "电影" : type == VideoType.EPISODE ? "电视剧" : "纪录片";
+    public void page(MutableLiveData<List<Video>> liveData, int page, TabType type, int mode) throws Exception {
+        String typeStr = type == TabType.FILM ? "电影" : type == TabType.EPISODE ? "电视剧" : "纪录片";
         Map<String, Object> json = Maps.of("type", typeStr, "sort", 7);
 
         Map<String, Object> sessionMap = new HashMap<>();
@@ -93,12 +93,12 @@ public class YouKuApi {
                             Video vd = new Video();
                             vd.title = it.title;
                             vd.description = it.subTitle;
-                            vd.score = type == VideoType.FILM && null != it.summary ? Float.parseFloat(it.summary) : 0;
+                            vd.score = type == TabType.FILM && null != it.summary ? Float.parseFloat(it.summary) : 0;
                             vd.imgCover = it.img;
                             vd.pageUrl = "https:" + it.videoLink;
                             vd.channel = "优酷";
                             vd.type = type;
-                            vd.updateStatus = type != VideoType.FILM ? it.summary : "";
+                            vd.updateStatus = type != TabType.FILM ? it.summary : "";
                             return vd;
                         }).collect(Collectors.toList());
 
