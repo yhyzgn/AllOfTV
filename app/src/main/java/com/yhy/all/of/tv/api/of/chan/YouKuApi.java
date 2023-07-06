@@ -16,6 +16,8 @@ import com.yhy.all.of.tv.api.model.YouKuVideo;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.rand.IpRand;
+import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.widget.web.JsExtractWebView;
 import com.yhy.all.of.tv.widget.web.sonic.Sonic;
@@ -70,7 +72,9 @@ public class YouKuApi {
         sessionMap.put("category", typeStr);
 
         OkGo.<String>get("https://youku.com/category/data")
-            .headers("referer", "https://youku.com/channel/webmovie/list?filter=type_" + URLEncoder.encode(typeStr, "utf-8") + "_sort_7&spm=a2hja.14919748_WEBMOVIE_JINGXUAN.drawer3.d_sort_2")
+            .headers("referer", "https://youku.com/channel/webmovie/list?filter=type_" + URLEncoder.encode(typeStr, "utf-8") + "&spm=a2hja.14919748_WEBTV_JINGXUAN.drawer3.d_tags_2")
+            .headers("User-Agent", UserAgentRand.get())
+            .headers("X-Forwarded-For", IpRand.get())
             .params("params", gson.toJson(json))
             .params("session", gson.toJson(sessionMap))
             .params("pageNo", page)

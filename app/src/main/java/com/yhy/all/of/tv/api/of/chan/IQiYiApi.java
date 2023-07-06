@@ -16,6 +16,8 @@ import com.yhy.all.of.tv.api.model.IQiYiVideo;
 import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.rand.IpRand;
+import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.utils.Md5Utils;
 
@@ -51,6 +53,8 @@ public class IQiYiApi {
 
     public void page(MutableLiveData<List<Video>> liveData, int page, VideoType type, int mode) throws Exception {
         OkGo.<String>get("https://mesh.if.iqiyi.com/portal/videolib/pcw/data")
+            .headers("User-Agent", UserAgentRand.get())
+            .headers("X-Forwarded-For", IpRand.get())
             .params("ret_num", 30)
             .params("page_id", Math.max(1, page))
             .params("channel_id", type == VideoType.FILM ? 1 : 2)

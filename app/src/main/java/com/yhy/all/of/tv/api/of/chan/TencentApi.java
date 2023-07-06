@@ -15,6 +15,8 @@ import com.yhy.all.of.tv.api.model.TencentVideo;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
 import com.yhy.all.of.tv.model.ems.VideoType;
+import com.yhy.all.of.tv.rand.IpRand;
+import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.DateUtils;
 import com.yhy.all.of.tv.utils.LogUtils;
 import com.yhy.all.of.tv.widget.web.JsExtractWebView;
@@ -76,6 +78,8 @@ public class TencentApi {
 
         OkGo.<String>post("https://pbaccess.video.qq.com/trpc.vector_layout.page_view.PageService/getPage?video_appid=3000010")
             .headers("cookie", "tvfe_boss_uuid=77ce84b0af77c334; video_platform=2; video_guid=f5aa0d25e4aa0b62; pgv_pvid=8172569500; pgv_info=ssid=s4222040415")
+            .headers("User-Agent", UserAgentRand.get())
+            .headers("X-Forwarded-For", IpRand.get())
             .upJson(gson.toJson(body))
             .execute(new StringCallback() {
                 @Override
