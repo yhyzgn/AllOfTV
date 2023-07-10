@@ -72,13 +72,13 @@ public class JsExtractWebView extends WebView implements SonicWebView, CrashRepo
         clearFocus();
         setOverScrollMode(View.OVER_SCROLL_ALWAYS);
         final WebSettings settings = getSettings();
+        settings.setDomStorageEnabled(true);
         settings.setNeedInitialFocus(false);
         settings.setAllowContentAccess(true);
         settings.setAllowFileAccess(true);
         settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setAllowFileAccessFromFileURLs(true);
         settings.setDatabaseEnabled(true);
-        settings.setDomStorageEnabled(true);
         settings.setJavaScriptEnabled(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -90,7 +90,6 @@ public class JsExtractWebView extends WebView implements SonicWebView, CrashRepo
             settings.setBlockNetworkImage(true);
         }
         settings.setUseWideViewPort(true);
-        settings.setDomStorageEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setSupportMultipleWindows(true);
         settings.setLoadWithOverviewMode(true);

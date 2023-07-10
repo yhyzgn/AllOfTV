@@ -104,7 +104,7 @@ public class TencentApi {
                             vd.pageUrl = "https://v.qq.com/x/cover/" + it.params.cid + ".html";
                             vd.channel = "腾讯";
                             vd.type = type;
-                            if (!TextUtils.isEmpty(it.params.publishDate)) {
+                            if (!TextUtils.isEmpty(it.params.publishDate) && !it.params.publishDate.startsWith("0000")) {
                                 LocalDate date = LocalDate.parse(it.params.publishDate, DateTimeFormatter.ofPattern(DateUtils.autoPattern(it.params.publishDate)));
                                 vd.year = date.getYear();
                             }
