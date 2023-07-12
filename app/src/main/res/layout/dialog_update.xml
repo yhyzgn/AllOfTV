@@ -109,46 +109,53 @@
             </ScrollView>
         </LinearLayout>
 
-        <com.azhon.appupdate.view.NumberProgressBar
-                android:id="@+id/npbDownload"
+        <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="@dimen/vs_8"
-                app:progress_reached_color="@color/colorPrimary"
-                app:progress_text_size="@dimen/ts_18"
-                app:progress_text_color="@color/colorPrimary"
-                android:visibility="gone" />
-
-        <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_height="56dp"
                 android:layout_marginTop="@dimen/vs_20">
 
-            <Button
-                    android:id="@+id/btnConfirm"
-                    android:layout_width="@dimen/vs_70"
-                    android:layout_height="@dimen/vs_50"
-                    android:textSize="@dimen/ts_18"
-                    android:textColor="@color/white"
-                    android:text="确定"
-                    android:background="@drawable/button_dialog_main"
-                    android:focusable="true"
-                    android:clickable="true"
-                    android:focusableInTouchMode="true" />
+            <com.azhon.appupdate.view.NumberProgressBar
+                    android:id="@+id/npbDownload"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    app:progress_reached_color="@color/colorPrimary"
+                    app:progress_text_size="@dimen/ts_18"
+                    app:progress_text_color="@color/colorPrimary"
+                    android:visibility="gone" />
 
-            <Button
-                    android:id="@+id/btnCancel"
-                    android:layout_width="@dimen/vs_70"
-                    android:layout_height="@dimen/vs_50"
-                    android:layout_marginStart="@dimen/vs_40"
-                    android:textSize="@dimen/ts_18"
-                    android:textColor="@color/white"
-                    android:background="@drawable/button_dialog_main"
-                    android:text="取消"
-                    android:focusable="true"
-                    android:clickable="true"
-                    android:focusableInTouchMode="true" />
-        </LinearLayout>
+            <LinearLayout
+                    android:id="@+id/llBtnBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_centerInParent="true">
+
+                <Button
+                        android:id="@+id/btnConfirm"
+                        android:layout_width="@dimen/vs_70"
+                        android:layout_height="@dimen/vs_50"
+                        android:textSize="@dimen/ts_18"
+                        android:textColor="@color/white"
+                        android:text="确定"
+                        android:background="@drawable/button_dialog_main"
+                        android:focusable="true"
+                        android:clickable="true"
+                        android:focusableInTouchMode="true" />
+
+                <Button
+                        android:id="@+id/btnCancel"
+                        android:layout_width="@dimen/vs_70"
+                        android:layout_height="@dimen/vs_50"
+                        android:layout_marginStart="@dimen/vs_40"
+                        android:textSize="@dimen/ts_18"
+                        android:textColor="@color/white"
+                        android:background="@drawable/button_dialog_main"
+                        android:text="取消"
+                        android:focusable="true"
+                        android:clickable="true"
+                        android:focusableInTouchMode="true" />
+            </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 </RelativeLayout>

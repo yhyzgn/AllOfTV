@@ -5,6 +5,7 @@ import android.text.Html;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,6 +30,7 @@ public class UpdateDialog extends BaseDialog {
     private final TextView tvTime;
     private final TextView tvLog;
     private final NumberProgressBar npbDownload;
+    private final LinearLayout llBtnBox;
     private final Button btnConfirm;
     private final Button btnCancel;
 
@@ -42,6 +44,7 @@ public class UpdateDialog extends BaseDialog {
         tvTime = findViewById(R.id.tvTime);
         tvLog = findViewById(R.id.tvLog);
         npbDownload = findViewById(R.id.npbDownload);
+        llBtnBox = findViewById(R.id.llBtnBox);
         btnConfirm = findViewById(R.id.btnConfirm);
         btnCancel = findViewById(R.id.btnCancel);
 
@@ -93,6 +96,7 @@ public class UpdateDialog extends BaseDialog {
     }
 
     public void startDownloading() {
+        llBtnBox.setVisibility(View.GONE);
         npbDownload.setVisibility(View.VISIBLE);
     }
 
