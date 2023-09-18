@@ -11,6 +11,8 @@ import com.google.gson.reflect.TypeToken;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
+import com.quickjs.JSContext;
+import com.quickjs.QuickJS;
 import com.yhy.all.of.tv.api.model.TencentVideo;
 import com.yhy.all.of.tv.internal.Maps;
 import com.yhy.all.of.tv.model.Video;
@@ -19,13 +21,16 @@ import com.yhy.all.of.tv.rand.IpRand;
 import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.DateUtils;
 import com.yhy.all.of.tv.utils.LogUtils;
-import com.yhy.all.of.tv.widget.web.JsExtractWebView;
-import com.yhy.all.of.tv.widget.web.sonic.Sonic;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -41,6 +46,7 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 public class TencentApi {
+    private static final String TAG = "TencentApi";
     public static final TencentApi instance = new TencentApi();
 
     private final Gson gson;
@@ -135,74 +141,77 @@ public class TencentApi {
      * @param liveData 加载回调
      */
     public void playList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
-        // 电影和剧集都通过 html 加载
-        getHtmlPage(activity, root, liveData);
+        // 通过爬虫加载
+        spiderPlayList(activity, root, liveData);
     }
 
-    private void getHtmlPage(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
+    private void spiderPlayList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
         String pageUrl = "https://v.qq.com/x/cover/" + root.id + ".html";
 
-        MutableLiveData<String> tempLiveData = new MutableLiveData<>();
-        JsExtractWebView wv = new JsExtractWebView(activity.getApplicationContext()).attach(activity, pageUrl, tempLiveData, "window.__PINIA__");
-        Sonic sonic = new Sonic(activity, wv);
-
-        tempLiveData.observe(activity, pinia -> {
-            LogUtils.i("pinia", pinia);
-            if (TextUtils.isEmpty(pinia) || Objects.equals("undefined", pinia)) {
-                // 重试
-                tempLiveData.removeObservers(activity);
-                wv.stop(true);
-                getHtmlPage(activity, root, liveData);
-                return;
-            }
-
+        new Thread(() -> {
             try {
-                JSONObject jo = new JSONObject(pinia);
+                Document doc = Jsoup.connect(pageUrl).get();
+                LogUtils.iTag(TAG, "title = " + doc.title());
 
-                JSONObject joCoverInfo = jo.getJSONObject("global").getJSONObject("coverInfo");
-
-                // 演员表
-                JSONArray actors = joCoverInfo.getJSONArray("leading_actor");
-                root.actors = gson.fromJson(actors.toString(), new TypeToken<>() {
-                });
-
-                // 简介信息
-                root.description = joCoverInfo.getString("description");
-
-                // 总集数
-                String episodeAll = joCoverInfo.optString("episode_all", "1");
-                if (TextUtils.isEmpty(episodeAll) || "null".equals(episodeAll)) {
-                    episodeAll = "1";
-                }
-                root.episodesTotal = Integer.parseInt(episodeAll);
-
-                // 播放列表
-                jo = jo.getJSONObject("episodeMain");
-                JSONArray ja = jo.getJSONArray("listData").getJSONObject(0).getJSONArray("list").getJSONArray(0);
-                List<Map<String, Object>> list = gson.fromJson(ja.toString(), new TypeToken<>() {
-                });
-                root.episodes = list.stream()
-                    .filter(it -> Objects.equals(it.get("isNoStoreWatchHistory"), false)) // 过滤非正片（true：预告片，花絮等，false：正片）
-                    .map(it -> {
-                        Video vd = new Video();
-                        vd.id = Objects.requireNonNull(it.get("vid")).toString();
-                        vd.title = Objects.requireNonNull(it.get("playTitle")).toString().replaceAll("^.*?(第\\d+集).*?$", "$1");
-                        vd.pageUrl = "https://v.qq.com/x/cover/" + root.id + "/" + vd.id + ".html";
-                        return vd;
-                    }).collect(Collectors.toList());
-                liveData.postValue(root);
-            } catch (JSONException e) {
+                Elements els = doc.select("head > script");
+                Element el = els.stream().filter(it -> it.html().contains("window.__PINIA__")).findFirst().orElseThrow(() -> new IllegalArgumentException(""));
+                parsePinia(el.data(), activity, root, liveData);
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            sonic.destroy();
-            wv.stop(true);
-        });
+        }).start();
+    }
 
-        if (sonic.load(pageUrl)) {
-            // sonic 已加载，无需 wv 再加载
+    private void parsePinia(String pinia, AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
+        LogUtils.i("pinia", pinia);
+        if (TextUtils.isEmpty(pinia) || Objects.equals("undefined", pinia)) {
+            // 重试
+            spiderPlayList(activity, root, liveData);
             return;
         }
 
-        wv.start();
+        try (QuickJS quickJS = QuickJS.createRuntime()) {
+            JSContext context = quickJS.createContext();
+            context.executeScript("window = {}; " + pinia, "file.js");
+            pinia = context.executeStringScript("JSON.stringify(window.__PINIA__);", "file.js");
+            context.close();
+
+            JSONObject jo = new JSONObject(pinia);
+            JSONObject joCoverInfo = jo.getJSONObject("global").getJSONObject("coverInfo");
+
+            // 演员表
+            JSONArray actors = joCoverInfo.getJSONArray("leading_actor");
+            root.actors = gson.fromJson(actors.toString(), new TypeToken<>() {
+            });
+
+            // 简介信息
+            root.description = joCoverInfo.getString("description");
+
+            // 总集数
+            String episodeAll = joCoverInfo.optString("episode_all", "1");
+            if (TextUtils.isEmpty(episodeAll) || "null".equals(episodeAll)) {
+                episodeAll = "1";
+            }
+            root.episodesTotal = Integer.parseInt(episodeAll);
+
+            // 播放列表
+            jo = jo.getJSONObject("episodeMain");
+            JSONArray ja = jo.getJSONArray("listData");
+            ja = ja.getJSONObject(ja.length() - 1).getJSONArray("list").getJSONArray(0);
+            List<Map<String, Object>> list = gson.fromJson(ja.toString(), new TypeToken<>() {
+            });
+            root.episodes = list.stream()
+                .filter(it -> Objects.equals(it.get("isNoStoreWatchHistory"), false)) // 过滤非正片（true：预告片，花絮等，false：正片）
+                .map(it -> {
+                    Video vd = new Video();
+                    vd.id = Objects.requireNonNull(it.get("vid")).toString();
+                    vd.title = Objects.requireNonNull(it.get("playTitle")).toString().replaceAll("^.*?(第\\d+集).*?$", "$1");
+                    vd.pageUrl = "https://v.qq.com/x/cover/" + root.id + "/" + vd.id + ".html";
+                    return vd;
+                }).collect(Collectors.toList());
+            liveData.postValue(root);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

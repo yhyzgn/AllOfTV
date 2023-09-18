@@ -11,6 +11,8 @@ import com.google.gson.reflect.TypeToken;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
+import com.quickjs.JSContext;
+import com.quickjs.QuickJS;
 import com.yhy.all.of.tv.api.model.YouKuEpisode;
 import com.yhy.all.of.tv.api.model.YouKuVideo;
 import com.yhy.all.of.tv.internal.Maps;
@@ -19,13 +21,16 @@ import com.yhy.all.of.tv.model.ems.TabType;
 import com.yhy.all.of.tv.rand.IpRand;
 import com.yhy.all.of.tv.rand.UserAgentRand;
 import com.yhy.all.of.tv.utils.LogUtils;
-import com.yhy.all.of.tv.widget.web.JsExtractWebView;
-import com.yhy.all.of.tv.widget.web.sonic.Sonic;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +46,7 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 public class YouKuApi {
+    private static final String TAG = "YouKuApi";
     public static final YouKuApi instance = new YouKuApi();
 
     private final Gson gson;
@@ -125,65 +131,72 @@ public class YouKuApi {
      * @param liveData 加载回调
      */
     public void playList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
-        // 电影和剧集都通过 html 加载
-        getHtmlPage(activity, root, liveData);
+        // 通过爬虫加载
+        spiderPlayList(activity, root, liveData);
     }
 
-    private void getHtmlPage(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
+    private void spiderPlayList(AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
         String pageUrl = root.pageUrl;
 
-        MutableLiveData<String> tempLiveData = new MutableLiveData<>();
-        JsExtractWebView wv = new JsExtractWebView(activity).attach(activity, pageUrl, tempLiveData, "window.__INITIAL_DATA__");
-        Sonic sonic = new Sonic(activity, wv);
+        new Thread(() -> {
+            try {
+                Document doc = Jsoup.connect(pageUrl).get();
+                LogUtils.iTag(TAG, "title = " + doc.title());
 
-        tempLiveData.observe(activity, data -> {
-            LogUtils.i("data", data);
-            if (!TextUtils.isEmpty(data)) {
-                try {
-                    JSONObject jo = new JSONObject(data);
-                    JSONObject joData = jo.getJSONObject("data");
-
-                    jo = joData.getJSONObject("model").getJSONObject("detail").getJSONObject("data");
-                    JSONArray jaNodes = jo.getJSONArray("nodes").getJSONObject(0).getJSONArray("nodes");
-
-                    // 简介
-                    root.description = jaNodes.getJSONObject(0).getJSONArray("nodes").getJSONObject(0).getJSONObject("data").getString("desc");
-
-                    // 总集数
-                    root.episodesTotal = joData.getJSONObject("data").getJSONObject("data").getJSONObject("extra").optInt("episodeTotal", 1);
-
-                    // 播放列表
-                    JSONArray ja = jaNodes.getJSONObject(2).getJSONArray("nodes");
-                    LogUtils.i(ja.toString());
-                    List<YouKuEpisode> list = gson.fromJson(ja.toString(), new TypeToken<>() {
-                    });
-
-                    root.episodes = list.stream()
-                        .filter(it -> Objects.equals(it.data.videoType, "正片"))
-                        .map(it -> {
-                            Video vd = new Video();
-                            vd.id = it.id + "";
-                            vd.title = it.data.title.replaceAll("^.*?(第\\d+集).*?$", "$1");
-                            vd.pageUrl = "https://v.youku.com/v_show/id_" + it.data.action.value + ".html";
-                            return vd;
-                        }).collect(Collectors.toList());
-
-                    liveData.postValue(root);
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                liveData.postValue(null);
+                Elements els = doc.select("body > script");
+                Element el = els.stream().filter(it -> it.html().contains("window.__INITIAL_DATA__")).findFirst().orElseThrow(() -> new IllegalArgumentException(""));
+                parsePinia(el.data(), activity, root, liveData);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            sonic.destroy();
-            wv.stop(true);
-        });
+        }).start();
+    }
 
-        if (sonic.load(pageUrl)) {
-            // sonic 已加载，无需 wv 再加载
+    private void parsePinia(String pinia, AppCompatActivity activity, Video root, MutableLiveData<Video> liveData) {
+        LogUtils.i("pinia", pinia);
+        if (TextUtils.isEmpty(pinia) || Objects.equals("undefined", pinia)) {
+            // 重试
+            spiderPlayList(activity, root, liveData);
             return;
         }
 
-        wv.start();
+        try (QuickJS quickJS = QuickJS.createRuntime()) {
+            JSContext context = quickJS.createContext();
+            context.executeScript("window = {}; " + pinia, "file.js");
+            pinia = context.executeStringScript("JSON.stringify(window.__INITIAL_DATA__);", "file.js");
+            context.close();
+
+            JSONObject jo = new JSONObject(pinia);
+            JSONObject joData = jo.getJSONObject("data");
+
+            jo = joData.getJSONObject("model").getJSONObject("detail").getJSONObject("data");
+            JSONArray jaNodes = jo.getJSONArray("nodes").getJSONObject(0).getJSONArray("nodes");
+
+            // 简介
+            root.description = jaNodes.getJSONObject(0).getJSONArray("nodes").getJSONObject(0).getJSONObject("data").getString("desc");
+
+            // 总集数
+            root.episodesTotal = joData.getJSONObject("data").getJSONObject("data").getJSONObject("extra").optInt("episodeTotal", 1);
+
+            // 播放列表
+            JSONArray ja = jaNodes.getJSONObject(2).getJSONArray("nodes");
+            LogUtils.i(ja.toString());
+            List<YouKuEpisode> list = gson.fromJson(ja.toString(), new TypeToken<>() {
+            });
+
+            root.episodes = list.stream()
+                .filter(it -> Objects.equals(it.data.videoType, "正片"))
+                .map(it -> {
+                    Video vd = new Video();
+                    vd.id = it.id + "";
+                    vd.title = it.data.title.replaceAll("^.*?(第\\d+集).*?$", "$1");
+                    vd.pageUrl = "https://v.youku.com/v_show/id_" + it.data.action.value + ".html";
+                    return vd;
+                }).collect(Collectors.toList());
+
+            liveData.postValue(root);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
