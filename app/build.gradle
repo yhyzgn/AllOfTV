@@ -92,8 +92,8 @@ android {
     }
 
     // 打包apk自动生成名称
-    android.applicationVariants.all { variant ->
-        variant.outputs.all { output ->
+    android.applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
             outputFileName = "AllOfTV_${defaultConfig.versionName}_${defaultConfig.versionCode}.apk"
         }
     }

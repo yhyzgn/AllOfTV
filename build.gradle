@@ -7,11 +7,13 @@ plugins {
 apply from: 'config.gradle'
 
 allprojects {
-    tasks.withType(JavaCompile) {
+    tasks.withType(JavaCompile).configureEach {
         options.encoding = "UTF-8"
     }
 
-    tasks.withType(Test) {
-        systemProperty "file.encoding", "UTF-8"
+    tasks.withType(Test).tap {
+        configureEach {
+            systemProperty "file.encoding", "UTF-8"
+        }
     }
 }
