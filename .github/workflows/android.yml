@@ -8,7 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write-all
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
