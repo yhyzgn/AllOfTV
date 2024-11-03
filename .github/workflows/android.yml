@@ -65,4 +65,3 @@ jobs:
           name: ${{ env.tagName }}_${{ env.runNumber }}
           body: ${{ steps.changelog.outputs.changes }}
           artifacts: app/build/outputs/apk/release/*.apk
-          token: ${{ secrets.RELEASE_TOKEN }}
