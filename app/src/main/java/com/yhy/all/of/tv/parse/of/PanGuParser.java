@@ -40,11 +40,10 @@ public class PanGuParser extends AbstractParser {
 
     @Override
     public boolean isVideoUrl(String url) {
-        // https://2682523f981a340b2dbf94860681e7d2.rdt.tfogc.com:49156/om.tc.qq.com/video.dispatch.tc.qq.com/gzc_1000102_0b53vaa3waabjiajjktfizsmdkgdxosadp2a.f10217.mp4?mkey=6a30793107fb6c6fb8100d1e58837e790e&name=M3U8TV&vkey=DDCBF725394D2CE1226D3DBF1D14FDF24CB8C13E11D54D7EDDA1F080D2B0D13387396D77A7AB87D709E646D69B7EFFDC208A42EABB6EF15851755BA8F95EE3FA9D664B1E324B88E6F50BFDC090856E459820FA6C7AAA28C40E444B17824C4F19437FF5562016870A2BB79DE255AD1AF5D1746642B906DAFF6F5801E6A3253B12&sdtfrom=v1010&type=mp4&platform=10901&br=117&fmt=10217&ver=0&sp=1&guid=7648102217445883&cip=222.71.216.36&cpro=31&cisp=1&stdfrom=1100&proto=https
-        return url.contains(".m3u8?vkey=")
-            || url.contains(".mp4?vkey=")
-            || url.contains("storage.360buyimg.com") && url.contains(".jpg?Expires=") // 爱奇艺/优酷
-            || url.contains("video.dispatch.tc.qq.com") && url.contains(".mp4?sdtfrom=") // 腾讯
-            ;
+        // https://122.228.8.29:4433/Cache/qiyi/274faa6b6656e653f6733d5212b8f279.m3u8?vkey=6636633341564d485656514a4167494143514a5555565144414655485541465155464e5555564a5642674e5544674d4657675655
+        // https://122.228.8.29:4433/Cache/hls/135bfdfd2ad755483c5adb9bfba2b543.m3u8?vkey=383161304251634a42514256426c49474246554856514e65556c6855416c4658576c6454556c5143446741465546414142517341
+        return
+                url.contains(".m3u8?vkey=") // 爱奇艺 腾讯
+                ;
     }
 }

@@ -2,10 +2,11 @@ pluginManagement {
     repositories {
         mavenLocal()
         maven { url 'https://jitpack.io' }
-        maven { url "https://maven.aliyun.com/repository/public" }
+        maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
+        maven { url "https://maven.aliyun.com/repository/spring-plugin" }
         mavenCentral()
-        google()
         gradlePluginPortal()
+        google()
     }
 }
 dependencyResolutionManagement {
@@ -13,10 +14,14 @@ dependencyResolutionManagement {
     repositories {
         mavenLocal()
         maven { url 'https://jitpack.io' }
-        maven { url "https://maven.aliyun.com/repository/public" }
+        maven { url 'https://maven.aliyun.com/repository/central/' }
+        maven { url 'https://maven.aliyun.com/repository/spring/' }
+        maven { url 'https://maven.aliyun.com/repository/apache-snapshots/' }
+        maven { url 'https://maven.aliyun.com/repository/spring-plugin/' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin/' }
+        maven { url 'https://maven.aliyun.com/repository/google/' }
         mavenCentral()
         google()
-        gradlePluginPortal()
     }
 }
 

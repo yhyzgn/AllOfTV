@@ -3,14 +3,14 @@ package com.yhy.all.of.tv.parse;
 import com.yhy.all.of.tv.chan.Chan;
 import com.yhy.all.of.tv.internal.Lists;
 import com.yhy.all.of.tv.parse.of.CKParser;
-import com.yhy.all.of.tv.parse.of.Hold8Parser;
-import com.yhy.all.of.tv.parse.of.JYParser;
-import com.yhy.all.of.tv.parse.of.JsonPlayerParser;
+import com.yhy.all.of.tv.parse.of.XiaMiParser;
+import com.yhy.all.of.tv.parse.of.PMParser;
+import com.yhy.all.of.tv.parse.of.YeMuParser;
 import com.yhy.all.of.tv.parse.of.M3U8TVParser;
-import com.yhy.all.of.tv.parse.of.NuoXunParser;
-import com.yhy.all.of.tv.parse.of.OKParser;
+import com.yhy.all.of.tv.parse.of.G8090Parser;
+import com.yhy.all.of.tv.parse.of.NnxvParser;
 import com.yhy.all.of.tv.parse.of.PanGuParser;
-import com.yhy.all.of.tv.parse.of.Yun17Parser;
+import com.yhy.all.of.tv.parse.of.BingDouParser;
 
 import java.util.List;
 import java.util.Objects;
@@ -30,14 +30,14 @@ public class ParserRegister {
 
     private ParserRegister() {
         parserList = Lists.of(
-            new JsonPlayerParser(),
+            new YeMuParser(),
             new CKParser(),
-            new NuoXunParser(),
-            new Hold8Parser(),
+            new G8090Parser(),
+            new XiaMiParser(),
             new PanGuParser(),
-            new Yun17Parser(),
-            new OKParser(),
-            new JYParser(),
+            new BingDouParser(),
+            new NnxvParser(),
+            new PMParser(),
             new M3U8TVParser()
         );
     }

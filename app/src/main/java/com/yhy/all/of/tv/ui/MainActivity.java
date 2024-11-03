@@ -419,7 +419,7 @@ public class MainActivity extends BaseActivity {
 
         DownloadManager manager = new DownloadManager.Builder(this)
             .apkName(apkName)
-            .apkUrl("https://ghproxy.com/" + apkUrl)
+            .apkUrl("https://ghp.ci/" + apkUrl)
             .apkDescription(!TextUtils.isEmpty(version.body) ? version.body : "检查到新版本")
             .smallIcon(R.mipmap.ic_launcher)
             .apkSize(FileUtils.formatSize(asset.size))

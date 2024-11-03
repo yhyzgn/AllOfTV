@@ -18,15 +18,15 @@ import java.util.List;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class NuoXunParser extends AbstractParser {
+public class G8090Parser extends AbstractParser {
     @Override
     public String name() {
-        return "诺讯";
+        return "8090g";
     }
 
     @Override
     public String url() {
-        return "https://www.nxflv.com/?url=";
+        return "https://www.8090g.cn/?url=";
     }
 
     @Override
@@ -40,10 +40,10 @@ public class NuoXunParser extends AbstractParser {
 
     @Override
     public boolean isVideoUrl(String url) {
-        // https://api.nxflv.com/Cache/YouKu/ca580a5f1cd19562aa7a216a529bd61b.m3u8
-        // https://2f0e9f8a4970eabbb2bc4c13495e7127.rdt.tfogc.com:49156/variety.tc.qq.com/q0033rtpdxb.mp4?vkey=4DA41EB60CC615A9ACF8AE8F81CBDC5669655A23EB2F0294DACA2C7EBBA842459C0F586A0E83110F92BA89BECF843988450BBFCAE9F8AF1B96137E7CA8E67C7CA57AFAF56DD7545A9757522A627A5CCC795139BF2963DAB508181BD085782745906C1DF0373A6CA9931344C5C4DF16E2034B41811E2C38D5D20D8B4F00C3F27E7FE016386D65C89B&QQ=335583&From=www.nxflv.com
-        return url.endsWith(".m3u8")  // 爱奇艺
-            || url.contains(".mp4?vkey=") // 腾讯
-            ;
+        // https://122.228.8.29:4433/Cache/qiyi/274faa6b6656e653f6733d5212b8f279.m3u8?vkey=6636633341564d485656514a4167494143514a5555565144414655485541465155464e5555564a5642674e5544674d4657675655
+        // https://122.228.8.29:4433/Cache/hls/135bfdfd2ad755483c5adb9bfba2b543.m3u8?vkey=383161304251634a42514256426c49474246554856514e65556c6855416c4658576c6454556c5143446741465546414142517341
+        return
+                url.contains(".m3u8?vkey=") // 爱奇艺 腾讯
+                ;
     }
 }
