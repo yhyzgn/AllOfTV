@@ -38,10 +38,10 @@ jobs:
           sed -i -r "s/name: 'v[0-9\\.]+'/name: '${{ env.tagName }}'/g" config.gradle
           cat config.gradle
 
-      - name: set up JDK 17
+      - name: set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: gradle
 
