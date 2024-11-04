@@ -52,57 +52,57 @@ public class IQiYiApi {
     }
 
     public void page(MutableLiveData<List<Video>> liveData, int page, TabType type, int mode) throws Exception {
-        OkGo.<String>get("https://mesh.if.iqiyi.com/portal/videolib/pcw/data")
-            .headers("User-Agent", UserAgentRand.get())
-            .headers("X-Forwarded-For", IpRand.get())
-            .params("ret_num", 30)
-            .params("page_id", Math.max(1, page))
-            .params("channel_id", type == TabType.FILM ? 1 : 2)
-            .params("mode", mode)
-            .execute(new StringCallback() {
-                @Override
-                public void onSuccess(Response<String> response) {
-                    String result = response.body();
-                    try {
-                        JSONObject jo = new JSONObject(result);
-                        JSONArray ja = jo.getJSONArray("data");
-                        String json = ja.toString();
+        OkGo.<String>get("https://mesh.if.iqiyi.com/portal/lw/videolib/data")
+                .headers("User-Agent", UserAgentRand.get())
+                .headers("X-Forwarded-For", IpRand.get())
+                .params("ret_num", 30)
+                .params("page_id", Math.max(1, page))
+                .params("channel_id", type == TabType.FILM ? 1 : 2)
+                .params("filter", "{\"mode\":\"" + mode + "\"}")
+                .execute(new StringCallback() {
+                    @Override
+                    public void onSuccess(Response<String> response) {
+                        String result = response.body();
+                        try {
+                            JSONObject jo = new JSONObject(result);
+                            JSONArray ja = jo.getJSONArray("data");
+                            String json = ja.toString();
 
-                        List<IQiYiVideo> list = gson.fromJson(json, new TypeToken<>() {
-                        });
-                        List<Video> res = list.stream().map(it -> {
-                            Video vd = new Video();
-                            vd.id = it.tvId + "";
-                            vd.title = it.title;
-                            vd.description = it.description;
-                            vd.score = it.snsScore;
-                            vd.imgCover = it.imageUrlNormal;
-                            vd.pageUrl = it.pageUrl;
-                            vd.channel = "爱奇艺";
-                            vd.type = type;
-                            vd.year = it.date.year;
-                            vd.month = it.date.month;
-                            vd.day = it.date.day;
-                            vd.updateStatus = it.dqUpdatestatus;
-                            vd.tags = TextUtils.isEmpty(it.tag) ? null : Arrays.stream(it.tag.split(",")).collect(Collectors.toList());
-                            vd.directors = it.creator.stream().map(dto -> dto.name).collect(Collectors.toList());
-                            vd.actors = it.contributor.stream().map(dto -> dto.name).collect(Collectors.toList());
-                            return vd;
-                        }).collect(Collectors.toList());
+                            List<IQiYiVideo> list = gson.fromJson(json, new TypeToken<>() {
+                            });
+                            List<Video> res = list.stream().map(it -> {
+                                Video vd = new Video();
+                                vd.id = it.tvId + "";
+                                vd.title = it.title;
+                                vd.description = it.description;
+                                vd.score = it.snsScore;
+                                vd.imgCover = it.imageUrlNormal;
+                                vd.pageUrl = it.pageUrl;
+                                vd.channel = "爱奇艺";
+                                vd.type = type;
+                                vd.year = it.date.year;
+                                vd.month = it.date.month;
+                                vd.day = it.date.day;
+                                vd.updateStatus = it.dqUpdatestatus;
+                                vd.tags = TextUtils.isEmpty(it.tag) ? null : Arrays.stream(it.tag.split(",")).collect(Collectors.toList());
+                                vd.directors = it.creator.stream().map(dto -> dto.name).collect(Collectors.toList());
+                                vd.actors = it.contributor.stream().map(dto -> dto.name).collect(Collectors.toList());
+                                return vd;
+                            }).collect(Collectors.toList());
 
-                        liveData.postValue(res);
-                    } catch (JSONException e) {
-                        LogUtils.e(e.getMessage());
-                        throw new RuntimeException(e);
+                            liveData.postValue(res);
+                        } catch (JSONException e) {
+                            LogUtils.e(e.getMessage());
+                            throw new RuntimeException(e);
+                        }
                     }
-                }
 
-                @Override
-                public void onError(Response<String> response) {
-                    LogUtils.e(response.getException().getMessage());
-                    liveData.postValue(null);
-                }
-            });
+                    @Override
+                    public void onError(Response<String> response) {
+                        LogUtils.e(response.getException().getMessage());
+                        liveData.postValue(null);
+                    }
+                });
     }
 
     /**
@@ -147,17 +147,17 @@ public class IQiYiApi {
                     root.episodesTotal = joData.getJSONObject("base_data").optInt("total_episode", 1);
 
                     root.episodes = pageKeys.stream()
-                        .map(featurePaged::get)
-                        .filter(it -> null != it && !it.isEmpty())
-                        .flatMap(Collection::stream)
-                        .filter(it -> Objects.equals("1", it.contentType)) // 1：正片，3：预告片
-                        .map(it -> {
-                            Video vd = new Video();
-                            vd.title = it.title.replaceAll("^.*?(第\\d+集).*?$", "$1");
-                            vd.pageUrl = it.pageUrl;
-                            vd.channel = "爱奇艺";
-                            return vd;
-                        }).collect(Collectors.toList());
+                            .map(featurePaged::get)
+                            .filter(it -> null != it && !it.isEmpty())
+                            .flatMap(Collection::stream)
+                            .filter(it -> Objects.equals("1", it.contentType)) // 1：正片，3：预告片
+                            .map(it -> {
+                                Video vd = new Video();
+                                vd.title = it.title.replaceAll("^.*?(第\\d+集).*?$", "$1");
+                                vd.pageUrl = it.pageUrl;
+                                vd.channel = "爱奇艺";
+                                return vd;
+                            }).collect(Collectors.toList());
                     liveData.postValue(root);
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
